@@ -175,8 +175,8 @@ CREATE TABLE Problems(
     FOREIGN KEY (ScooterId) REFERENCES Scooters(ID)
 );
 
-DROP TABLE IF EXISTS Problems CASCADE;
-CREATE TABLE Problems(
+DROP TABLE IF EXISTS ProblemStatuses CASCADE;
+CREATE TABLE ProblemStatuses(
     ProblemID bigint PRIMARY KEY,
     DateSolved TIMESTAMP NOT NULL,
     Description text NOT NULL,
