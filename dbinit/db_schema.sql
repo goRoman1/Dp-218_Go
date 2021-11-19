@@ -6,6 +6,7 @@ CREATE TABLE Roles(
     IsUser  boolean,
     IsSupplier boolean
 );
+INSERT INTO Roles(ID, Name, IsAdmin, IsUser, IsSupplier) VALUES(1, "Admin role", true, false, false);
 
 DROP TABLE IF EXISTS Users CASCADE;
 CREATE TABLE Users(
@@ -14,11 +15,12 @@ CREATE TABLE Users(
     IsBlocked   boolean,
     UserName    VARCHAR(100),
     UserSurname VARCHAR(100),
-    CreatedAt   TIMESTAMP NOT NULL,
+    CreatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     RoleID      int NOT NULL,
 
     FOREIGN KEY (RoleID) REFERENCES Roles(ID)
 );
+INSERT INTO Users(LoginEmail, IsBlocked, UserName, UserSurname, RoleID) VALUES("dt@mail.com", false, "David", "Taxon", 1);
 
 
 DROP TABLE IF EXISTS LoginInfo CASCADE;
