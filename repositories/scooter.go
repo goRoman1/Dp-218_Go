@@ -1,1 +1,0 @@
-//scooter interface implementation (Postgres)
