@@ -1,54 +1,62 @@
-package handler
+package routing
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/ITA-Dnipro/Dp-218_Go/db"
-	"github.com/ITA-Dnipro/Dp-218_Go/models"
-	"github.com/go-chi/chi"
+	model "Dp218Go/domain/entities"
+	iface "Dp218Go/domain/interfaces"
+	repo "Dp218Go/repositories"
+
 	"github.com/go-chi/render"
+	"github.com/gorilla/mux"
 )
 
+var	userRepo iface.UserRepo
 var userIDKey = "userID"
 
-func users(router chi.Router) {
-	router.Get("/", getAllUsers)
-	router.Post("/", createUser)
-	router.Route("/{"+userIDKey+"}", func(r chi.Router) {
-		r.Use(UserContext)
-		r.Get("/", getUser)
-		r.Put("/", updateUser)
-		r.Delete("/", deleteUser)
-	})
+var keyRoutes = []Route{
+	{
+		Uri:         `/users`,
+		Method:    http.MethodGet,
+		Handler:	getAllUsers,
+	},
+	{
+		Uri:         `/user/{`+userIDKey+`}`,
+		Method:     http.MethodGet,
+		Handler:	getUser,
+	},
+	{
+		Uri:         `/user`,
+		Method:     http.MethodPost,
+		Handler:	createUser,
+	},
+	{
+		Uri:         `/user/{`+userIDKey+`}`,
+		Method:     http.MethodPut,
+		Handler:	updateUser,
+	},
+	{
+		Uri:         `/user/{`+userIDKey+`}`,
+		Method:     http.MethodDelete,
+		Handler:	deleteUser,
+	},
 }
 
-func UserContext(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId := chi.URLParam(r, userIDKey)
-		if userId == "" {
-			render.Render(w, r, ErrorRenderer(fmt.Errorf("user ID is required")))
-			return
-		}
-		id, err := strconv.Atoi(userId)
-		if err != nil {
-			render.Render(w, r, ErrorRenderer(fmt.Errorf("invalid user ID")))
-			return
-		}
-		ctx := context.WithValue(r.Context(), userIDKey, id)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+func AddUserHandler(router *mux.Router, repo iface.UserRepo) {
+	userRepo = repo
+	for _, rt := range keyRoutes{
+		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+	}
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
-	user := &models.User{}
+	user := &model.User{}
 	if err := render.Bind(r, user); err != nil {
 		render.Render(w, r, ErrBadRequest)
 		return
 	}
-	if err := dbInstance.AddUser(user); err != nil {
+	if err := userRepo.AddUser(user); err != nil {
 		render.Render(w, r, ErrorRenderer(err))
 		return
 	}
@@ -59,7 +67,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := dbInstance.GetAllUsers()
+	users, err := userRepo.GetAllUsers()
 	if err != nil {
 		render.Render(w, r, ServerErrorRenderer(err))
 		return
@@ -71,10 +79,13 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value(userIDKey).(int)
-	user, err := dbInstance.GetUserById(userId)
+	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
-		if err == db.ErrNoMatch {
+		render.Render(w, r, ErrorRenderer(err))
+	}
+	user, err := userRepo.GetUserById(userId)
+	if err != nil {
+		if err == repo.ErrNoMatch {
 			render.Render(w, r, ErrNotFound)
 		} else {
 			render.Render(w, r, ErrorRenderer(err))
@@ -88,10 +99,13 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value(userIDKey).(int)
-	err := dbInstance.DeleteUser(userId)
+	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
-		if err == db.ErrNoMatch {
+		render.Render(w, r, ErrorRenderer(err))
+	}
+	err = userRepo.DeleteUser(userId)
+	if err != nil {
+		if err == repo.ErrNoMatch {
 			render.Render(w, r, ErrNotFound)
 		} else {
 			render.Render(w, r, ServerErrorRenderer(err))
@@ -102,15 +116,18 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value(userIDKey).(int)
-	userData := models.User{}
+	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
+	if err != nil {
+		render.Render(w, r, ErrorRenderer(err))
+	}
+	userData := model.User{}
 	if err := render.Bind(r, &userData); err != nil {
 		render.Render(w, r, ErrBadRequest)
 		return
 	}
-	userData, err := dbInstance.UpdateUser(userId, userData)
+	userData, err = userRepo.UpdateUser(userId, userData)
 	if err != nil {
-		if err == db.ErrNoMatch {
+		if err == repo.ErrNoMatch {
 			render.Render(w, r, ErrNotFound)
 		} else {
 			render.Render(w, r, ServerErrorRenderer(err))

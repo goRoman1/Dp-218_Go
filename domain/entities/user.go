@@ -1,8 +1,8 @@
-package models
+package entities
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 )
 
 type User struct {
@@ -11,7 +11,7 @@ type User struct {
 	IsBlocked   bool   `json:"is_blocked"`
 	UserName    string `json:"user_name"`
 	UserSurname string `json:"user_surname"`
-	CreatedAt   string `json:"created_at"`
+	CreatedAt   time.Time `json:"created_at"`
 	RoleID      int    `json:"role_id"`
 }
 
@@ -20,10 +20,6 @@ type UserList struct {
 }
 
 func (u *User) Bind(r *http.Request) error {
-	if u.LoginEmail == "" {
-		return fmt.Errorf("login_email is a required field")
-	}
-
 	return nil
 }
 
