@@ -37,6 +37,8 @@ services:
           memory: 4G
     networks:
       - scooternet
+    ports:
+      - "5444:5432"
 
   pgadmin:
     image: dpage/pgadmin4
