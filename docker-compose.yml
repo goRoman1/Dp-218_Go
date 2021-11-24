@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  scooterapp:
+    container_name: scooter_app
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file: 
+      - ./configs/.env
+    depends_on:
+      - scooterdb
+      - pgadmin
+    networks:
+      - scooternet
+    ports: 
+      - "8080:8080"
+
+  scooterdb:
+    image: postgres
+    container_name: scooter_db
+    env_file: 
+      - ./configs/.env
+    volumes:
+      #- ./configs:/docker-entrypoint-initdb.d
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scooteradmin -d scooterdb"]  
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    networks:
+      - scooternet
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: scooter_pgadmin
+    environment:
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    env_file: 
+      - ./configs/.env
+    ports:
+      - "5080:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - scooternet
+      
+networks:
+  scooternet:
+    driver: bridge  
+
+volumes:
+  dbdata:
