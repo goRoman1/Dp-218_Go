@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	model "Dp218Go/domain/entities"
+	model "Dp218Go/domain/dto"
 	"Dp218Go/pkg/postgres"
 )
 

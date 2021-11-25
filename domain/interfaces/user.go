@@ -1,13 +1,13 @@
 package interfaces
 
 import (
-	models "Dp218Go/domain/entities"
+	model "Dp218Go/domain/dto"
 )
 
 type UserRepo interface {
-	GetAllUsers() (*models.UserList, error)
-	GetUserById(userId int) (models.User, error)
-	AddUser(user *models.User) error
-	UpdateUser(userId int, userData models.User) (models.User, error)
+	GetAllUsers() (*model.UserList, error)
+	GetUserById(userId int) (model.User, error)
+	AddUser(user *model.User) error
+	UpdateUser(userId int, userData model.User) (model.User, error)
 	DeleteUser(userId int) error
 }

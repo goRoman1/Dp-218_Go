@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	model "Dp218Go/domain/entities"
+	model "Dp218Go/domain/dto"
 	iface "Dp218Go/domain/interfaces"
 	repo "Dp218Go/repositories"
 
@@ -96,6 +96,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, ServerErrorRenderer(err))
 		return
 	}
+
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {

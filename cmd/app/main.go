@@ -25,26 +25,35 @@ var HTTP_PORT = os.Getenv("HTTP_PORT")
 var MIGRATE_DOWN, _ = strconv.ParseBool(os.Getenv("MIGRATE_DOWN"))
 
 func main() {
+	var str = "postgres://scooteradmin:Megascooter!@localhost:5444/scooterdb"
+	//var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	//	POSTGRES_USER,
+	//	POSTGRES_PASSWORD,
+	//	PG_HOST,
+	//	PG_PORT,
+	//	POSTGRES_DB)
 
-	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		POSTGRES_USER,
-		POSTGRES_PASSWORD,
-		PG_HOST,
-		PG_PORT,
-		POSTGRES_DB)
-
-	pg, err := postgres.NewPostgres(connectionString)
+	pg, err := postgres.NewPostgres(str)
 	if err != nil {
 		log.Fatalf("app - Run - postgres.New: %v", err)
 	}
 	defer pg.CloseDB()
 
-	err = doMigrate(connectionString)
+	err = doMigrate(str)
 	if err != nil {
 		log.Printf("app - Run - Migration issues: %v\n", err)
 	}
 
 	var userRepo = repo.New(pg)
+	var scooterRepo = repo.NewSc(pg)
+
+	lst, err := scooterRepo.GetAllScooters()
+	if err!=nil {
+		fmt.Println(err)
+	}
+	fmt.Println(lst)
+
+
 
 	handler := routing.NewRouter()
 	routing.AddUserHandler(handler, userRepo)

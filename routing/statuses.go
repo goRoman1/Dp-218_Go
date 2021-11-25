@@ -1,6 +1,8 @@
 package routing
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -41,4 +43,18 @@ func ServerErrorRenderer(err error) *ResponseStatus {
 		StatusText: "Internal server error",
 		Message:    err.Error(),
 	}
+}
+
+func JSONMarshal(data interface{}) ([]byte) {
+	e, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return e
+}
+
+func HTTPResponse(w http.ResponseWriter, statusCode int, resp []byte) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	w.Write(resp)
 }
