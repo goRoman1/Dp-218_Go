@@ -25,6 +25,14 @@ var scooterRoutes = []Route{
 		Handler:	getScooterById,
 	},
 }
+
+func AddScooterHandler(router *mux.Router, repo iface.ScooterRepo) {
+	scooterRepo = repo
+	for _, rt := range scooterRoutes{
+		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+	}
+}
+
 func getAllScooters(w http.ResponseWriter, r *http.Request) {
 	scooters, err := scooterRepo.GetAllScooters()
 	if err != nil {
@@ -42,7 +50,7 @@ func getScooterById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		render.Render(w, r, ErrorRenderer(err))
 	}
-	scooter, err := userRepo.GetUserById(scooterId)
+	scooter, err := scooterRepo.GetScooterById(scooterId)
 	if err != nil {
 		if err == repo.ErrNoMatch {
 			render.Render(w, r, ErrNotFound)

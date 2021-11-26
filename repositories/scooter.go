@@ -5,6 +5,7 @@ import (
 	"Dp218Go/pkg/postgres"
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type ScooterRepoDb struct {
@@ -17,7 +18,7 @@ func NewSc(pg *postgres.Postgres) *ScooterRepoDb {
 
 func (sc *ScooterRepoDb) GetAllScooters () (*model.ScooterList, error) {
 	scooterList := &model.ScooterList{}
-	sc.QuerySQL = "SELECT s.id, sm.maxweight, sm.modelname, ss.locationid, ss.batteryremain, ss.canberent, l.lattitude, l.longtitude  FROM scooters as s JOIN scootermodels as sm ON s.modelid=sm.id JOIN scooterstatuses as ss ON s.id=ss.scooterid JOIN locations as l ON ss.locationid=l.id ORDER BY s.id"
+	sc.QuerySQL = `SELECT s.id, sm.maxweight, sm.modelname, ss.locationid, ss.batteryremain, ss.canberent, l.lattitude, l.longtitude  FROM scooters as s JOIN scootermodels as sm ON s.modelid=sm.id JOIN scooterstatuses as ss ON s.id=ss.scooterid JOIN locations as l ON ss.locationid=l.id ORDER BY s.id`
 	rows, err := sc.QueryResult(context.Background())
 	if err != nil {
 		return scooterList, err
@@ -46,10 +47,10 @@ func (sc *ScooterRepoDb) GetScooterById(scooterId int) (model.Scooter, error) {
 	}
 }
 
-//func (sc *ScooterRepoDb) SendPosition(scooter model.Scooter) {
-//	sc.QuerySQL = "UPDATE locations SET lattitude=$1, longtitude=$2 WHERE id=$3 RETURNING id"
-//	_, err := sc.QueryResult(context.Background(), scooter.Lattitude, scooter.Longtitude,scooter.LocationId )
-//	if err!=nil {
-//		fmt.Println(err)
-//	}
-//}
+func (sc *ScooterRepoDb) SendPosition(scooter model.Scooter) {
+	sc.QuerySQL = "UPDATE locations SET lattitude=$1, longtitude=$2 WHERE id=$3 RETURNING id"
+	_, err := sc.QueryResult(context.Background(), scooter.Lattitude, scooter.Longtitude,scooter.LocationId )
+	if err!=nil {
+		fmt.Println(err)
+	}
+}
