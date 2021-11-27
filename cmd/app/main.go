@@ -51,6 +51,8 @@ func main() {
 	routing.AddUserHandler(handler, userRepo)
 	httpServer := httpserver.New(handler, httpserver.Port(HTTP_PORT))
 
+	scL,err := scooterRepo.GetAllScooters()
+	fmt.Println(scL)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
