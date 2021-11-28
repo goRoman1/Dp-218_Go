@@ -1,10 +1,10 @@
 package main
 
 import (
-	"Dp218Go/pkg/httpserver"
-	"Dp218Go/pkg/postgres"
-	repo "Dp218Go/repositories"
+	"Dp218Go/repositories/postgres"
 	"Dp218Go/routing"
+	"Dp218Go/routing/httpserver"
+	"Dp218Go/services"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -33,21 +33,21 @@ func main() {
 		PG_PORT,
 		POSTGRES_DB)
 
-	pg, err := postgres.NewPostgres(connectionString)
+	db, err := postgres.NewConnection(connectionString)
 	if err != nil {
 		log.Fatalf("app - Run - postgres.New: %v", err)
 	}
-	defer pg.CloseDB()
+	defer db.CloseDB()
 
 	err = doMigrate(connectionString)
 	if err != nil {
 		log.Printf("app - Run - Migration issues: %v\n", err)
 	}
 
-	var userRepo = repo.New(pg)
+	var userService = services.NewUserService(db)
 
 	handler := routing.NewRouter()
-	routing.AddUserHandler(handler, userRepo)
+	routing.AddUserHandler(handler, userService)
 	httpServer := httpserver.New(handler, httpserver.Port(HTTP_PORT))
 
 

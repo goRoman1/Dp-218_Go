@@ -3,11 +3,11 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"log"
 	"time"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -22,30 +22,29 @@ type Postgres struct {
 	connAttempts int
 	connTimeout  time.Duration
 
-	QuerySQL string
 	Pool     *pgxpool.Pool
 }
 
-func (pg *Postgres) QueryResult(ctx context.Context, args ...interface{}) (pgx.Rows, error) {
-	return pg.Pool.Query(ctx, pg.QuerySQL, args...)
+func (pg *Postgres) QueryResult(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error) {
+	return pg.Pool.Query(ctx, query, args...)
 }
 
-func (pg *Postgres) QueryResultRow(ctx context.Context, args ...interface{}) pgx.Row {
-	return pg.Pool.QueryRow(ctx, pg.QuerySQL, args...)
+func (pg *Postgres) QueryResultRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
+	return pg.Pool.QueryRow(ctx, query, args...)
 }
 
-func (pg *Postgres) QueryExec(ctx context.Context, args ...interface{}) (pgconn.CommandTag, error) {
-	return pg.Pool.Exec(ctx, pg.QuerySQL, args...)
+func (pg *Postgres) QueryExec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
+	return pg.Pool.Exec(ctx, query, args...)
 }
 
-func NewPostgres(dbUri string) (*Postgres, error) {
+func NewConnection(connectionString string) (*Postgres, error) {
 	dbPg := &Postgres{
 		maxPoolSize:  defaultMaxPoolSize,
 		connAttempts: defaultConnAttempts,
 		connTimeout:  defaultConnTimeout,
 	}
 
-	poolConfig, err := pgxpool.ParseConfig(dbUri)
+	poolConfig, err := pgxpool.ParseConfig(connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("Postgres. Error parsing config url - %v", err)
 	}

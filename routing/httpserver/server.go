@@ -23,18 +23,18 @@ type Server struct{
 
 type Option func(*Server)
 
-func New(handler http.Handler, opts ...Option) *Server{
+func New(handler http.Handler, opts ...Option) *Server {
 	httpServer := &http.Server{
-		Handler: handler,
-		ReadTimeout: defaultReadTimeout,
+		Handler:      handler,
+		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
-		IdleTimeout: defaultIdleTimeout,
-		Addr: defaultAddr,
+		IdleTimeout:  defaultIdleTimeout,
+		Addr:         defaultAddr,
 	}
 
 	server := &Server{
-		server: httpServer,
-		notify: make(chan error, 1),
+		server:          httpServer,
+		notify:          make(chan error, 1),
 		shutdownTimeout: defaultShutdownTimeout,
 	}
 
