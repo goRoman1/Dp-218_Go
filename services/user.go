@@ -5,14 +5,6 @@ import (
 	"Dp218Go/repositories"
 )
 
-type UserUsecases interface {
-	GetAllUsers() (*models.UserList, error)
-	GetUserById(userId int) (models.User, error)
-	AddUser(user *models.User) error
-	UpdateUser(userId int, userData models.User) (models.User, error)
-	DeleteUser(userId int) error
-}
-
 type UserService struct {
 	repo repositories.AnyDatabase
 }

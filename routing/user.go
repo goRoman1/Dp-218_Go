@@ -2,6 +2,7 @@ package routing
 
 import (
 	"Dp218Go/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -93,7 +94,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		ServerErrorRender(FormatJSON, w)
 		return
 	}
-	EncodeError(FormatJSON, w, ErrorRenderer(err, "success", http.StatusOK))
+	EncodeError(FormatJSON, w, ErrorRenderer(fmt.Errorf(""), "success", http.StatusOK))
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
