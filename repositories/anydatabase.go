@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"Dp218Go/services/usecases"
+	"Dp218Go/models/usecases"
 	"context"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
