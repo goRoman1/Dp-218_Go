@@ -1,11 +1,13 @@
 package routing
 
 import (
+	"Dp218Go/configs"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
+	"strings"
 )
 
 type Route struct {
@@ -17,14 +19,25 @@ type Route struct {
 const (
 	FormatJSON = iota
 	FormatHTML
-	HTMLforError = "file:///home/Dp218Go/templates/html/error.html"
+)
+
+var (
+	HTMLPath      = configs.TEMPLATES_PATH + "html/"
+	MainPageHTML  = HTMLPath + "main-page.html"
+	ErrorPageHTML = HTMLPath + "error.html"
+	APIprefix     = "/api/v1"
 )
 
 func NewRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	router.HandleFunc("/", showHomePage)
 	return router
+}
+
+func showHomePage(w http.ResponseWriter, r *http.Request) {
+	EncodeAnswer(FormatHTML, w, nil, MainPageHTML)
 }
 
 func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +61,7 @@ func EncodeError(format int, w http.ResponseWriter, respErr *ResponseStatus) {
 	case FormatHTML:
 		w.Header().Set("Content-Type", "text/html")
 		var tmpl *template.Template
-		if tmpl, err = template.ParseFiles(HTMLforError); err == nil {
+		if tmpl, err = template.ParseFiles(ErrorPageHTML); err == nil {
 			err = tmpl.Execute(w, respErr)
 		}
 	default:
@@ -71,6 +84,10 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(answer)
 	case FormatHTML:
+		if len(htmlTemplates) == 0 {
+			EncodeError(format, w, &ResponseStatus{StatusText: "Encode error", Message: "no html temlates", StatusCode: http.StatusInternalServerError})
+			return
+		}
 		w.Header().Set("Content-Type", "text/html")
 		var tmpl *template.Template
 		if tmpl, err = template.ParseFiles(htmlTemplates[0]); err == nil {
@@ -81,14 +98,14 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 	}
 
 	if err != nil {
-		ServerErrorRender(format, w)
+		EncodeError(format, w, &ResponseStatus{Err: err, StatusText: "Encode error", Message: err.Error(), StatusCode: http.StatusInternalServerError})
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestData interface{}) {
+func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestData interface{}, htmlDecoder func(r *http.Request, dataToDecode interface{}) (error)) {
 	var err error
 	switch format {
 	case FormatJSON:
@@ -96,7 +113,7 @@ func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestDa
 		err = json.NewDecoder(r.Body).Decode(requestData)
 	case FormatHTML:
 		w.Header().Set("Content-Type", "text/html")
-		//TODO: make decode from html forms work
+		err = htmlDecoder(r, requestData)
 	default:
 		err = fmt.Errorf("format error")
 	}
@@ -107,4 +124,11 @@ func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestDa
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func GetFormatFromRequest(r *http.Request) int {
+	if strings.Contains(r.RequestURI, APIprefix) {
+		return FormatJSON
+	}
+	return FormatHTML
 }

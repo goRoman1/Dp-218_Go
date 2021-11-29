@@ -13,5 +13,6 @@ type AnyDatabase interface {
 	QueryExec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	CloseDB()
 
-	usecases.UserUsecases
+	usecases.UserUsecasesRepo
+	usecases.RoleUsecasesRepo
 }

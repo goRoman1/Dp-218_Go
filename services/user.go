@@ -32,3 +32,11 @@ func (db *UserService) DeleteUser(userId int) error {
 func (db *UserService) UpdateUser(userId int, userData models.User) (models.User, error) {
 	return db.repo.UpdateUser(userId, userData)
 }
+
+func (db *UserService) GetAllRoles() (*models.RoleList, error) {
+	return db.repo.GetAllRoles()
+}
+
+func (db *UserService) GetRoleById(roleId int) (models.Role, error) {
+	return db.repo.GetRoleById(roleId)
+}

@@ -23,7 +23,7 @@ type User struct {
 	UserName    string `json:"user_name"`
 	UserSurname string `json:"user_surname"`
 	CreatedAt   time.Time `json:"created_at"`
-	RoleID      int    `json:"role_id"`
+	Role      Role    `json:"role"`
 }
 
 type UserList struct {
