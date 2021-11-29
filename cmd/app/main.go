@@ -1,7 +1,9 @@
 package main
 
 import (
+	"Dp218Go/pkg/grpcserver"
 	"Dp218Go/pkg/httpserver"
+	"Dp218Go/pkg/pb"
 	"Dp218Go/pkg/postgres"
 	repo "Dp218Go/repositories"
 	"Dp218Go/routing"
@@ -9,7 +11,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"google.golang.org/grpc"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -53,6 +58,29 @@ func main() {
 
 	scL,err := scooterRepo.GetAllScooters()
 	fmt.Println(scL)
+
+	svr := grpcserver.NewServer()
+	svr.Run()
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterScooterServiceServer(grpcServer, svr)
+
+	listener, err := net.Listen("tcp", ":8000")
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		fmt.Println("grpc server started: 8000")
+		log.Fatal(grpcServer.Serve(listener))
+	}()
+
+	http.HandleFunc("/scrun", svr.ScootRun)
+
+	http.HandleFunc("/", grpcserver.GISHandler)
+	http.HandleFunc("/scooter", svr.ScooterHandler)
+
+	fmt.Println("http server started: 8000")
+	http.ListenAndServe(":9000", nil)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

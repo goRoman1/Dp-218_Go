@@ -20,7 +20,7 @@ var scooterRoutes = []Route{
 		Handler:	getAllScooters,
 	},
 	{
-		Uri:         `/scooter/{`+scooterIdKey+`}`,
+		Uri:         `/scoot/{`+scooterIdKey+`}`,
 		Method:     http.MethodGet,
 		Handler:	getScooterById,
 	},

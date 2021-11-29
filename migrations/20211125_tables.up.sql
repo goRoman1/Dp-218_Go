@@ -1,239 +1,232 @@
-CREATE TABLE IF NOT EXISTS Roles
+CREATE TABLE IF NOT EXISTS roles
 (
-    ID         smallint PRIMARY KEY,
-    Name       VARCHAR(50) UNIQUE,
-    IsAdmin    boolean,
-    IsUser     boolean,
-    IsSupplier boolean
+    id         smallint PRIMARY KEY,
+    name       VARCHAR(50) UNIQUE,
+    is_admin    boolean,
+    is_user     boolean,
+    is_supplier boolean
 );
 
-CREATE TABLE IF NOT EXISTS Users
+CREATE TABLE IF NOT EXISTS users
 (
-    ID          serial PRIMARY KEY,
-    LoginEmail  VARCHAR(100) UNIQUE NOT NULL,
-    IsBlocked   boolean,
-    UserName    VARCHAR(100),
-    UserSurname VARCHAR(100),
-    CreatedAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    RoleID      int                 NOT NULL,
+    id          serial PRIMARY KEY,
+    login_email  VARCHAR(100) UNIQUE NOT NULL,
+    is_blocked   boolean,
+    user_name    VARCHAR(100),
+    user_surname VARCHAR(100),
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    role_id      int                 NOT NULL,
 
-    FOREIGN KEY (RoleID) REFERENCES Roles (ID)
+    FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 
-CREATE TABLE IF NOT EXISTS LoginInfo
+CREATE TABLE IF NOT EXISTS login_info
 (
-    UserId       int PRIMARY KEY,
-    PasswordHash VARCHAR(512),
+    user_id       int PRIMARY KEY,
+    password_hash VARCHAR(512),
 
-    FOREIGN KEY (UserId) REFERENCES Users (ID)
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS LoginStatus
+CREATE TABLE IF NOT EXISTS login_status
 (
-    UserId    int PRIMARY KEY,
-    LoggedIn  boolean,
-    DateTime  TIMESTAMP NOT NULL,
-    IPAddress VARCHAR(40),
+    user_id    int PRIMARY KEY,
+    logged_in  boolean,
+    date_time  TIMESTAMP NOT NULL,
+    ip_address VARCHAR(40),
 
-    FOREIGN KEY (UserId) REFERENCES Users (ID)
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS ContactTypes
+CREATE TABLE IF NOT EXISTS contact_types
 (
-    ID   smallserial PRIMARY KEY,
-    Name VARCHAR(50)
+    id   smallserial PRIMARY KEY,
+    name VARCHAR(50)
 );
 
-CREATE TABLE IF NOT EXISTS Contacts
+CREATE TABLE IF NOT EXISTS contacts
 (
-    ID          serial PRIMARY KEY,
-    TypeId      int NOT NULL,
-    UserId      int NOT NULL,
-    ContactInfo VARCHAR(200),
+    id          serial PRIMARY KEY,
+    type_id      int NOT NULL,
+    user_id      int NOT NULL,
+    contact_info VARCHAR(200),
 
-    FOREIGN KEY (TypeId) REFERENCES ContactTypes (ID),
-    FOREIGN KEY (UserId) REFERENCES Users (ID)
+    FOREIGN KEY (type_id) REFERENCES contact_types (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS Accounts
+CREATE TABLE IF NOT EXISTS accounts
 (
-    ID      serial PRIMARY KEY,
-    Name    VARCHAR(100),
-    Number  VARCHAR(100) UNIQUE NOT NULL,
-    OwnerId int                 NOT NULL,
+    id       serial PRIMARY KEY,
+    name     VARCHAR(100),
+    number   VARCHAR(100) UNIQUE NOT NULL,
+    owner_id int                 NOT NULL,
 
-    FOREIGN KEY (OwnerId) REFERENCES Users (ID)
+    FOREIGN KEY (owner_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS PaymentTypes
+CREATE TABLE IF NOT EXISTS payment_types
 (
     ID   smallserial PRIMARY KEY,
     Name VARCHAR(100) UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS SupplierComissions
+CREATE TABLE IF NOT EXISTS supplier_commissions
 (
-    ID               serial PRIMARY KEY,
-    ComissionPercent NUMERIC(4, 2),
-    UserId           int NOT NULL,
+    id                  serial PRIMARY KEY,
+    commission_percent  NUMERIC(4, 2),
+    user_id             int NOT NULL,
 
-    FOREIGN KEY (UserId) REFERENCES Users (ID)
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS SupplierPrices
+CREATE TABLE IF NOT EXISTS supplier_prices
 (
-    ID            serial PRIMARY KEY,
-    Price         NUMERIC(15, 2),
-    PaymentTypeId smallint NOT NULL,
-    UserId        int      NOT NULL,
+    id               serial PRIMARY KEY,
+    price            NUMERIC(15, 2),
+    payment_type_id  smallint NOT NULL,
+    user_id          int      NOT NULL,
 
-    FOREIGN KEY (PaymentTypeId) REFERENCES PaymentTypes (ID),
-    FOREIGN KEY (UserId) REFERENCES Users (ID)
+    FOREIGN KEY (payment_type_id) REFERENCES payment_types (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS ScooterBrands
+CREATE TABLE IF NOT EXISTS scooter_models
 (
-    ID   smallserial PRIMARY KEY,
-    Name VARCHAR(100) UNIQUE NOT NULL
+    id               smallserial PRIMARY KEY,
+    payment_type_id  smallint     NOT NULL,
+    model_name       VARCHAR(100) NOT NULL,
+    max_weight       NUMERIC(5, 2),
+    speed            smallint     NOT NULL,
+
+    FOREIGN KEY (payment_type_id) REFERENCES payment_types (id)
 );
 
-CREATE TABLE IF NOT EXISTS ScooterModels
+CREATE TABLE IF NOT EXISTS scooters
 (
-    ID              smallserial PRIMARY KEY,
-    BrandId         smallint     NOT NULL,
-    PaymentTypeId   smallint     NOT NULL,
-    ModelName       VARCHAR(100) NOT NULL,
-    BatteryCapacity NUMERIC(10, 0),
-    MaxWeight       NUMERIC(5, 2),
-    MaxDistance     NUMERIC(10, 0),
+    id            serial PRIMARY KEY,
+    model_id      smallint            NOT NULL,
+    owner_id      int                 NOT NULL,
+    serial_number VARCHAR(100) UNIQUE NOT NULL,
+    latitude  NUMERIC(14, 12) NOT NULL,
+    longitude NUMERIC(14, 12) NOT NULL,
 
-    FOREIGN KEY (BrandId) REFERENCES ScooterBrands (ID),
-    FOREIGN KEY (PaymentTypeId) REFERENCES PaymentTypes (ID)
+    FOREIGN KEY (model_id) REFERENCES scooter_models (id),
+    FOREIGN KEY (owner_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS Scooters
+CREATE TABLE IF NOT EXISTS locations
 (
-    ID           serial PRIMARY KEY,
-    ModelId      smallint            NOT NULL,
-    OwnerId      int                 NOT NULL,
-    SerialNumber VARCHAR(100) UNIQUE NOT NULL,
-
-    FOREIGN KEY (ModelId) REFERENCES ScooterModels (ID),
-    FOREIGN KEY (OwnerId) REFERENCES Users (ID)
+    id        serial PRIMARY KEY,
+    latitude  NUMERIC(14, 12) NOT NULL,
+    longitude NUMERIC(14, 12) NOT NULL,
+    label     VARCHAR(200)
 );
 
-CREATE TABLE IF NOT EXISTS Locations
+CREATE TABLE IF NOT EXISTS scooter_stations
 (
-    ID         serial PRIMARY KEY,
-    Lattitude  NUMERIC(10, 0) NOT NULL,
-    Longtitude NUMERIC(10, 0) NOT NULL,
-    Label      VARCHAR(200)
+    id          serial PRIMARY KEY,
+    location_id int NOT NULL,
+    name        VARCHAR(100),
+    is_active   boolean,
+
+    FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
-CREATE TABLE IF NOT EXISTS ScooterStations
+CREATE TABLE IF NOT EXISTS scooter_statuses
 (
-    ID         serial PRIMARY KEY,
-    LocationId int NOT NULL,
-    Name       VARCHAR(100),
-    IsActive   boolean,
+    scooter_id     int PRIMARY KEY,
+    location_id    int,
+    battery_remain NUMERIC(5, 2),
+    can_be_rent     boolean,
+    station_id     int,
 
-    FOREIGN KEY (LocationId) REFERENCES Locations (ID)
+    FOREIGN KEY (scooter_id)  REFERENCES scooters (id),
+    FOREIGN KEY (location_id) REFERENCES locations (id),
+    FOREIGN KEY (station_id)  REFERENCES scooter_stations (id)
 );
 
-CREATE TABLE IF NOT EXISTS ScooterStatuses
+CREATE TABLE IF NOT EXISTS problem_types
 (
-    ScooterId     int PRIMARY KEY,
-    LocationId    int,
-    BatteryRemain NUMERIC(5, 2),
-    CanBeRent     boolean,
-    StationId     int,
-
-    FOREIGN KEY (ScooterId) REFERENCES Scooters (ID),
-    FOREIGN KEY (LocationId) REFERENCES Locations (ID),
-    FOREIGN KEY (StationId) REFERENCES ScooterStations (ID)
+    id   smallserial PRIMARY KEY,
+    name VARCHAR(150) UNIQUE NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS ProblemTypes
+CREATE TABLE IF NOT EXISTS problems
 (
-    ID   smallserial PRIMARY KEY,
-    Name VARCHAR(150) UNIQUE NOT NULL
+    id            bigserial PRIMARY KEY,
+    user_id       int       NOT NULL,
+    type_Id       smallint  NOT NULL,
+    scooter_id    int,
+    date_reported TIMESTAMP NOT NULL,
+    description   text      NOT NULL,
+    is_solved     boolean,
+
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (type_id) REFERENCES problem_types (id),
+    FOREIGN KEY (scooter_id) REFERENCES scooters (id)
 );
 
-CREATE TABLE IF NOT EXISTS Problems
+CREATE TABLE IF NOT EXISTS problem_statuses
 (
-    ID           bigserial PRIMARY KEY,
-    UserId       int       NOT NULL,
-    TypeId       smallint  NOT NULL,
-    ScooterId    int,
-    DateReported TIMESTAMP NOT NULL,
-    Description  text      NOT NULL,
-    IsSolved     boolean,
+    problem_id   bigint PRIMARY KEY,
+    date_solved  TIMESTAMP NOT NULL,
+    description text      NOT NULL,
 
-    FOREIGN KEY (UserId) REFERENCES Users (ID),
-    FOREIGN KEY (TypeId) REFERENCES ProblemTypes (ID),
-    FOREIGN KEY (ScooterId) REFERENCES Scooters (ID)
+    FOREIGN KEY (problem_id) REFERENCES problems (id)
 );
 
-CREATE TABLE IF NOT EXISTS ProblemStatuses
+CREATE TABLE IF NOT EXISTS scooter_statuses_in_rent
 (
-    ProblemID   bigint PRIMARY KEY,
-    DateSolved  TIMESTAMP NOT NULL,
-    Description text      NOT NULL,
+    id         bigserial PRIMARY KEY,
+    user_id     int       NOT NULL,
+    scooter_id  int       NOT NULL,
+    station_id  int,
+    date_time   TIMESTAMP NOT NULL,
+    location_id int,
+    is_returned boolean,
 
-    FOREIGN KEY (ProblemID) REFERENCES Problems (ID)
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (scooter_id) REFERENCES Scooters (id),
+    FOREIGN KEY (station_id) REFERENCES Scooter_Stations (id),
+    FOREIGN KEY (location_id) REFERENCES Locations (id)
 );
 
-CREATE TABLE IF NOT EXISTS ScooterStatusesInRent
+CREATE TABLE IF NOT EXISTS orders
 (
-    ID         bigserial PRIMARY KEY,
-    UserId     int       NOT NULL,
-    ScooterId  int       NOT NULL,
-    StationId  int,
-    DateTime   TIMESTAMP NOT NULL,
-    LocationId int,
-    IsReturned boolean,
+    id             bigserial PRIMARY KEY,
+    user_id        int NOT NULL,
+    scooter_id     int NOT NULL,
+    status_start_id bigint,
+    status_end_id  bigint,
+    distance       NUMERIC(12, 2),
+    amount         money,
 
-    FOREIGN KEY (UserId) REFERENCES Users (ID),
-    FOREIGN KEY (ScooterId) REFERENCES Scooters (ID),
-    FOREIGN KEY (StationId) REFERENCES ScooterStations (ID),
-    FOREIGN KEY (LocationId) REFERENCES Locations (ID)
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (scooter_id) REFERENCES scooters (id),
+    FOREIGN KEY (status_start_id) REFERENCES scooter_statuses_in_rent (id),
+    FOREIGN KEY (status_end_id) REFERENCES scooter_statuses_in_rent (id)
 );
 
-CREATE TABLE IF NOT EXISTS Orders
+CREATE TABLE IF NOT EXISTS account_transactions
 (
-    ID            bigserial PRIMARY KEY,
-    UserId        int NOT NULL,
-    ScooterId     int NOT NULL,
-    StatusStartId bigint,
-    StatusEndId   bigint,
-    Distance      NUMERIC(12, 2),
-    Amount        money,
+    id              bigserial PRIMARY KEY,
+    date_time       TIMESTAMP NOT NULL,
+    payment_type_id smallint  NOT NULL,
+    account_from_id int,
+    account_to_id   int,
+    order_id        bigint,
+    amount          money,
 
-    FOREIGN KEY (UserId) REFERENCES Users (ID),
-    FOREIGN KEY (ScooterId) REFERENCES Scooters (ID),
-    FOREIGN KEY (StatusStartId) REFERENCES ScooterStatusesInRent (ID),
-    FOREIGN KEY (StatusEndId) REFERENCES ScooterStatusesInRent (ID)
-);
-
-CREATE TABLE IF NOT EXISTS AccountTransactions
-(
-    ID            bigserial PRIMARY KEY,
-    DateTime      TIMESTAMP NOT NULL,
-    PaymentTypeId smallint  NOT NULL,
-    AccountFromId int,
-    AccountToId   int,
-    OrderId       bigint,
-    Amount        money,
-
-    FOREIGN KEY (PaymentTypeId) REFERENCES PaymentTypes (ID),
-    FOREIGN KEY (AccountFromId) REFERENCES Accounts (ID),
-    FOREIGN KEY (AccountToId) REFERENCES Accounts (ID),
-    FOREIGN KEY (OrderId) REFERENCES Orders (ID)
+    FOREIGN KEY (payment_type_id) REFERENCES payment_types (id),
+    FOREIGN KEY (account_from_id) REFERENCES accounts (id),
+    FOREIGN KEY (account_To_id) REFERENCES accounts (id),
+    FOREIGN KEY (order_id) REFERENCES orders (id)
 );
 
 BEGIN;
-INSERT INTO Roles(ID, Name, IsAdmin, IsUser, IsSupplier) VALUES(1, 'Admin role', true, false, false);
-INSERT INTO Roles(ID, Name, IsAdmin, IsUser, IsSupplier) VALUES(2, 'User role', false, true, false);
-INSERT INTO Roles(ID, Name, IsAdmin, IsUser, IsSupplier) VALUES(3, 'Supplier role', false, false, true);
-INSERT INTO Roles(ID, Name, IsAdmin, IsUser, IsSupplier) VALUES(7, 'SuperAdmin role', true, true, true);
+INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(1, 'admin role', true, false, false);
+INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(2, 'user role', false, true, false);
+INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(3, 'supplier role', false, false, true);
+INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(7, 'super_admin role', true, true, true);
 COMMIT;

@@ -18,14 +18,14 @@ func NewSc(pg *postgres.Postgres) *ScooterRepoDb {
 
 func (sc *ScooterRepoDb) GetAllScooters () (*model.ScooterList, error) {
 	scooterList := &model.ScooterList{}
-	sc.QuerySQL = `SELECT s.id, sm.maxweight, sm.modelname, ss.locationid, ss.batteryremain, ss.canberent, l.lattitude, l.longtitude  FROM scooters as s JOIN scootermodels as sm ON s.modelid=sm.id JOIN scooterstatuses as ss ON s.id=ss.scooterid JOIN locations as l ON ss.locationid=l.id ORDER BY s.id`
+	sc.QuerySQL = `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.can_be_rent, s.latitude, s.longitude FROM scooters as s JOIN scooter_models as sm ON s.model_id=sm.id JOIN scooter_statuses as ss ON s.id=ss.scooter_id ORDER BY s.id`
 	rows, err := sc.QueryResult(context.Background())
 	if err != nil {
 		return scooterList, err
 	}
 	for rows.Next() {
 		var scooter model.Scooter
-		err := rows.Scan(&scooter.Id, &scooter.MaxWeight, &scooter.ScooterModel,&scooter.LocationId, &scooter.BatteryRemain, &scooter.CanBeRent, &scooter.Lattitude, &scooter.Longtitude)
+		err := rows.Scan(&scooter.Id, &scooter.MaxWeight, &scooter.ScooterModel, &scooter.BatteryRemain, &scooter.CanBeRent, &scooter.Latitude, &scooter.Longitude)
 		if err != nil {
 			return scooterList, err
 		}
@@ -36,10 +36,10 @@ func (sc *ScooterRepoDb) GetAllScooters () (*model.ScooterList, error) {
 
 func (sc *ScooterRepoDb) GetScooterById(scooterId int) (model.Scooter, error) {
 	scooter := model.Scooter{}
-	sc.QuerySQL = "SELECT s.id, sm.maxweight, sm.modelname, ss.locationid, ss.batteryremain, ss.canberent, l.lattitude, l.longtitude  FROM scooters as s JOIN scootermodels as sm ON s.modelid=sm.id JOIN scooterstatuses as ss ON s.id=ss.scooterid JOIN locations as l ON ss.locationid=l.id WHERE s.id=$1"
+	sc.QuerySQL = "SELECT s.id, sm.max_weight, sm.model_name, ss.location_id, ss.battery_remain, ss.can_be_rent, l.latitude, l.longitude  FROM scooters as s JOIN scooter_models as sm ON s.model_id=sm.id JOIN scooter_statuses as ss ON s.id=ss.scooter_id JOIN locations as l ON ss.location_id=l.id WHERE s.id=$1"
 	row := sc.QueryResultRow(context.Background(), scooterId)
 	switch err := row.Scan(&scooter.Id, &scooter.MaxWeight, &scooter.ScooterModel,
-		&scooter.LocationId, &scooter.BatteryRemain, &scooter.CanBeRent, &scooter.Lattitude, &scooter.Longtitude); err {
+		&scooter.LocationId, &scooter.BatteryRemain, &scooter.CanBeRent, &scooter.Latitude, &scooter.Longitude); err {
 	case sql.ErrNoRows:
 		return scooter, ErrNoMatch
 	default:
@@ -48,8 +48,8 @@ func (sc *ScooterRepoDb) GetScooterById(scooterId int) (model.Scooter, error) {
 }
 
 func (sc *ScooterRepoDb) SendPosition(scooter model.Scooter) {
-	sc.QuerySQL = "UPDATE locations SET lattitude=$1, longtitude=$2 WHERE id=$3 RETURNING id"
-	_, err := sc.QueryResult(context.Background(), scooter.Lattitude, scooter.Longtitude,scooter.LocationId )
+	sc.QuerySQL = "UPDATE locations SET latitude=$1, longitude=$2 WHERE id=$3 RETURNING id"
+	_, err := sc.QueryResult(context.Background(), scooter.Latitude, scooter.Longitude,scooter.LocationId )
 	if err!=nil {
 		fmt.Println(err)
 	}

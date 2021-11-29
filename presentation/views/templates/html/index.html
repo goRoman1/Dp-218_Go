@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Scooter service</title>
+        <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"></script>
+        <script type="text/javascript">
+            var map;
+
+            let eventSource = new EventSource("/scooter");
+            let scooters = new Map();
+            // let scooter;
+
+            DG.then(function () {
+                map = DG.map('map', {
+                    center: [48.4223, 35.0234],
+                    zoom: 12
+                });
+
+                // scooter = DG.marker([50.0, 40.0]);
+                // scooter.addTo(map);
+                // console.log(scooter)
+            });
+
+                // scooter = DG.marker([50.0, 40.0]);
+                // scooter.addTo(map);
+
+
+
+            eventSource.onopen = function(e) {
+                console.log("connection: open");
+            };
+
+            eventSource.onerror = function(e) {
+                console.log("connection: error");
+                if (this.readyState == EventSource.CONNECTING) {
+                    console.log(`reconnectin=${this.readyState})...`);
+                } else {
+                    console.log("error occured");
+                }
+            };
+
+            eventSource.onmessage = function(e) {
+                // console.log("message: " + e.data);
+                json = JSON.parse(e.data);
+                // console.log(json);
+
+                console.log(scooters.has(json.id));
+
+                if (scooters.has(json.id) != true) {
+                    console.log("in if");
+                    let scr = DG.marker([json.longitude, json.latitude]);
+                    scr.addTo(map);
+                    scooters.set(json.id, scr);
+                    // console.log(map);
+                    // return;
+                }
+                let scr = scooters.get(json.id);
+                // console.log(scr);
+                scr.setLatLng({lat: json.latitude, lng: json.longitude});
+                console.log(scr.getLatLng());
+            };
+
+        </script>
+    </head>
+    <body>
+        <div id="map" style="width:700px; height:100vh"></div>
+    </body>
+</html>

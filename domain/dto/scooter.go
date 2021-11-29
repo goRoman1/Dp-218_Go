@@ -3,14 +3,14 @@ package dto
 import "net/http"
 
 type Scooter struct {
-	Id 				 int 			`json:"scooterid"`
-	LocationId		 int			`json:"locationid"`
-	Lattitude 		 float64		`json:"lattitude"`
-	Longtitude 		 float64		`json:"longtitude"`
-	ScooterModel 	 string			`json:"scootermodel"`
-	MaxWeight 		 float64 	    `json:"maxweight"`
-	BatteryRemain    float64   		`json:"batteryremain"`
-	CanBeRent		 bool			`json:"canberent"`
+	Id 				 int 			`json:"scooter_id"`
+	LocationId		 int			`json:"location_id"`
+	Latitude 		 float64		`json:"latitude"`
+	Longitude 		 float64		`json:"longitude"`
+	ScooterModel 	 string			`json:"scooter_model"`
+	MaxWeight 		 float64 	    `json:"max_weight"`
+	BatteryRemain    float64   		`json:"battery_remain"`
+	CanBeRent		 bool			`json:"can_be_rent"`
 }
 
 type ScooterList struct {
