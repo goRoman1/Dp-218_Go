@@ -15,7 +15,7 @@ func (pg *Postgres) GetAllUsers() (*models.UserList, error) {
 		return list, err
 	}
 
-	querySQL := `SELECT * FROM Users ORDER BY ID DESC;`
+	querySQL := `SELECT * FROM users ORDER BY id DESC;`
 	rows, err := pg.QueryResult(context.Background(), querySQL)
 	if err != nil {
 		return list, err
@@ -43,7 +43,7 @@ func (pg *Postgres) GetAllUsers() (*models.UserList, error) {
 func (pg *Postgres) AddUser(user *models.User) error {
 	var id int
 	var createdAt time.Time
-	querySQL := `INSERT INTO Users(LoginEmail, IsBlocked, UserName, UserSurname, RoleID) VALUES($1, $2, $3, $4, $5) RETURNING ID, CreatedAt;`
+	querySQL := `INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES($1, $2, $3, $4, $5) RETURNING id, created_at;`
 	err := pg.QueryResultRow(context.Background(), querySQL, user.LoginEmail, user.IsBlocked, user.UserName, user.UserSurname, user.Role.ID).Scan(&id, &createdAt)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (pg *Postgres) AddUser(user *models.User) error {
 func (pg *Postgres) GetUserById(userId int) (models.User, error) {
 	user := models.User{}
 
-	querySQL := `SELECT * FROM Users WHERE ID = $1;`
+	querySQL := `SELECT * FROM users WHERE id = $1;`
 	row := pg.QueryResultRow(context.Background(), querySQL, userId)
 	var roleId int
 	err := row.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked,
@@ -67,16 +67,21 @@ func (pg *Postgres) GetUserById(userId int) (models.User, error) {
 }
 
 func (pg *Postgres) DeleteUser(userId int) error {
-	querySQL := `DELETE FROM Users WHERE ID = $1;`
+	querySQL := `DELETE FROM users WHERE id = $1;`
 	_, err := pg.QueryExec(context.Background(), querySQL, userId)
 	return err
 }
 
 func (pg *Postgres) UpdateUser(userId int, userData models.User) (models.User, error) {
 	user := models.User{}
-	querySQL := `UPDATE Users SET LoginEmail=$1, IsBlocked=$2, UserName=$3, UserSurname=$4, RoleID=$5 WHERE ID=$6 RETURNING ID, LoginEmail;`
+	querySQL := `UPDATE users SET login_email=$1, is_blocked=$2, user_name=$3, user_surname=$4, role_id=$5 WHERE id=$6 RETURNING id, created_at, login_email, is_blocked, user_name, user_surname, role_id;`
+	var roleId int
 	err := pg.QueryResultRow(context.Background(), querySQL, userData.LoginEmail, userData.IsBlocked, userData.UserName,
-		userData.UserSurname, userData.Role.ID, userId).Scan(&user.ID, &user.LoginEmail)
+		userData.UserSurname, userData.Role.ID, userId).Scan(&user.ID, &user.CreatedAt, &user.LoginEmail, &user.IsBlocked, &user.UserName, &user.UserSurname, &roleId)
+	if err != nil {
+		return user, err
+	}
+	user.Role, err = pg.GetRoleById(roleId)
 	if err != nil {
 		return user, err
 	}

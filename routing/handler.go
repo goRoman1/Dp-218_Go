@@ -105,7 +105,7 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 	w.WriteHeader(http.StatusOK)
 }
 
-func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestData interface{}, htmlDecoder func(r *http.Request, dataToDecode interface{}) (error)) {
+func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestData interface{}, htmlDecoder func(r *http.Request, dataToDecode interface{}) error) {
 	var err error
 	switch format {
 	case FormatJSON:

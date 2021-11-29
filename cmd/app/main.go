@@ -65,7 +65,9 @@ func doMigrate(connStr string) error {
 		return err
 	}
 
-	migr.Force(20211124)
+	if configs.MIGRATE_VERSION_FORCE>0 {
+		migr.Force(configs.MIGRATE_VERSION_FORCE)
+	}
 
 	if configs.MIGRATE_DOWN {
 		migr.Down()

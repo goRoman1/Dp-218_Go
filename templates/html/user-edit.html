@@ -32,6 +32,7 @@
 
 <div class="col-md-8 order-md-1">
     <form class="needs-validation" novalidate="" method="post" action="/user/{{.ID}}">
+
         <div class="mb-3">
             <label for="inputEmail">Login (e-mail)</label>
             <div class="input-group">
@@ -49,35 +50,42 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="firstName">First name</label>
-                <input type="text" class="form-control" id="firstName" name="UserName" placeholder="" value="{{.UserName}}" required="">
+                <input type="text" class="form-control" id="firstName" name="UserName" placeholder=""
+                       value="{{.UserName}}" required="">
                 <div class="invalid-feedback">
                     Valid first name is required.
                 </div>
             </div>
             <div class="col-md-6 mb-3">
                 <label for="lastName">Last name</label>
-                <input type="text" class="form-control" id="lastName" name="UserSurname" placeholder="" value="{{.UserSurname}}" formnovalidate>
+                <input type="text" class="form-control" id="lastName" name="UserSurname" placeholder=""
+                       value="{{.UserSurname}}" formnovalidate>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-5 mb-3">
                 <label for="roleSelect">Role</label>
-                <select class="custom-select d-block w-100" id="roleSelect" name="RoleID" required="">
-                    {{range $k, $v := .ListOfRoles}}
-                    <option value="{{$v.ID}}">{{$v.Name}}</option>
-                    {{end}}
-                </select>
-                <script>document.getElementById('roleSelect').value='{{.Role.ID}}';</script>
+                    <select class="custom-select d-block w-100" id="roleSelect" name="RoleID" required="">
+                        {{range $k, $v := .ListOfRoles}}
+                        <option value="{{$v.ID}}">{{$v.Name}}</option>
+                        {{end}}
+                    </select>
+                <script>document.getElementById('roleSelect').value = '{{.Role.ID}}';</script>
                 <div class="invalid-feedback">
                     Please select a valid role.
                 </div>
+            </div>
+            <div class="custom-control custom-switch">
+                <p>&nbsp;</p>
+                <input type="checkbox" class="custom-control-input" id="blocked" name="IsBlocked" {{if .IsBlocked}}checked{{end}}>
+                <label class="custom-control-label" for="blocked">Blocked</label>
             </div>
         </div>
 
         <hr class="mb-4">
         <button type="submit" class="btn btn-primary btn-lg">Save & continue</button>
-        <button type="button" class="btn btn-secondary" onclick="window.location.href='/users'">Dismiss & return</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='/users'">Return</button>
     </form>
 </div>
 

@@ -4,6 +4,7 @@ import (
 	"Dp218Go/models"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"Dp218Go/services"
@@ -135,12 +136,15 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DecodeUserUpdateRequest(r *http.Request, data interface{}) error  {
+	var err error
 	r.ParseForm()
 	userData := models.User{}
 	userData.LoginEmail = r.FormValue("LoginEmail")
 	userData.UserName = r.FormValue("UserName")
 	userData.UserSurname = r.FormValue("UserSurname")
-	roleId, err := strconv.Atoi(r.FormValue("RoleID"))
+	userData.IsBlocked = r.FormValue("IsBlocked")=="On"
+	var roleId int
+	roleId, err = strconv.Atoi(r.FormValue("RoleID"))
 	if err!=nil{
 		return err
 	}
@@ -148,6 +152,6 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error  {
 	if err!=nil{
 		return err
 	}
-	data = &userData
+	reflect.ValueOf(data).Elem().Set(reflect.ValueOf(userData))
 	return nil
 }
