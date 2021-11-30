@@ -11,6 +11,11 @@ type UserUsecasesRepo interface {
 	AddUser(user *models.User) error
 	UpdateUser(userId int, userData models.User) (models.User, error)
 	DeleteUser(userId int) error
+	FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error)
+}
+
+type UserUsecasesGeneral interface {
+	ChangeUsersBlockStatus(userId int) error
 }
 
 type RoleUsecasesRepo interface {

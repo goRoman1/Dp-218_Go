@@ -78,7 +78,8 @@
             </div>
             <div class="custom-control custom-switch">
                 <p>&nbsp;</p>
-                <input type="checkbox" class="custom-control-input" id="blocked" name="IsBlocked" {{if .IsBlocked}}checked{{end}}>
+                <input type="checkbox" class="custom-control-input" id="blocked" value="true" name="IsBlocked" {{if .IsBlocked}}  checked {{end}}>
+                <input type="hidden" class="custom-control-input" id="hideblocked" value="false" name="IsBlocked" {{if eq .IsBlocked false}}  checked {{end}}>
                 <label class="custom-control-label" for="blocked">Blocked</label>
             </div>
         </div>
@@ -112,6 +113,11 @@
         })
     }, false)
 }())
+</script>
+<script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"

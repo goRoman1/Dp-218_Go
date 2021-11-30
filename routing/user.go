@@ -4,7 +4,6 @@ import (
 	"Dp218Go/models"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strconv"
 
 	"Dp218Go/services"
@@ -19,6 +18,11 @@ var keyRoutes = []Route{
 		Uri:     `/users`,
 		Method:  http.MethodGet,
 		Handler: getAllUsers,
+	},
+	{
+		Uri:     `/users`,
+		Method:  http.MethodPost,
+		Handler: allUsersOperation,
 	},
 	{
 		Uri:     `/user/{` + userIDKey + `}`,
@@ -51,7 +55,6 @@ func (ur *userRole) ListOfRoles() []models.Role {
 	return roles.Roles
 }
 
-
 func AddUserHandler(router *mux.Router, service *services.UserService) {
 	userService = service
 	for _, rt := range keyRoutes {
@@ -75,9 +78,17 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
+	var users = &models.UserList{}
+	var err error
 	format := GetFormatFromRequest(r)
 
-	users, err := userService.GetAllUsers()
+	r.ParseForm()
+	searchData := r.FormValue("SearchData")
+	if len(searchData)==0 {
+		users, err = userService.GetAllUsers()
+	} else {
+		users, err = userService.FindUsersByLoginNameSurname(searchData)
+	}
 	if err != nil {
 		ServerErrorRender(format, w)
 		return
@@ -92,6 +103,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
+		return
 	}
 	user, err := userService.GetUserById(userId)
 	if err != nil {
@@ -108,6 +120,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
+		return
 	}
 	err = userService.DeleteUser(userId)
 	if err != nil {
@@ -123,8 +136,13 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
+		return
 	}
-	userData := models.User{}
+	userData, err := userService.GetUserById(userId)
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
 	DecodeRequest(format, w, r, &userData, DecodeUserUpdateRequest)
 	userData, err = userService.UpdateUser(userId, userData)
 	if err != nil {
@@ -135,23 +153,64 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	EncodeAnswer(format, w, &userRole{userData}, HTMLPath+"user-edit.html")
 }
 
-func DecodeUserUpdateRequest(r *http.Request, data interface{}) error  {
+func allUsersOperation(w http.ResponseWriter, r *http.Request){
+	format := GetFormatFromRequest(r)
+
+	r.ParseForm()
+	if ! r.Form.Has("ActionType"){
+		return
+	}
+	actionType := r.FormValue("ActionType")
+	switch actionType {
+	case "BlockUser":
+		userId, err := strconv.Atoi(r.FormValue("UserID"))
+		if err != nil {
+			EncodeError(format, w, ErrorRendererDefault(err))
+			return
+		}
+		err = userService.ChangeUsersBlockStatus(userId)
+		if err != nil {
+			EncodeError(format, w, ErrorRendererDefault(err))
+			return
+		}
+	default:
+		EncodeError(format, w, ErrorRendererDefault(fmt.Errorf("unknown users operation")))
+	}
+	getAllUsers(w, r)
+}
+
+func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
+
 	var err error
 	r.ParseForm()
-	userData := models.User{}
-	userData.LoginEmail = r.FormValue("LoginEmail")
-	userData.UserName = r.FormValue("UserName")
-	userData.UserSurname = r.FormValue("UserSurname")
-	userData.IsBlocked = r.FormValue("IsBlocked")=="On"
-	var roleId int
-	roleId, err = strconv.Atoi(r.FormValue("RoleID"))
-	if err!=nil{
-		return err
+	//userData := models.User{}
+	userData := data.(*models.User)
+
+	if r.Form.Has("LoginEmail") {
+		userData.LoginEmail = r.FormValue("LoginEmail")
+
 	}
-	userData.Role, err = userService.GetRoleById(roleId)
-	if err!=nil{
-		return err
+	if r.Form.Has("UserName") {
+		userData.UserName = r.FormValue("UserName")
 	}
-	reflect.ValueOf(data).Elem().Set(reflect.ValueOf(userData))
+	if r.Form.Has("UserSurname") {
+		userData.UserSurname = r.FormValue("UserSurname")
+	}
+	if r.Form.Has("RoleID") {
+		var roleId int
+		roleId, err = strconv.Atoi(r.FormValue("RoleID"))
+		if err != nil {
+			return err
+		}
+		userData.Role, err = userService.GetRoleById(roleId)
+		if err != nil {
+			return err
+		}
+	}
+	if r.Form.Has("IsBlocked") {
+		userData.IsBlocked, _ = strconv.ParseBool(r.FormValue("IsBlocked"))
+	}
+
+	//reflect.ValueOf(data).Elem().Set(reflect.ValueOf(userData))
 	return nil
 }

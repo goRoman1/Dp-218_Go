@@ -33,10 +33,24 @@ func (db *UserService) UpdateUser(userId int, userData models.User) (models.User
 	return db.repo.UpdateUser(userId, userData)
 }
 
+func (db *UserService) FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error) {
+	return db.repo.FindUsersByLoginNameSurname(whatToFind)
+}
+
 func (db *UserService) GetAllRoles() (*models.RoleList, error) {
 	return db.repo.GetAllRoles()
 }
 
 func (db *UserService) GetRoleById(roleId int) (models.Role, error) {
 	return db.repo.GetRoleById(roleId)
+}
+
+func (db *UserService) ChangeUsersBlockStatus(userId int) error {
+	user, err:= db.repo.GetUserById(userId)
+	if err!=nil{
+		return err
+	}
+	user.IsBlocked = !user.IsBlocked
+	_, err = db.repo.UpdateUser(userId, user)
+	return err
 }
