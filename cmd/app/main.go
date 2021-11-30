@@ -36,7 +36,8 @@ func main() {
 		log.Printf("app - Run - Migration issues: %v\n", err)
 	}
 
-	var userService = services.NewUserService(db)
+	var userRoleRepoDB = postgres.NewUserRepoDB(db)
+	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
 
 	handler := routing.NewRouter()
 	routing.AddUserHandler(handler, userService)

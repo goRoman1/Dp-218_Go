@@ -46,11 +46,11 @@ var keyRoutes = []Route{
 	},
 }
 
-type userRole struct {
+type userWithRoleList struct {
 	models.User
 }
 
-func (ur *userRole) ListOfRoles() []models.Role {
+func (ur *userWithRoleList) ListOfRoles() []models.Role {
 	roles, _ := userService.GetAllRoles()
 	return roles.Roles
 }
@@ -111,7 +111,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(format, w, &userRole{user}, HTMLPath+"user-edit.html")
+	EncodeAnswer(format, w, &userWithRoleList{user}, HTMLPath+"user-edit.html")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +150,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(format, w, &userRole{userData}, HTMLPath+"user-edit.html")
+	EncodeAnswer(format, w, &userWithRoleList{userData}, HTMLPath+"user-edit.html")
 }
 
 func allUsersOperation(w http.ResponseWriter, r *http.Request){

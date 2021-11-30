@@ -6,51 +6,52 @@ import (
 )
 
 type UserService struct {
-	repo repositories.AnyDatabase
+	repoUser repositories.UserRepo
+	repoRole repositories.RoleRepo
 }
 
-func NewUserService(db repositories.AnyDatabase) *UserService {
-	return &UserService{db}
+func NewUserService(repoUser repositories.UserRepo, repoRole repositories.RoleRepo) *UserService {
+	return &UserService{repoUser: repoUser, repoRole: repoRole}
 }
 
-func (db *UserService) GetAllUsers() (*models.UserList, error) {
-	return db.repo.GetAllUsers()
+func (ser *UserService) GetAllUsers() (*models.UserList, error) {
+	return ser.repoUser.GetAllUsers()
 }
 
-func (db *UserService) AddUser(user *models.User) error {
-	return db.repo.AddUser(user)
+func (ser *UserService) AddUser(user *models.User) error {
+	return ser.repoUser.AddUser(user)
 }
 
-func (db *UserService) GetUserById(userId int) (models.User, error) {
-	return db.repo.GetUserById(userId)
+func (ser *UserService) GetUserById(userId int) (models.User, error) {
+	return ser.repoUser.GetUserById(userId)
 }
 
-func (db *UserService) DeleteUser(userId int) error {
-	return db.repo.DeleteUser(userId)
+func (ser *UserService) DeleteUser(userId int) error {
+	return ser.repoUser.DeleteUser(userId)
 }
 
-func (db *UserService) UpdateUser(userId int, userData models.User) (models.User, error) {
-	return db.repo.UpdateUser(userId, userData)
+func (ser *UserService) UpdateUser(userId int, userData models.User) (models.User, error) {
+	return ser.repoUser.UpdateUser(userId, userData)
 }
 
-func (db *UserService) FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error) {
-	return db.repo.FindUsersByLoginNameSurname(whatToFind)
+func (ser *UserService) FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error) {
+	return ser.repoUser.FindUsersByLoginNameSurname(whatToFind)
 }
 
-func (db *UserService) GetAllRoles() (*models.RoleList, error) {
-	return db.repo.GetAllRoles()
+func (ser *UserService) GetAllRoles() (*models.RoleList, error) {
+	return ser.repoRole.GetAllRoles()
 }
 
-func (db *UserService) GetRoleById(roleId int) (models.Role, error) {
-	return db.repo.GetRoleById(roleId)
+func (ser *UserService) GetRoleById(roleId int) (models.Role, error) {
+	return ser.repoRole.GetRoleById(roleId)
 }
 
-func (db *UserService) ChangeUsersBlockStatus(userId int) error {
-	user, err:= db.repo.GetUserById(userId)
+func (ser *UserService) ChangeUsersBlockStatus(userId int) error {
+	user, err:= ser.repoUser.GetUserById(userId)
 	if err!=nil{
 		return err
 	}
 	user.IsBlocked = !user.IsBlocked
-	_, err = db.repo.UpdateUser(userId, user)
+	_, err = ser.repoUser.UpdateUser(userId, user)
 	return err
 }
