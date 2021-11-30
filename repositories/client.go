@@ -2,16 +2,19 @@ package repositories
 
 import (
 	"Dp218Go/pkg/pb"
+	"Dp218Go/pkg/postgres"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	"time"
 )
 
-const step = 0.0001
+const step = 0.001
+
 
 func ClAdd() {
 	conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithInsecure())
+	// сделать переподключение, вместо падения
 	if err != nil {
 		panic(err)
 	}
@@ -22,10 +25,14 @@ func ClAdd() {
 	if err != nil {
 		panic(err)
 	}
-
-	cl := NewClient(1, 48.423,35.032, stream)
-	cl.Run(1)
+	db, err := postgres.NewPostgres("postgres://scooteradmin:Megascooter!@localhost:5444/scooterdb")
+	if err !=nil {
+		fmt.Println(err)
+	}
+	cl := NewClient(4, 48.42332,35.03242, stream)
+	cl.Run(1, 1, NewSc(db) )
 }
+
 
 type Client struct {
 	Id uint64
@@ -45,29 +52,100 @@ func NewClient(id uint64, latitude, longitude float64, stream pb.ScooterService_
 	}
 }
 
-func (s *Client) Run(interval int) {
+var destination = []struct {
+	latitude float64
+	longitude float64
+}{ {
+	latitude: 48.4423,
+	longitude: 35.0434,
+	}, {
+	latitude: 48.3233,
+	longitude: 35.0434,
+	}, {
+	latitude: 48.0223,
+	longitude: 35.0134,
+	}, {
+	latitude: 48.4223,
+	longitude: 35.0234,
+	},
+}
 
+var station = struct {
+	latitude float64
+	longitude float64
+}{
+	latitude: 48.4423,
+	longitude: 35.0434,
+}
+
+
+
+func (s *Client) Run(interval, uid int, db *ScooterRepoDb) {
+	err, tripId, locaId := db.SendAtStart(uid,s)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//при старте отправляю координаты старта в базу
+	switch {
+	case s.Latitude <= station.latitude && s.Longitude <= station.longitude:
+		for ; s.Latitude <=station.latitude && s.
+			Longitude <= station.longitude; s.Latitude,s.Longitude = s.Latitude+step,s.Longitude+step {
+			s.moving(1)
+		}
+		fmt.Println("Trip finished. You are at the point")
+		db.SendAtEnd(tripId, locaId, s)
+			if err!=nil {
+				fmt.Println(err)
+			}
+	case s.Latitude >= station.latitude && s.Longitude <= station.longitude:
+		for ; s.Latitude >= station.latitude && s.
+			Longitude <= station.longitude; s.Latitude,s.Longitude = s.Latitude-step,s.Longitude+step {
+			s.moving(1)
+		}
+		fmt.Println("Trip finished. You are at the point")
+		db.SendAtEnd(tripId, locaId, s)
+		if err!=nil {
+			fmt.Println(err)
+		}
+	case s.Latitude >= station.latitude && s.Longitude >= station.longitude:
+		for ; s.Latitude >= station.latitude && s.
+			Longitude >= station.longitude; s.Latitude,s.Longitude = s.Latitude-step,s.Longitude-step {
+			s.moving(1)
+		}
+		fmt.Println("Trip finished. You are at the point")
+		db.SendAtEnd(tripId, locaId, s)
+		if err!=nil {
+			fmt.Println(err)
+		}
+	case s.Latitude <= station.latitude && s.Longitude >= station.longitude:
+		for ; s.Latitude <=station.latitude && s.
+			Longitude >= station.longitude; s.Latitude,s.Longitude = s.Latitude+step,s.Longitude-step {
+			s.moving(1)
+		}
+		fmt.Println("Trip finished. You are at the point")
+		db.SendAtEnd(tripId, locaId, s)
+		if err!=nil {
+			fmt.Println(err)
+		}
+	default:
+		fmt.Println("You are at this point now")
+	}
+
+	//при окончании поездки - отправляю координты завершения
+}
+
+func (s *Client) moving(interval int)  {
 	intPol := time.Duration(interval) * time.Second
 
 	fmt.Println("executing run in client")
-	// x, y := randomStep()
-
-	for {
-
-		//TODO change direction make it random
-
-		s.Latitude, s.Longitude = s.Latitude+step, s.Longitude+step
-		// send location to server
-		msg := &pb.ClientMessage{
-			Id: s.Id,
-			Latitude:  s.Latitude,
-			Longitude:  s.Longitude,
-		}
-		err := s.stream.Send(msg)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("after send client")
-		time.Sleep(intPol)
+	msg := &pb.ClientMessage{
+		Id: s.Id,
+		Latitude:  s.Latitude,
+		Longitude:  s.Longitude,
 	}
+	err := s.stream.Send(msg)
+	if err != nil {
+		panic(err)
+	}
+	time.Sleep(intPol)
 }

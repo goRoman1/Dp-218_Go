@@ -29,6 +29,7 @@ var POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")
 var HTTP_PORT = os.Getenv("HTTP_PORT")
 var MIGRATE_DOWN, _ = strconv.ParseBool(os.Getenv("MIGRATE_DOWN"))
 
+
 func main() {
 	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		POSTGRES_USER,
@@ -49,15 +50,18 @@ func main() {
 	}
 
 	var userRepo = repo.New(pg)
-	var scooterRepo = repo.NewSc(pg)
+	var ScooterRepo = repo.NewSc(pg)
 
 	handler := routing.NewRouter()
-	routing.AddScooterHandler(handler, scooterRepo)
+	routing.AddScooterHandler(handler, ScooterRepo)
 	routing.AddUserHandler(handler, userRepo)
 	httpServer := httpserver.New(handler, httpserver.Port(HTTP_PORT))
 
-	scL,err := scooterRepo.GetAllScooters()
+	scL,err := ScooterRepo.GetAllScooters()
 	fmt.Println(scL)
+
+	sc, err:= ScooterRepo.GetScooterById(4)
+	fmt.Println(sc)
 
 	svr := grpcserver.NewServer()
 	svr.Run()

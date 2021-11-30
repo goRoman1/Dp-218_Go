@@ -31,7 +31,6 @@ func GISHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ss *Server)ScootRun(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w,r,"./presentation/views/templates/html/index.html")
 	repo.ClAdd()
 }
 

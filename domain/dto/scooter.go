@@ -4,7 +4,6 @@ import "net/http"
 
 type Scooter struct {
 	Id 				 int 			`json:"scooter_id"`
-	LocationId		 int			`json:"location_id"`
 	Latitude 		 float64		`json:"latitude"`
 	Longitude 		 float64		`json:"longitude"`
 	ScooterModel 	 string			`json:"scooter_model"`

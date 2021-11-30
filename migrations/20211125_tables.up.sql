@@ -108,8 +108,8 @@ CREATE TABLE IF NOT EXISTS scooters
     model_id      smallint            NOT NULL,
     owner_id      int                 NOT NULL,
     serial_number VARCHAR(100) UNIQUE NOT NULL,
-    latitude  NUMERIC(14, 12) NOT NULL,
-    longitude NUMERIC(14, 12) NOT NULL,
+    latitude      NUMERIC(12, 8),
+    longitude     NUMERIC(12, 8),
 
     FOREIGN KEY (model_id) REFERENCES scooter_models (id),
     FOREIGN KEY (owner_id) REFERENCES users (id)
@@ -118,8 +118,8 @@ CREATE TABLE IF NOT EXISTS scooters
 CREATE TABLE IF NOT EXISTS locations
 (
     id        serial PRIMARY KEY,
-    latitude  NUMERIC(14, 12) NOT NULL,
-    longitude NUMERIC(14, 12) NOT NULL,
+    latitude  NUMERIC(10, 0) NOT NULL,
+    longitude NUMERIC(10, 0) NOT NULL,
     label     VARCHAR(200)
 );
 
@@ -229,4 +229,13 @@ INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(1, 'admin rol
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(2, 'user role', false, true, false);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(3, 'supplier role', false, false, true);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(7, 'super_admin role', true, true, true);
+
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('guru_admin@guru.com', false, 'Guru', 'Sadh', 7);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('VikaP@mail.com', false, 'Vika', 'Petrova', 1);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('IraK@mail.com', true, 'Ira', 'Petrova', 1);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('IvanIvanych@mail.com', false, 'Ivan', 'Ivanov', 3);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('PetrPetroff@mail.com', false, 'Petr', 'Petrov', 3);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserChan@mail.com', false, 'Jackie', 'Chan', 2);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
 COMMIT;
