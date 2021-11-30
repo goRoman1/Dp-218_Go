@@ -32,12 +32,19 @@ func NewRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	router.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/",
+		http.FileServer(http.Dir(configs.TEMPLATES_PATH))))
 	router.HandleFunc("/", showHomePage)
+	router.HandleFunc("/login", showLoginPage)
 	return router
 }
 
 func showHomePage(w http.ResponseWriter, r *http.Request) {
 	EncodeAnswer(FormatHTML, w, nil, MainPageHTML)
+}
+
+func showLoginPage(w http.ResponseWriter, r *http.Request) {
+	EncodeAnswer(FormatHTML, w, nil, HTMLPath + "login-registration.html")
 }
 
 func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
