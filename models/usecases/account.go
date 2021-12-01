@@ -6,7 +6,9 @@ import (
 )
 
 type AccountUsecases interface {
-	CalculateMoneyAmountByDate(accont models.Account, byTime time.Time) error
-	AddMoneyToAccount(account models.Account, amountCents uint) error
-	TakeMoneyFromAccount(account models.Account, amountCents uint) error
+	CalculateMoneyAmountByDate(account models.Account, byTime time.Time) (int, error)
+	CalculateProfitForPeriod(account models.Account, start, end time.Time) (int, error)
+	CalculateLossForPeriod(account models.Account, start, end time.Time) (int, error)
+	AddMoneyToAccount(account models.Account, amountCents int) error
+	TakeMoneyFromAccount(account models.Account, amountCents int) error
 }

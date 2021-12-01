@@ -26,7 +26,7 @@ type AccountTransaction struct {
 	AccountFrom Account     `json:"account_from"`
 	AccountTo   Account     `json:"account_to"`
 	Order       Order       `json:"order"`
-	AmountCents int         `json:"amount_cents"`
+	AmountCents int        `json:"amount_cents"`
 }
 
 type AccountTransactionList struct {
