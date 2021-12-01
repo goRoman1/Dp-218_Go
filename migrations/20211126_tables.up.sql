@@ -16,16 +16,9 @@ CREATE TABLE IF NOT EXISTS users
     user_surname VARCHAR(100),
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     role_id      int                 NOT NULL,
-
-    FOREIGN KEY (role_id) REFERENCES roles (id)
-);
-
-CREATE TABLE IF NOT EXISTS login_info
-(
-    user_id       int PRIMARY KEY,
     password_hash VARCHAR(512),
 
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 
 CREATE TABLE IF NOT EXISTS login_status

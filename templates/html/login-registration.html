@@ -12,22 +12,23 @@
 <div id="app"></div>
 <div class="container" id="container">
   <div class="form-container sign-up-container">
-    <form action="#">
+    <form action="/signup" method="post">
       <h1>Create Account</h1>
       <span>Use your email for registration</span>
-      <input type="text" placeholder="Name" />
-      <input type="email" placeholder="Email" />
-      <input id="password"  type="password" placeholder="Password" />
+      <input type="text" placeholder="Name" name="name"/>
+      <input type="text" placeholder="Surname" name="surname"/>
+      <input type="email" placeholder="Email" name="email"/>
+      <input id="password"  type="password" placeholder="Password" name="password"/>
       <input id="confirm_password" type="password" placeholder="Confirm Password" />
       <button>Sign Up</button>
     </form>
   </div>
   <div class="form-container sign-in-container">
-    <form action="#">
+    <form action="/signin" method="post">
       <h1>Sign in</h1>
       <span>Use your account</span>
-      <input type="email" placeholder="Email" />
-      <input  type="password" placeholder="Password" />
+      <input type="email" placeholder="Email" name="email"/>
+      <input  type="password" placeholder="Password" name="password" />
       <a href="#">Forgot your password?</a>
       <button>Sign In</button>
     </form>

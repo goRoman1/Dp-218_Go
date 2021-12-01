@@ -1,13 +1,15 @@
 package routing
 
 import (
+	"Dp218Go/auth/webauth"
 	"Dp218Go/configs"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type Route struct {
@@ -28,14 +30,19 @@ var (
 	APIprefix     = "/api/v1"
 )
 
-func NewRouter() *mux.Router {
+func NewRouter(authser *webauth.AuthService) *mux.Router {
 	router := mux.NewRouter()
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+
 	router.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/",
 		http.FileServer(http.Dir(configs.TEMPLATES_PATH))))
+
 	router.HandleFunc("/", showHomePage)
 	router.HandleFunc("/login", showLoginPage)
+	router.HandleFunc("/signup", webauth.SignUp(authser))
+	router.HandleFunc("/signin", webauth.SignIn(authser))
+	router.HandleFunc("/signout", webauth.SignOut(authser))
 	return router
 }
 
@@ -44,7 +51,7 @@ func showHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func showLoginPage(w http.ResponseWriter, r *http.Request) {
-	EncodeAnswer(FormatHTML, w, nil, HTMLPath + "login-registration.html")
+	EncodeAnswer(FormatHTML, w, nil, HTMLPath+"login-registration.html")
 }
 
 func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
