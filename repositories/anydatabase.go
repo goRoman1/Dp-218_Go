@@ -15,4 +15,5 @@ type AnyDatabase interface {
 
 	usecases.UserUsecasesRepo
 	usecases.RoleUsecasesRepo
+	usecases.StationUsecasesRepo
 }

@@ -24,7 +24,7 @@ func (pg *Postgres) GetAllUsers() (*models.UserList, error) {
 	for rows.Next() {
 		var user models.User
 		var roleId int
-		err := rows.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked,
+		err := rows.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked, //svoya stryktyra
 			&user.UserName, &user.UserSurname, &user.CreatedAt, &roleId)
 		if err != nil {
 			return list, err

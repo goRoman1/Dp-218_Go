@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS locations
 CREATE TABLE IF NOT EXISTS scooter_stations
 (
     id          serial PRIMARY KEY,
-    location_id int NOT NULL,
+    location_id int,
     name        VARCHAR(100),
     is_active   boolean,
 
@@ -236,4 +236,9 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserChan@mail.com', false, 'Jackie', 'Chan', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
+
+INSERT INTO locations(id, latitude, longitude, label) VALUES (1, 20, 30, 'Dnepr');
+INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (1, 1, 'station pobeda3', true);
+INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (2, 1, 'station pobeda1', true);
+INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (3, 1, 'station pobeda4', false);
 COMMIT;

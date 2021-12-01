@@ -37,9 +37,11 @@ func main() {
 	}
 
 	var userService = services.NewUserService(db)
+	var stationService = services.NewStationService(db)
 
 	handler := routing.NewRouter()
 	routing.AddUserHandler(handler, userService)
+	routing.AddStationHandler(handler, stationService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 
 
