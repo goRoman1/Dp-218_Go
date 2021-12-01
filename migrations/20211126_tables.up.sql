@@ -67,8 +67,8 @@ CREATE TABLE IF NOT EXISTS accounts
 
 CREATE TABLE IF NOT EXISTS payment_types
 (
-    ID   smallserial PRIMARY KEY,
-    Name VARCHAR(100) UNIQUE
+    id   smallserial PRIMARY KEY,
+    name VARCHAR(100) UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS supplier_commissions
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS orders
     status_start_id bigint,
     status_end_id  bigint,
     distance       NUMERIC(12, 2),
-    amount         money,
+    amount_cents   bigint,
 
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (scooter_id) REFERENCES scooters (id),
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS account_transactions
     account_from_id int,
     account_to_id   int,
     order_id        bigint,
-    amount          money,
+    amount_cents    bigint,
 
     FOREIGN KEY (payment_type_id) REFERENCES payment_types (id),
     FOREIGN KEY (account_from_id) REFERENCES accounts (id),
@@ -223,6 +223,13 @@ CREATE TABLE IF NOT EXISTS account_transactions
 );
 
 BEGIN;
+INSERT INTO payment_types(id, name) VALUES(1, 'comission');
+INSERT INTO payment_types(id, name) VALUES(2, 'simple income');
+INSERT INTO payment_types(id, name) VALUES(3, 'simple outcome');
+INSERT INTO payment_types(id, name) VALUES(4, 'rent scooter class1');
+INSERT INTO payment_types(id, name) VALUES(5, 'rent scooter class2');
+INSERT INTO payment_types(id, name) VALUES(6, 'rent scooter class3');
+
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(1, 'admin role', true, false, false);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(2, 'user role', false, true, false);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(3, 'supplier role', false, false, true);
