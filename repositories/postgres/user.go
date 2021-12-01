@@ -24,7 +24,7 @@ func (urdb *UserRepoDB) GetAllUsers() (*models.UserList, error) {
 		return list, err
 	}
 
-	querySQL := `SELECT * FROM users ORDER BY id DESC;`
+	querySQL := `SELECT id, login_email, is_blocked, user_name, user_surname, created_at, role_id FROM users ORDER BY id DESC;`
 	rows, err := urdb.db.QueryResult(context.Background(), querySQL)
 	if err != nil {
 		return list, err
@@ -52,10 +52,11 @@ func (urdb *UserRepoDB) GetAllUsers() (*models.UserList, error) {
 func (urdb *UserRepoDB) AddUser(user *models.User) error {
 	var id int
 	var createdAt time.Time
-	querySQL := `INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) 
-		VALUES($1, $2, $3, $4, $5)
+	querySQL := `INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) 
+		VALUES($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at;`
-	err := urdb.db.QueryResultRow(context.Background(), querySQL, user.LoginEmail, user.IsBlocked, user.UserName, user.UserSurname, user.Role.ID).Scan(&id, &createdAt)
+	err := urdb.db.QueryResultRow(context.Background(),
+		querySQL, user.LoginEmail, user.IsBlocked, user.UserName, user.UserSurname, user.Role.ID, user.Password).Scan(&id, &createdAt)
 	if err != nil {
 		return err
 	}
@@ -67,11 +68,33 @@ func (urdb *UserRepoDB) AddUser(user *models.User) error {
 func (urdb *UserRepoDB) GetUserById(userId int) (models.User, error) {
 	user := models.User{}
 
-	querySQL := `SELECT * FROM users WHERE id = $1;`
+	querySQL := `SELECT id, login_email, is_blocked, user_name, user_surname, created_at, role_id FROM users WHERE id = $1;`
 	row := urdb.db.QueryResultRow(context.Background(), querySQL, userId)
+
 	var roleId int
 	err := row.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked,
 		&user.UserName, &user.UserSurname, &user.CreatedAt, &roleId)
+	if err != nil {
+		return models.User{}, err
+	}
+	user.Role, err = urdb.GetRoleById(roleId)
+
+	return user, err
+}
+
+func (urdb *UserRepoDB) GetUserByEmail(email string) (models.User, error) {
+	user := models.User{}
+
+	querySQL := `SELECT id, login_email, is_blocked, user_name, user_surname, created_at, role_id, password_hash FROM users WHERE login_email = $1;`
+	row := urdb.db.QueryResultRow(context.Background(), querySQL, email)
+
+	var roleId int
+	err := row.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked,
+		&user.UserName, &user.UserSurname, &user.CreatedAt, &roleId, &user.Password)
+
+	if err != nil {
+		return models.User{}, err
+	}
 	user.Role, err = urdb.GetRoleById(roleId)
 
 	return user, err
@@ -110,7 +133,7 @@ func (urdb *UserRepoDB) FindUsersByLoginNameSurname(whatToFind string) (*models.
 		return list, err
 	}
 
-	querySQL := `SELECT * FROM users 
+	querySQL := `SELECT id, login_email, is_blocked, user_name, user_surname, created_at, role_id FROM users 
 		WHERE LOWER(login_email) LIKE LOWER($1) 
 			OR LOWER(user_name) LIKE LOWER($1) 
 			OR LOWER(user_surname) LIKE LOWER($1) 
@@ -167,7 +190,7 @@ func (urdb *UserRepoDB) GetRoleById(roleId int) (models.Role, error) {
 
 func FindRoleInTheList(roles *models.RoleList, roleId int) (models.Role, error) {
 	for _, v := range roles.Roles {
-		if v.ID == roleId{
+		if v.ID == roleId {
 			return v, nil
 		}
 	}
