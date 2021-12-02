@@ -10,11 +10,11 @@ import (
 )
 
 type AccountRepoDB struct {
-	userRepo UserRepoDB
+	userRepo *UserRepoDB
 	db       repositories.AnyDatabase
 }
 
-func NewAccountRepoDB(userRepo UserRepoDB, db repositories.AnyDatabase) *AccountRepoDB {
+func NewAccountRepoDB(userRepo *UserRepoDB, db repositories.AnyDatabase) *AccountRepoDB {
 	return &AccountRepoDB{userRepo, db}
 }
 

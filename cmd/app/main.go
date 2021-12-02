@@ -1,7 +1,6 @@
 package main
 
 import (
-	"Dp218Go/auth/webauth"
 	"Dp218Go/configs"
 	"Dp218Go/repositories/postgres"
 	"Dp218Go/routing"
@@ -44,11 +43,15 @@ func main() {
 	var userRoleRepoDB = postgres.NewUserRepoDB(db)
 	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
 
-	sessStore := sessions.NewCookieStore([]byte(sessionKey))
-	authser := webauth.NewAuthService(userRoleRepoDB, sessStore)
+	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
+	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
 
-	handler := routing.NewRouter(authser)
+	sessStore := sessions.NewCookieStore([]byte(sessionKey))
+	authService := services.NewAuthService(userRoleRepoDB, sessStore)
+
+	handler := routing.NewRouter(authService)
 	routing.AddUserHandler(handler, userService)
+	routing.AddAccountHandler(handler, accService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 
 	interrupt := make(chan os.Signal, 1)

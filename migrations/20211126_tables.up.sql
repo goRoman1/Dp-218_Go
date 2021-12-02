@@ -226,6 +226,7 @@ INSERT INTO payment_types(id, name) VALUES(6, 'rent scooter class3');
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(1, 'admin role', true, false, false);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(2, 'user role', false, true, false);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(3, 'supplier role', false, false, true);
+INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(5, 'supplier+user role', false, false, true);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(7, 'super_admin role', true, true, true);
 
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('guru_admin@guru.com', false, 'Guru', 'Sadh', 7);
@@ -236,4 +237,5 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserChan@mail.com', false, 'Jackie', 'Chan', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
+INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) VALUES('gtr@gmail.com', false, 'Gregor', 'Tyson', 7, '$2a$10$Le9uo/qFrA.EPFh5d1Z5Wu1EaNCVMkeV1dOT/q86ZZ.obCeSY/472');
 COMMIT;

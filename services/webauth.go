@@ -1,4 +1,4 @@
-package webauth
+package services
 
 import (
 	"Dp218Go/models"
@@ -14,6 +14,11 @@ type AuthService struct {
 	DB        repositories.UserRepo
 	sessStore sessions.Store
 }
+
+const (
+	SessionName = "login"
+	SessionVal  = "user"
+)
 
 func NewAuthService(db repositories.UserRepo, store sessions.Store) *AuthService {
 
@@ -44,4 +49,8 @@ func (sv *AuthService) GetUserFromRequest(r *http.Request) (*models.User, error)
 
 	return user, nil
 
+}
+
+func (sv *AuthService) GetSessionStore() sessions.Store {
+	return sv.sessStore
 }

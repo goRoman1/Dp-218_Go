@@ -14,7 +14,12 @@ import (
 var userService *services.UserService
 var userIDKey = "userID"
 
-var keyRoutes = []Route{
+var keyUserRoutes = []Route{
+	{
+		Uri:     `/home`,
+		Method:  http.MethodGet,
+		Handler: getUserPage,
+	},
 	{
 		Uri:     `/users`,
 		Method:  http.MethodGet,
@@ -58,7 +63,7 @@ func (ur *userWithRoleList) ListOfRoles() []models.Role {
 
 func AddUserHandler(router *mux.Router, service *services.UserService) {
 	userService = service
-	for _, rt := range keyRoutes {
+	for _, rt := range keyUserRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
@@ -98,6 +103,20 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EncodeAnswer(format, w, users, HTMLPath+"user-list.html")
+}
+
+func getUserPage(w http.ResponseWriter, r *http.Request) {
+
+	//var users = &models.UserList{}
+	//var err error
+
+	user, err := AuthService.GetUserFromRequest(r)
+	if err != nil {
+		EncodeError(FormatHTML, w, ErrorRendererDefault(err))
+		return
+	}
+
+	EncodeAnswer(FormatHTML, w, user, HTMLPath+"aggregator.html")
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
