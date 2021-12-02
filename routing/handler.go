@@ -102,9 +102,11 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 	var err error
 
 	switch format {
+
 	case FormatJSON:
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(answer)
+
 	case FormatHTML:
 		if len(htmlTemplates) == 0 {
 			EncodeError(format, w, &ResponseStatus{StatusText: "Encode error", Message: "no html temlates", StatusCode: http.StatusInternalServerError})
@@ -115,6 +117,7 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 		if tmpl, err = template.ParseFiles(htmlTemplates[0]); err == nil {
 			err = tmpl.Execute(w, answer)
 		}
+
 	default:
 		err = fmt.Errorf("format error")
 	}
@@ -129,13 +132,17 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 
 func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestData interface{}, htmlDecoder func(r *http.Request, dataToDecode interface{}) error) {
 	var err error
+
 	switch format {
+
 	case FormatJSON:
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewDecoder(r.Body).Decode(requestData)
+
 	case FormatHTML:
 		w.Header().Set("Content-Type", "text/html")
 		err = htmlDecoder(r, requestData)
+
 	default:
 		err = fmt.Errorf("format error")
 	}
