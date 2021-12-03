@@ -1,8 +1,8 @@
 package routing
 
 import (
-	"Dp218Go/auth/webauth"
 	"Dp218Go/configs"
+	"Dp218Go/services"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -28,9 +28,11 @@ var (
 	MainPageHTML  = HTMLPath + "main-page.html"
 	ErrorPageHTML = HTMLPath + "error.html"
 	APIprefix     = "/api/v1"
+	AuthService   = &services.AuthService{}
 )
 
-func NewRouter(authser *webauth.AuthService) *mux.Router {
+func NewRouter(authService *services.AuthService) *mux.Router {
+	AuthService = authService
 	router := mux.NewRouter()
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
@@ -40,9 +42,9 @@ func NewRouter(authser *webauth.AuthService) *mux.Router {
 
 	router.HandleFunc("/", showHomePage)
 	router.HandleFunc("/login", showLoginPage)
-	router.HandleFunc("/signup", webauth.SignUp(authser))
-	router.HandleFunc("/signin", webauth.SignIn(authser))
-	router.HandleFunc("/signout", webauth.SignOut(authser))
+	router.HandleFunc("/signup", SignUp(AuthService))
+	router.HandleFunc("/signin", SignIn(AuthService))
+	router.HandleFunc("/signout", SignOut(AuthService))
 	return router
 }
 
@@ -51,6 +53,12 @@ func showHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func showLoginPage(w http.ResponseWriter, r *http.Request) {
+	_, err := AuthService.GetUserFromRequest(r)
+	if err == nil {
+		http.Redirect(w, r, "/home", http.StatusFound)
+		return
+	}
+
 	EncodeAnswer(FormatHTML, w, nil, HTMLPath+"login-registration.html")
 }
 

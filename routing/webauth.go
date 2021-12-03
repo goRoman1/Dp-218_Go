@@ -1,8 +1,9 @@
-package webauth
+package routing
 
 import (
 	"Dp218Go/auth"
 	"Dp218Go/models"
+	"Dp218Go/services"
 
 	"errors"
 	"fmt"
@@ -14,12 +15,7 @@ var (
 	ErrSignIn = errors.New("signin error")
 )
 
-const (
-	SessionName = "login"
-	SessionVal  = "user"
-)
-
-func SignUp(sv *AuthService) http.HandlerFunc {
+func SignUp(sv *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// TODO implement validation
@@ -52,9 +48,10 @@ func SignUp(sv *AuthService) http.HandlerFunc {
 	}
 }
 
-func SignIn(sv *AuthService) http.HandlerFunc {
+func SignIn(sv *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// // TODO implement validation
+
 		type authRequest struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -68,8 +65,14 @@ func SignIn(sv *AuthService) http.HandlerFunc {
 
 		user, err := sv.DB.GetUserByEmail(req.Email)
 		if err != nil {
-			fmt.Println("cant get user", err)
-			http.Error(w, ErrSignIn.Error(), http.StatusForbidden)
+			//fmt.Println("cant get user", err)
+			//http.Error(w, ErrSignIn.Error(), http.StatusForbidden)
+			EncodeError(FormatHTML, w, &ResponseStatus{
+				Err:        ErrSignIn,
+				StatusCode: http.StatusForbidden,
+				StatusText: ErrSignIn.Error(),
+				Message:    "cant get user" + err.Error(),
+			})
 			return
 		}
 
@@ -79,14 +82,14 @@ func SignIn(sv *AuthService) http.HandlerFunc {
 			return
 		}
 
-		session, err := sv.sessStore.Get(r, SessionName)
+		session, err := sv.GetSessionStore().Get(r, services.SessionName)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		session.Values[SessionVal] = user
+		session.Values[services.SessionVal] = user
 		err = session.Save(r, w)
 		if err != nil {
 			fmt.Println(err)
@@ -98,16 +101,16 @@ func SignIn(sv *AuthService) http.HandlerFunc {
 	}
 }
 
-func SignOut(sv *AuthService) http.HandlerFunc {
+func SignOut(sv *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		session, err := sv.sessStore.Get(r, SessionName)
+		session, err := sv.GetSessionStore().Get(r, services.SessionName)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		session.Values[SessionVal] = nil
+		session.Values[services.SessionVal] = nil
 		session.Options.MaxAge = -1
 		err = session.Save(r, w)
 		if err != nil {
