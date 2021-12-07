@@ -3,6 +3,7 @@ package services
 import (
 	"Dp218Go/models"
 	"Dp218Go/repositories"
+	"fmt"
 	"time"
 )
 
@@ -141,6 +142,13 @@ func (accserv *AccountService) TakeMoneyFromAccount(account models.Account, amou
 	if err != nil {
 		return err
 	}
+	totalMoney, err := accserv.CalculateMoneyAmountByDate(account, time.Now())
+	if err != nil {
+		return err
+	}
+	if accserv.CentsFromMoney(totalMoney) < amountCents{
+		return fmt.Errorf("can't take more money than you have")
+	}
 
 	accTransaction := &models.AccountTransaction{
 		DateTime:    time.Now(),
@@ -154,9 +162,13 @@ func (accserv *AccountService) TakeMoneyFromAccount(account models.Account, amou
 }
 
 func (accserv *AccountService) MoneyFromCents(cents int) models.Money {
+	coefCents := 1
+	if cents < 0 {
+		coefCents = -1
+	}
 	return models.Money{
 		Dollars: cents / 100,
-		Cents:   cents % 100,
+		Cents:   coefCents * cents % 100,
 	}
 }
 
@@ -190,6 +202,7 @@ func (accserv *AccountService) GetAccountOutputStructById(accId int) (interface{
 	if err != nil {
 		return nil, err
 	}
+	totalMonth := accserv.CentsFromMoney(monthIncome) - accserv.CentsFromMoney(monthOutcome)
 
 	return struct {
 		ID                  int
@@ -199,6 +212,7 @@ func (accserv *AccountService) GetAccountOutputStructById(accId int) (interface{
 		MonthlyIncome       models.Money
 		MonthlyOutcome      models.Money
 		MonthlyTransactions []transactionsWithIncome
+		TotalMonthAmount    models.Money
 	}{
 		ID:                  account.ID,
 		Number:              account.Number,
@@ -207,6 +221,7 @@ func (accserv *AccountService) GetAccountOutputStructById(accId int) (interface{
 		MonthlyIncome:       monthIncome,
 		MonthlyOutcome:      monthOutcome,
 		MonthlyTransactions: addIncomeToTransactions(monthTransactions.AccountTransactions, account),
+		TotalMonthAmount:    accserv.MoneyFromCents(totalMonth),
 	}, nil
 }
 

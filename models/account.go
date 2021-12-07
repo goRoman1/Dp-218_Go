@@ -38,8 +38,12 @@ type AccountTransactionList struct {
 }
 
 func (accTrans *AccountTransaction) GetAmountInMoney() Money {
+	coefCents := 1
+	if accTrans.AmountCents < 0 {
+		coefCents = -1
+	}
 	return Money{
 		Dollars: accTrans.AmountCents / 100,
-		Cents:   accTrans.AmountCents % 100,
+		Cents:   coefCents * accTrans.AmountCents % 100,
 	}
 }
