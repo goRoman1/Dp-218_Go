@@ -2,14 +2,23 @@ package postgres
 
 import (
 	"Dp218Go/models"
+	"Dp218Go/repositories"
 	"context"
 )
 
-func (pg *Postgres) GetAllStations() (*models.StationList, error) {
+type StationRepoDB struct {
+	db repositories.AnyDatabase
+}
+
+func NewStationRepoDB(db repositories.AnyDatabase) *StationRepoDB {
+	return &StationRepoDB{db}
+}
+
+func (pg *StationRepoDB) GetAllStations() (*models.StationList, error) {
 	list := &models.StationList{}
 
 	querySQL := `SELECT * FROM scooter_stations ORDER BY id DESC;`
-	rows, err := pg.QueryResult(context.Background(), querySQL)
+	rows, err := pg.db.QueryResult(context.Background(), querySQL)
 	if err != nil {
 		return list, err
 	}
@@ -26,12 +35,12 @@ func (pg *Postgres) GetAllStations() (*models.StationList, error) {
 	return list, nil
 }
 
-func (pg *Postgres) AddStation(station *models.Station) error {
+func (pg *StationRepoDB) AddStation(station *models.Station) error {
 	var id int
 	querySQL := `INSERT INTO scooter_stations(id, location_id, name, is_active) 
 		VALUES($1, $2, $3, $4)
 		RETURNING id;`
-	err := pg.QueryResultRow(context.Background(), querySQL, station.ID, station.LocationID, station.Name, station.IsActive).Scan(&id)
+	err := pg.db.QueryResultRow(context.Background(), querySQL, station.ID, station.LocationID, station.Name, station.IsActive).Scan(&id)
 	if err != nil {
 		return err
 	}
@@ -39,18 +48,18 @@ func (pg *Postgres) AddStation(station *models.Station) error {
 	return nil
 }
 
-func (pg *Postgres) GetStationById(stationId int) (models.Station, error) {
+func (pg *StationRepoDB) GetStationById(stationId int) (models.Station, error) {
 	station := models.Station{}
 
 	querySQL := `SELECT * FROM scooter_stations WHERE id = $1;`
-	row := pg.QueryResultRow(context.Background(), querySQL, stationId)
+	row := pg.db.QueryResultRow(context.Background(), querySQL, stationId)
 	err := row.Scan(&station.ID, &station.LocationID, &station.Name, &station.IsActive)
 
 	return station, err
 }
 
-func (pg *Postgres) DeleteStation(stationId int) error {
+func (pg *StationRepoDB) DeleteStation(stationId int) error {
 	querySQL := `DELETE FROM scooter_stations WHERE id = $1;`
-	_, err := pg.QueryExec(context.Background(), querySQL, stationId)
+	_, err := pg.db.QueryExec(context.Background(), querySQL, stationId)
 	return err
 }

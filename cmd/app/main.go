@@ -45,12 +45,14 @@ func main() {
 
 	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
 	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
-
+	var stationRepoDb = postgres.NewStationRepoDB(db)
+	var stationService = services.NewStationService(stationRepoDb)
 	sessStore := sessions.NewCookieStore([]byte(sessionKey))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)
 
 	handler := routing.NewRouter(authService)
 	routing.AddUserHandler(handler, userService)
+	routing.AddStationHandler(handler, stationService)
 	routing.AddAccountHandler(handler, accService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 
