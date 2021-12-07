@@ -146,7 +146,7 @@ func (accserv *AccountService) TakeMoneyFromAccount(account models.Account, amou
 	if err != nil {
 		return err
 	}
-	if accserv.CentsFromMoney(totalMoney) < amountCents{
+	if accserv.CentsFromMoney(totalMoney) < amountCents {
 		return fmt.Errorf("can't take more money than you have")
 	}
 

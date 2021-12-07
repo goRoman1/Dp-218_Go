@@ -18,8 +18,8 @@ type AccountTransactionRepo interface {
 	AddAccountTransaction(accountTransaction *models.AccountTransaction) error
 	GetAccountTransactions(accounts ...models.Account) (*models.AccountTransactionList, error)
 	GetAccountTransactionsInTimePeriod(start time.Time, end time.Time, accounts ...models.Account) (*models.AccountTransactionList, error)
-	GetAccountTransactionsByOrder(order models.Order)(*models.AccountTransactionList, error)
-	GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ... models.Account) (*models.AccountTransactionList, error)
+	GetAccountTransactionsByOrder(order models.Order) (*models.AccountTransactionList, error)
+	GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error)
 }
 
 type PaymentTypeRepo interface {

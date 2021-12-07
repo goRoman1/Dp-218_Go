@@ -47,8 +47,8 @@ func (ser *UserService) GetRoleById(roleId int) (models.Role, error) {
 }
 
 func (ser *UserService) ChangeUsersBlockStatus(userId int) error {
-	user, err:= ser.repoUser.GetUserById(userId)
-	if err!=nil{
+	user, err := ser.repoUser.GetUserById(userId)
+	if err != nil {
 		return err
 	}
 	user.IsBlocked = !user.IsBlocked
