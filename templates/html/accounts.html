@@ -30,59 +30,24 @@
 </header>
 
 <div class="bs-component">
-
-    <div class="jumbotron">
-        <h2 class="display-4">Account # {{.Number}}&nbsp;{{.Name}}</h2>
-        <hr class="my-4">
-        <h3 class="display-4" style="color: darkmagenta">Money: {{.TotalAmount.Dollars}}.{{.TotalAmount.Cents}} $</h3>
-        <hr class="my-4">
-        <div class="row">
-            <h3 class="text-success">>>> (month): {{.MonthlyIncome.Dollars}}.{{.MonthlyIncome.Cents}} $</h3>
-            &nbsp;&nbsp;&nbsp;
-            <button class="btn btn-success">Add some $$$</button>
-        </div>
-        <div class="row">
-            &nbsp;&nbsp;&nbsp;
-        </div>
-        <div class="row">
-            <h3 class="text-danger"><<< (month): {{.MonthlyOutcome.Dollars}}.{{.MonthlyOutcome.Cents}} $</h3>
-            &nbsp;&nbsp;&nbsp;
-            <button class="btn btn-danger">Take some $$$</button>
-        </div>
-        <input type="hidden" name="AccountId" value="{{.ID}}"/>
-    </div>
-
-    <h1>List of operations</h1>
     <div class="table-responsive">
         <table class="table table-striped table-sm">
             <thead>
             <tr>
                 <th class="d-none">ID</th>
-                <th>Date/Time</th>
-                <th>Status</th>
-                <th>Payment type</th>
-                <th>Amount</th>
-                <th>From account</th>
-                <th>To account</th>
-                <th>Order #</th>
+                <th>Account #</th>
+                <th>Name</th>
             </tr>
             </thead>
             <tbody>
-            {{range .MonthlyTransactions}}
+            {{range .Accounts}}
             <tr>
-                <td class="d-none">{{.Transaction.ID}}</td>
-                <td>{{.Transaction.DateTime}}</td>
-                <td>{{if .IsIncome}}
-                    <span class="badge badge-danger">Outcome</span>
-                    {{else}}
-                    <span class="badge badge-success">Income</span>
-                    {{end}}
+                <td class="d-none" name="AccountId">{{.ID}}</td>
+                <td bgcolor="#8fbc8f"><b>{{.Number}}</b></td>
+                <td>{{.Name}}</td>
+                <td>
+                    <button type="submit" class="btn btn-primary" onclick="window.location.href='/account/{{.ID}}'">INFO</button>
                 </td>
-                <td>{{.Transaction.PaymentType.Name}}</td>
-                <td>{{.Transaction.GetAmountInMoney.Dollars}}.{{.Transaction.GetAmountInMoney.Cents}} $</td>
-                <td># {{.Transaction.AccountFrom.Number}}</td>
-                <td># {{.Transaction.AccountTo.Number}}</td>
-                <td>TODO: order</td>
             </tr>
             {{end}}
             </tbody>

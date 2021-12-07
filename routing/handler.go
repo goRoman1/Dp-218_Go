@@ -161,3 +161,25 @@ func GetFormatFromRequest(r *http.Request) int {
 	}
 	return FormatHTML
 }
+
+func GetParameterFromRequest(r *http.Request, paramName string) (string, error) {
+	if r.Method == http.MethodGet && r.Form == nil || r.Method != http.MethodGet && r.PostForm == nil {
+		r.ParseForm()
+	}
+
+	result := ""
+	switch r.Method {
+	case http.MethodGet:
+		if _, ok := r.Form[paramName]; !ok {
+			return "", fmt.Errorf("no such field <%s> in request", paramName)
+		}
+		result = r.FormValue(paramName)
+	default:
+		if _, ok := r.PostForm[paramName]; !ok {
+			return "", fmt.Errorf("no such field <%s> in request", paramName)
+		}
+		result = r.PostFormValue(paramName)
+	}
+
+	return result, nil
+}

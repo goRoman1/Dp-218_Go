@@ -149,7 +149,7 @@ func (accdb *AccountRepoDB) AddAccountTransaction(accountTransaction *models.Acc
 
 func getTransactionsBySomeQuery(accdb *AccountRepoDB, querySQL string, params ...interface{}) (*models.AccountTransactionList, error) {
 	list := &models.AccountTransactionList{}
-	rows, err := accdb.db.QueryResult(context.Background(), querySQL, params)
+	rows, err := accdb.db.QueryResult(context.Background(), querySQL, params...)
 	if err != nil {
 		return list, err
 	}
@@ -177,7 +177,7 @@ func getTransactionsBySomeQuery(accdb *AccountRepoDB, querySQL string, params ..
 
 func (accdb *AccountRepoDB) GetAccountTransactions(accounts ...models.Account) (*models.AccountTransactionList, error) {
 	querySQL := `SELECT id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents FROM account_transactions`
-	var params []int
+	var params []interface{}
 	for i, acc := range accounts {
 		if i == 0 {
 			querySQL += ` WHERE FALSE`
@@ -188,7 +188,7 @@ func (accdb *AccountRepoDB) GetAccountTransactions(accounts ...models.Account) (
 	}
 	querySQL += `;`
 
-	return getTransactionsBySomeQuery(accdb, querySQL, params)
+	return getTransactionsBySomeQuery(accdb, querySQL, params...)
 }
 
 func (accdb *AccountRepoDB) GetAccountTransactionsInTimePeriod(start time.Time, end time.Time, accounts ...models.Account) (*models.AccountTransactionList, error) {
@@ -208,7 +208,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionsInTimePeriod(start time.Time, 
 	}
 	querySQL += `;`
 
-	return getTransactionsBySomeQuery(accdb, querySQL, params)
+	return getTransactionsBySomeQuery(accdb, querySQL, params...)
 }
 
 func (accdb *AccountRepoDB) GetAccountTransactionsByOrder(order models.Order) (*models.AccountTransactionList, error) {
@@ -221,7 +221,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionsByOrder(order models.Order) (*
 func (accdb *AccountRepoDB) GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error){
 	querySQL := `SELECT id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents FROM account_transactions
 		WHERE payment_type_id=$1`
-	var params []int
+	var params []interface{}
 	params = append(params, paymentType.ID)
 	var accountCondition = make([]string, len(accounts))
 	for i, acc := range accounts {
@@ -234,7 +234,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionsByPaymentType(paymentType mode
 	}
 	querySQL += `;`
 
-	return getTransactionsBySomeQuery(accdb, querySQL, params)
+	return getTransactionsBySomeQuery(accdb, querySQL, params...)
 }
 
 func (accdb *AccountRepoDB) GetPaymentTypeById(paymentTypeId int) (models.PaymentType, error) {

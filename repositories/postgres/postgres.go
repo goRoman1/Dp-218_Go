@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	defaultMaxPoolSize  = 1
+	defaultMaxPoolSize  = 3
 	defaultConnAttempts = 10
 	defaultConnTimeout  = time.Second
+	defaultQueryTimeout = 20*time.Second
 )
 
 type Postgres struct {
@@ -26,15 +27,21 @@ type Postgres struct {
 }
 
 func (db *Postgres) QueryResult(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error) {
-	return db.Pool.Query(ctx, query, args...)
+	ctxt, cancel := context.WithTimeout(ctx, defaultQueryTimeout)
+	defer cancel()
+	return db.Pool.Query(ctxt, query, args...)
 }
 
 func (db *Postgres) QueryResultRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
-	return db.Pool.QueryRow(ctx, query, args...)
+	ctxt, cancel := context.WithTimeout(ctx, defaultQueryTimeout)
+	defer cancel()
+	return db.Pool.QueryRow(ctxt, query, args...)
 }
 
 func (db *Postgres) QueryExec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
-	return db.Pool.Exec(ctx, query, args...)
+	ctxt, cancel := context.WithTimeout(ctx, defaultQueryTimeout)
+	defer cancel()
+	return db.Pool.Exec(ctxt, query, args...)
 }
 
 func NewConnection(connectionString string) (*Postgres, error) {
