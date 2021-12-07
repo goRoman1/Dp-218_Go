@@ -25,16 +25,16 @@ type Postgres struct {
 	Pool     *pgxpool.Pool
 }
 
-func (pg *Postgres) QueryResult(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error) {
-	return pg.Pool.Query(ctx, query, args...)
+func (db *Postgres) QueryResult(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error) {
+	return db.Pool.Query(ctx, query, args...)
 }
 
-func (pg *Postgres) QueryResultRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
-	return pg.Pool.QueryRow(ctx, query, args...)
+func (db *Postgres) QueryResultRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
+	return db.Pool.QueryRow(ctx, query, args...)
 }
 
-func (pg *Postgres) QueryExec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
-	return pg.Pool.Exec(ctx, query, args...)
+func (db *Postgres) QueryExec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
+	return db.Pool.Exec(ctx, query, args...)
 }
 
 func NewConnection(connectionString string) (*Postgres, error) {
@@ -61,11 +61,12 @@ func NewConnection(connectionString string) (*Postgres, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Postgres. Failed to connect: %v", err)
 	}
+
 	return dbPg, nil
 }
 
-func (pg *Postgres) CloseDB() {
-	if pg.Pool != nil {
-		pg.Pool.Close()
+func (db *Postgres) CloseDB() {
+	if db.Pool != nil {
+		db.Pool.Close()
 	}
 }

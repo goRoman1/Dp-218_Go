@@ -2,12 +2,14 @@ package routing
 
 import (
 	"Dp218Go/configs"
+	"Dp218Go/services"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type Route struct {
@@ -26,18 +28,38 @@ var (
 	MainPageHTML  = HTMLPath + "main-page.html"
 	ErrorPageHTML = HTMLPath + "error.html"
 	APIprefix     = "/api/v1"
+	AuthService   = &services.AuthService{}
 )
 
-func NewRouter() *mux.Router {
+func NewRouter(authService *services.AuthService) *mux.Router {
+	AuthService = authService
 	router := mux.NewRouter()
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+
+	router.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/",
+		http.FileServer(http.Dir(configs.TEMPLATES_PATH))))
+
 	router.HandleFunc("/", showHomePage)
+	router.HandleFunc("/login", showLoginPage)
+	router.HandleFunc("/signup", SignUp(AuthService))
+	router.HandleFunc("/signin", SignIn(AuthService))
+	router.HandleFunc("/signout", SignOut(AuthService))
 	return router
 }
 
 func showHomePage(w http.ResponseWriter, r *http.Request) {
 	EncodeAnswer(FormatHTML, w, nil, MainPageHTML)
+}
+
+func showLoginPage(w http.ResponseWriter, r *http.Request) {
+	_, err := AuthService.GetUserFromRequest(r)
+	if err == nil {
+		http.Redirect(w, r, "/home", http.StatusFound)
+		return
+	}
+
+	EncodeAnswer(FormatHTML, w, nil, HTMLPath+"login-registration.html")
 }
 
 func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {

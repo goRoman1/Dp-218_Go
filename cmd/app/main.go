@@ -7,14 +7,18 @@ import (
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
 	"fmt"
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/gorilla/sessions"
 )
+
+var sessionKey = "secretkey"
 
 func main() {
 
@@ -36,14 +40,19 @@ func main() {
 		log.Printf("app - Run - Migration issues: %v\n", err)
 	}
 
-	var userService = services.NewUserService(db)
-	var stationService = services.NewStationService(db)
+	var userRoleRepoDB = postgres.NewUserRepoDB(db)
+	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
 
-	handler := routing.NewRouter()
+	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
+	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
+
+	sessStore := sessions.NewCookieStore([]byte(sessionKey))
+	authService := services.NewAuthService(userRoleRepoDB, sessStore)
+
+	handler := routing.NewRouter(authService)
 	routing.AddUserHandler(handler, userService)
-	routing.AddStationHandler(handler, stationService)
+	routing.AddAccountHandler(handler, accService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
-
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
@@ -62,12 +71,12 @@ func main() {
 }
 
 func doMigrate(connStr string) error {
-	migr, err := migrate.New("file://"+configs.MIGRATIONS_PATH, connStr + "?sslmode=disable")
-	if err!= nil{
+	migr, err := migrate.New("file://"+configs.MIGRATIONS_PATH, connStr+"?sslmode=disable")
+	if err != nil {
 		return err
 	}
 
-	if configs.MIGRATE_VERSION_FORCE>0 {
+	if configs.MIGRATE_VERSION_FORCE > 0 {
 		migr.Force(configs.MIGRATE_VERSION_FORCE)
 	}
 

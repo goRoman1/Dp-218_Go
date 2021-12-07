@@ -7,13 +7,19 @@ import (
 	"strconv"
 
 	"Dp218Go/services"
+
 	"github.com/gorilla/mux"
 )
 
 var userService *services.UserService
 var userIDKey = "userID"
 
-var keyRoutes = []Route{
+var keyUserRoutes = []Route{
+	{
+		Uri:     `/home`,
+		Method:  http.MethodGet,
+		Handler: getUserPage,
+	},
 	{
 		Uri:     `/users`,
 		Method:  http.MethodGet,
@@ -46,18 +52,18 @@ var keyRoutes = []Route{
 	},
 }
 
-type userRole struct {
+type userWithRoleList struct {
 	models.User
 }
 
-func (ur *userRole) ListOfRoles() []models.Role {
+func (ur *userWithRoleList) ListOfRoles() []models.Role {
 	roles, _ := userService.GetAllRoles()
 	return roles.Roles
 }
 
 func AddUserHandler(router *mux.Router, service *services.UserService) {
 	userService = service
-	for _, rt := range keyRoutes {
+	for _, rt := range keyUserRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
@@ -78,13 +84,15 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
+
 	var users = &models.UserList{}
 	var err error
 	format := GetFormatFromRequest(r)
 
 	r.ParseForm()
 	searchData := r.FormValue("SearchData")
-	if len(searchData)==0 {
+
+	if len(searchData) == 0 {
 		users, err = userService.GetAllUsers()
 	} else {
 		users, err = userService.FindUsersByLoginNameSurname(searchData)
@@ -95,6 +103,20 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EncodeAnswer(format, w, users, HTMLPath+"user-list.html")
+}
+
+func getUserPage(w http.ResponseWriter, r *http.Request) {
+
+	//var users = &models.UserList{}
+	//var err error
+
+	user, err := AuthService.GetUserFromRequest(r)
+	if err != nil {
+		EncodeError(FormatHTML, w, ErrorRendererDefault(err))
+		return
+	}
+
+	EncodeAnswer(FormatHTML, w, user, HTMLPath+"aggregator.html")
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +133,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(format, w, &userRole{user}, HTMLPath+"user-edit.html")
+	EncodeAnswer(format, w, &userWithRoleList{user}, HTMLPath+"user-edit.html")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
@@ -150,14 +172,15 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(format, w, &userRole{userData}, HTMLPath+"user-edit.html")
+	EncodeAnswer(format, w, &userWithRoleList{userData}, HTMLPath+"user-edit.html")
 }
 
-func allUsersOperation(w http.ResponseWriter, r *http.Request){
+func allUsersOperation(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
 	r.ParseForm()
-	if ! r.Form.Has("ActionType"){
+	if _, ok := r.Form["ActionType"]; !ok {
+
 		return
 	}
 	actionType := r.FormValue("ActionType")
@@ -186,17 +209,18 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 	//userData := models.User{}
 	userData := data.(*models.User)
 
-	if r.Form.Has("LoginEmail") {
+	if _, ok := r.Form["LoginEmail"]; ok {
 		userData.LoginEmail = r.FormValue("LoginEmail")
 
 	}
-	if r.Form.Has("UserName") {
+	if _, ok := r.Form["UserName"]; ok {
 		userData.UserName = r.FormValue("UserName")
 	}
-	if r.Form.Has("UserSurname") {
+	if _, ok := r.Form["UserSurname"]; ok {
 		userData.UserSurname = r.FormValue("UserSurname")
 	}
-	if r.Form.Has("RoleID") {
+	if _, ok := r.Form["RoleID"]; ok {
+
 		var roleId int
 		roleId, err = strconv.Atoi(r.FormValue("RoleID"))
 		if err != nil {
@@ -207,7 +231,7 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 			return err
 		}
 	}
-	if r.Form.Has("IsBlocked") {
+	if _, ok := r.Form["IsBlocked"]; ok {
 		userData.IsBlocked, _ = strconv.ParseBool(r.FormValue("IsBlocked"))
 	}
 
