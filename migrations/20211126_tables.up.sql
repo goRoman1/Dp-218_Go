@@ -171,15 +171,12 @@ CREATE TABLE IF NOT EXISTS problem_statuses
 CREATE TABLE IF NOT EXISTS scooter_statuses_in_rent
 (
     id         bigserial PRIMARY KEY,
-    user_id     int       NOT NULL,
-    scooter_id  int       NOT NULL,
     station_id  int,
     date_time   TIMESTAMP NOT NULL,
     location_id int,
-    is_returned boolean,
+    latitude      NUMERIC(16, 14),
+    longitude     NUMERIC(16, 14),
 
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (scooter_id) REFERENCES Scooters (id),
     FOREIGN KEY (station_id) REFERENCES Scooter_Stations (id),
     FOREIGN KEY (location_id) REFERENCES Locations (id)
 );

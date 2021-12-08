@@ -16,7 +16,7 @@ func NewScooterRepoDB(db repositories.AnyDatabase) *ScooterRepoDB {
 	return &ScooterRepoDB{db}
 }
 
-func (scdb *ScooterRepoDB) GetAllScooters () (*models.ScooterList, error) {
+func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterList, error) {
 	scooterList := &models.ScooterList{}
 
 	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.latitude, ss.longitude 
@@ -70,26 +70,49 @@ ss.longitude
 func (scdb *ScooterRepoDB) GetScooterStatus(scooterID int) (models.ScooterStatus, error) {
 	var scooterStatus = models.ScooterStatus{}
 	scooter, err := scdb.GetScooterById(scooterID)
-	if err!=nil {
+	if err != nil {
 		fmt.Println(err)
 		return models.ScooterStatus{}, err
 	}
 	scooterStatus.Scooter = scooter
 
 	querySQL := `SELECT battery_remain, latitude, longitude 
-				FROM scooter_statuses
-				WHERE scooter_id=$1`
+					FROM scooter_statuses
+					WHERE scooter_id=$1`
 
-	row := scdb.db.QueryResultRow(context.Background(),querySQL, scooterID)
-	switch err = row.Scan(&scooterStatus.BatteryRemain,
-		&scooterStatus.Location.Latitude, &scooterStatus.Location.Longitude); err {
-	case sql.ErrNoRows:
-		return scooterStatus, err
-	default:
+	row := scdb.db.QueryResultRow(context.Background(), querySQL, scooterID)
+	err = row.Scan(&scooterStatus.BatteryRemain,
+		&scooterStatus.Location.Latitude, &scooterStatus.Location.Longitude)
+	if err != nil {
 		return scooterStatus, err
 	}
+
+	return scooterStatus, nil
 }
 
+func (scdb *ScooterRepoDB) CreateScooterStatusInRent(scooterID int) (models.ScooterStatusInRent, error) {
+	var scooterStatusInRent models.ScooterStatusInRent
+	scooterStatus, err := scdb.GetScooterStatus(scooterID)
+	if err != nil {
+		fmt.Println(err)
+		return scooterStatusInRent, err
+	}
+
+	scooterStatusInRent.Location = scooterStatus.Location
+
+	querySQL := `INSERT INTO scooter_statuses_in_rent(date_time, latitude, longitude) 
+					VALUES(now(), $1, $2) RETURNING id, date_time`
+
+	err = scdb.db.QueryResultRow(context.Background(), querySQL, scooterStatus.Location.Latitude,
+		scooterStatus.Location.Longitude).Scan(&scooterStatusInRent.ID, &scooterStatusInRent.DateTime)
+	if err != nil {
+		fmt.Println(err)
+		return scooterStatusInRent, err
+	}
+
+	return scooterStatusInRent, nil
+
+}
 
 //func(scdb *ScooterRepoDB) SendAtStart(uID, sID int) (error, int) {
 //	scooter, err := scdb.GetScooterById(sID)
