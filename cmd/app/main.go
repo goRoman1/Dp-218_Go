@@ -2,12 +2,18 @@ package main
 
 import (
 	"Dp218Go/configs"
+	"Dp218Go/protos"
 	"Dp218Go/repositories/postgres"
 	"Dp218Go/routing"
+	"Dp218Go/routing/grpcserver"
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
 	"fmt"
+	"google.golang.org/grpc"
+	"html/template"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -46,13 +52,59 @@ func main() {
 	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
 	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
 
+	var scooterRepo = postgres.NewScooterRepoDB(db)
+	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
+	var scooterService = services.NewScooterService(scooterRepo)
+
+	scL, err := scooterRepo.GetAllScooters()
+	fmt.Println(scL, err)
+
+
+
+	svr := grpcserver.NewServer()
+	svr.Run()
+	grpcServer := grpc.NewServer()
+
+	protos.RegisterScooterServiceServer(grpcServer, svr)
+
+	listener, err := net.Listen("tcp", ":8000")
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		fmt.Println("grpc server started: 8000")
+		log.Fatal(grpcServer.Serve(listener))
+	}()
+
+	http.HandleFunc("/scooter", svr.ScooterHandler)
+	http.HandleFunc("/run", routing.StartScooterTrip)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		tmpl, err := template.ParseFiles("./templates/html/scooter-run.html")
+		if err!= nil {
+			fmt.Println(err)
+		}
+		err = tmpl.Execute(w, scL)
+		if err!=nil {
+			fmt.Println()
+		}
+	})
+
 	sessStore := sessions.NewCookieStore([]byte(sessionKey))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)
 
 	handler := routing.NewRouter(authService)
 	routing.AddUserHandler(handler, userService)
 	routing.AddAccountHandler(handler, accService)
+	routing.AddScooterHandler(handler,scooterService)
+	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
+
+
+	fmt.Println("http server started: 9000")
+	http.ListenAndServe(":9000", nil)
+
+
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

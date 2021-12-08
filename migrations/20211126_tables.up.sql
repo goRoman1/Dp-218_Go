@@ -129,8 +129,9 @@ CREATE TABLE IF NOT EXISTS scooter_statuses
     scooter_id     int PRIMARY KEY,
     location_id    int,
     battery_remain NUMERIC(5, 2),
-    can_be_rent     boolean,
     station_id     int,
+    latitude      NUMERIC(16, 14),
+    longitude     NUMERIC(16, 14),
 
     FOREIGN KEY (scooter_id)  REFERENCES scooters (id),
     FOREIGN KEY (location_id) REFERENCES locations (id),
@@ -238,4 +239,10 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) VALUES('gtr@gmail.com', false, 'Gregor', 'Tyson', 7, '$2a$10$Le9uo/qFrA.EPFh5d1Z5Wu1EaNCVMkeV1dOT/q86ZZ.obCeSY/472');
+
+INSERT INTO scooter_models(id, payment_type_id, model_name, max_weight, speed) VALUES(1, 1, 'Awesome Scooter', 125.0,
+                                                                                      5);
+INSERT INTO scooters(id, model_id, owner_id, serial_number) VALUES(1, 1, 1, '223445');
+
+INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude) VALUES(1, 77, 48.42452620789186, 35.02444471956219);
 COMMIT;

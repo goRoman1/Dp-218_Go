@@ -18,7 +18,6 @@ type AccountList struct {
 	Accounts []Account `json:"accounts"`
 }
 
-
 type AccountTransaction struct {
 	ID          int         `json:"id"`
 	DateTime    time.Time   `json:"date_time"`
