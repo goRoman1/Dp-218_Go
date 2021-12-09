@@ -33,7 +33,7 @@ func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterList, error) {
 	}
 
 	for rows.Next() {
-		var scooter models.Scooter
+		var scooter models.ScooterDTO
 		err := rows.Scan(&scooter.ID, &scooter.MaxWeight, &scooter.ScooterModel, &scooter.BatteryRemain,
 			&scooter.Latitude, &scooter.Longitude)
 		if err != nil {
@@ -46,8 +46,8 @@ func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterList, error) {
 	return scooterList, nil
 }
 
-func (scdb *ScooterRepoDB) GetScooterById(scooterId int) (models.Scooter, error) {
-	scooter := models.Scooter{}
+func (scdb *ScooterRepoDB) GetScooterById(scooterId int) (models.ScooterDTO, error) {
+	scooter := models.ScooterDTO{}
 	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.latitude, 
 ss.longitude 
 					FROM scooters as s 
@@ -113,6 +113,14 @@ func (scdb *ScooterRepoDB) CreateScooterStatusInRent(scooterID int) (models.Scoo
 	return scooterStatusInRent, nil
 
 }
+
+//func (scdb *ScooterRepoDB) SendCurrentPosition(id int, lat, lon float64) {
+//	scooter, err := scdb.GetScooterById(id)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//
+//}
 
 //func(scdb *ScooterRepoDB) SendAtStart(uID, sID int) (error, int) {
 //	scooter, err := scdb.GetScooterById(sID)

@@ -17,13 +17,14 @@ const (
 
 type GrpcScooterService struct {
 	repositories.ScooterRepo
+
 }
 
 type GrpcScooterClient struct {
 	Id uint64
-	Latitude float64
-	Longitude float64
+	coordinate models.Coordinate
 	stream protos.ScooterService_ReceiveClient
+	repositories.ScooterRepo
 }
 
 func NewGrpcScooterService(repo repositories.ScooterRepo) *GrpcScooterService {
@@ -32,89 +33,25 @@ func NewGrpcScooterService(repo repositories.ScooterRepo) *GrpcScooterService {
 	}
 }
 
-func NewGrpcScooterClient(id uint64, lat, lon float64,
+func NewGrpcScooterClient(id uint64, coordinate models.Coordinate,
 	stream protos.ScooterService_ReceiveClient) *GrpcScooterClient {
 	return &GrpcScooterClient{
 		Id: id,
-		Latitude: lat,
-		Longitude: lon,
+		coordinate: coordinate,
 		stream: stream,
 	}
 }
 
-func (s *GrpcScooterClient) grpcScooterMessage()  {
-	intPol := time.Duration(interval) * time.Second
-
-	fmt.Println("executing run in client")
-	msg := &protos.ClientMessage{
-		Id: s.Id,
-		Latitude:  s.Latitude,
-		Longitude:  s.Longitude,
-	}
-	err := s.stream.Send(msg)
-	if err != nil {
+func (gss *GrpcScooterService) InitAndRun(scooterID int,
+	coordinate models.Coordinate) error{
+	scooter,err := gss.GetScooterById(scooterID)
+	if err!= nil {
 		fmt.Println(err)
-		//panic(err)
+		return err
 	}
-	time.Sleep(intPol)
-}
+	// TODO по айди станции нахожу координаты
 
-func (s *GrpcScooterClient) Run(station models.Coordinate) error {
-	//err, _ := s.SendAtStart(uid, int(s.Id))
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-
-	switch {
-	case s.Latitude <= station.Latitude && s.Longitude <= station.Longitude:
-		for ; s.Latitude <= station.Latitude && s.Longitude <= station.Longitude; s.Latitude,
-		s.Longitude = s.Latitude+step,s.Longitude+step {
-				fmt.Println(s)
-			s.grpcScooterMessage()
-		}
-		fmt.Println("Trip finished. You are at the point")
-		//err = db.SendAtEnd(tripId, s)
-		//if err!=nil {
-		//	fmt.Println(err)
-		//}
-	case s.Latitude >= station.Latitude && s.Longitude <= station.Longitude:
-		for ; s.Latitude <= station.Latitude && s.Longitude <= station.Longitude; s.Latitude,
-			s.Longitude = s.Latitude-step,s.Longitude+step {
-			s.grpcScooterMessage()
-		}
-		fmt.Println("Trip finished. You are at the point")
-		//err = db.SendAtEnd(tripId, s)
-		//if err!=nil {
-		//	fmt.Println(err)
-		//}
-	case s.Latitude >= station.Latitude && s.Longitude >= station.Longitude:
-		for ; s.Latitude <= station.Latitude && s.Longitude <= station.Longitude; s.Latitude,
-			s.Longitude = s.Latitude-step,s.Longitude-step  {
-			s.grpcScooterMessage()
-		}
-		fmt.Println("Trip finished. You are at the point")
-		//err = db.SendAtEnd(tripId, s)
-		//if err!=nil {
-		//	fmt.Println(err)
-		//}
-	case s.Latitude <= station.Latitude && s.Longitude >= station.Longitude:
-		for ; s.Latitude <= station.Latitude && s.Longitude <= station.Longitude; s.Latitude,
-			s.Longitude = s.Latitude+step,s.Longitude-step {
-			s.grpcScooterMessage()
-		}
-		fmt.Println("Trip finished. You are at the point")
-		//err = db.SendAtEnd(tripId, s)
-		//if err!=nil {
-		//	fmt.Println(err)
-		//}
-	default:
-		return fmt.Errorf("you are at this point now")
-	}
-	return nil
-}
-
-func InitClient(scooter models.Scooter, repo repositories.ScooterRepo) (*GrpcScooterClient, error) {
-	scooterStatus, err := repo.GetScooterStatus(scooter.ID)
+	scooterStatus, err := gss.GetScooterStatus(scooter.ID)
 	if err!= nil {
 		fmt.Println(err)
 	}
@@ -132,28 +69,60 @@ func InitClient(scooter models.Scooter, repo repositories.ScooterRepo) (*GrpcSco
 		panic(err)
 	}
 
-	return &GrpcScooterClient{
-		Id: uint64(scooter.ID),
-		Latitude: scooterStatus.Location.Latitude,
-		Longitude: scooterStatus.Location.Longitude,
-		stream: stream,
-	}, nil
+	client := NewGrpcScooterClient(uint64(scooterID),
+		scooterStatus.Location, stream)
+	err = client.Run(coordinate)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err
 }
 
-func (gss *GrpcScooterService) InitAndRun(scooterID int,
-	coordinate models.Coordinate) error{
-	scooter,err := gss.GetScooterById(scooterID)
-	if err!= nil {
-		fmt.Println(err)
-		return err
+func (s *GrpcScooterClient) grpcScooterMessage()  {
+	intPol := time.Duration(interval) * time.Second
+
+	fmt.Println("executing run in client")
+	msg := &protos.ClientMessage{
+		Id: s.Id,
+		Latitude:  s.coordinate.Latitude,
+		Longitude:  s.coordinate.Longitude,
 	}
-	// TODO по айди станции нахожу координаты
-	client,err := InitClient(scooter, gss.ScooterRepo)
-	if err!= nil {
+	err := s.stream.Send(msg)
+	if err != nil {
 		fmt.Println(err)
-		return err
 	}
-	err = client.Run(coordinate)
-	fmt.Println(err)
-	return err
+	time.Sleep(intPol)
+}
+
+func (s *GrpcScooterClient) Run(station models.Coordinate) error {
+
+	switch {
+	case s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude:
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+		s.coordinate.Longitude = s.coordinate.Latitude+step,s.coordinate.Longitude+step {
+			s.grpcScooterMessage()
+		}
+		fmt.Println("Trip finished. You are at the point")
+	case s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude <= station.Longitude:
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+			s.coordinate.Longitude = s.coordinate.Latitude-step,s.coordinate.Longitude+step {
+			s.grpcScooterMessage()
+		}
+		fmt.Println("Trip finished. You are at the point")
+	case s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude >= station.Longitude:
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+			s.coordinate.Longitude = s.coordinate.Latitude-step,s.coordinate.Longitude-step  {
+			s.grpcScooterMessage()
+		}
+		fmt.Println("Trip finished. You are at the point")
+	case s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude >= station.Longitude:
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+			s.coordinate.Longitude = s.coordinate.Latitude+step,s.coordinate.Longitude-step {
+			s.grpcScooterMessage()
+		}
+		fmt.Println("Trip finished. You are at the point")
+	default:
+		return fmt.Errorf("you are at this point now")
+	}
+	return nil
 }

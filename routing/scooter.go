@@ -5,11 +5,12 @@ import (
 	"Dp218Go/services"
 	"fmt"
 	"github.com/gorilla/mux"
+	"html/template"
 	"net/http"
 	"strconv"
 )
 
-var	scooterService *services.ScooterService
+var scooterService *services.ScooterService
 var scooterGrpcService *services.GrpcScooterService
 var scooterIDKey = "scooterId"
 
@@ -19,14 +20,14 @@ var choosenScooter = 1
 
 var scooterRoutes = []Route{
 	{
-		Uri:         `/scooters`,
-		Method:    http.MethodGet,
-		Handler:	getAllScooters,
+		Uri:     `/scooters`,
+		Method:  http.MethodGet,
+		Handler: getAllScooters,
 	},
 	{
-		Uri:         `/scooter/{`+scooterIDKey+`}`,
-		Method:     http.MethodGet,
-		Handler:	getScooterById,
+		Uri:     `/scooter/{` + scooterIDKey + `}`,
+		Method:  http.MethodGet,
+		Handler: getScooterById,
 	}, {
 		Uri:     `/run`,
 		Method:  http.MethodGet,
@@ -34,18 +35,17 @@ var scooterRoutes = []Route{
 	},
 }
 
-
 func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
 	scooterService = service
-	for _, rt := range scooterRoutes{
+	for _, rt := range scooterRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
-func AddGrpcScooterHandler (router *mux.Router, service *services.GrpcScooterService) {
+func AddGrpcScooterHandler(router *mux.Router, service *services.GrpcScooterService) {
 	scooterGrpcService = service
-	for _, rt := range scooterRoutes{
+	for _, rt := range scooterRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
@@ -82,11 +82,26 @@ func getScooterById(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartScooterTrip(w http.ResponseWriter, r *http.Request) {
-		err := scooterGrpcService.InitAndRun(choosenScooter, choosenWay)
-		if err != nil {
-			EncodeError(FormatJSON, w, ErrorRendererDefault(err))
-			return
-		}
+	err := scooterGrpcService.InitAndRun(choosenScooter, choosenWay)
+	if err != nil {
+		EncodeError(FormatJSON, w, ErrorRendererDefault(err))
+		return
+	}
 }
 
+func ShowTripPage(w http.ResponseWriter, r *http.Request) {
 
+	scooterList, err := scooterService.GetAllScooters()
+	if err!= nil {
+		fmt.Println(err)
+	}
+
+	tmpl, err := template.ParseFiles("./templates/html/scooter-run.html")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = tmpl.Execute(w, scooterList)
+	if err != nil {
+		fmt.Println()
+	}
+}

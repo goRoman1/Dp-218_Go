@@ -14,7 +14,7 @@ func NewOrderRepoDB(db repositories.AnyDatabase) *OrderRepoDb {
 	return &OrderRepoDb{db}
 }
 
-func (ordb *OrderRepoDb) CreateOrder(user models.User, scooter models.Scooter) (models.Order, error) {
+func (ordb *OrderRepoDb) CreateOrder(user models.User, scooter models.ScooterDTO) (models.Order, error) {
 	var order = models.Order{}
 	order.UserID = user.ID
 	order.ScooterID = scooter.ID

@@ -18,7 +18,7 @@ func (ser *ScooterService) GetAllScooters() (*models.ScooterList, error) {
 	return ser.repoScooter.GetAllScooters()
 }
 
-func (ser *ScooterService) GetScooterById(uid int) (models.Scooter, error) {
+func (ser *ScooterService) GetScooterById(uid int) (models.ScooterDTO, error) {
 	return ser.repoScooter.GetScooterById(uid)
 }
 
