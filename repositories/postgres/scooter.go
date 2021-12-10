@@ -4,7 +4,6 @@ import (
 	"Dp218Go/models"
 	"Dp218Go/repositories"
 	"context"
-	"database/sql"
 	"fmt"
 )
 
@@ -16,10 +15,10 @@ func NewScooterRepoDB(db repositories.AnyDatabase) *ScooterRepoDB {
 	return &ScooterRepoDB{db}
 }
 
-func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterList, error) {
-	scooterList := &models.ScooterList{}
+func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterListDTO, error) {
+	scooterList := &models.ScooterListDTO{}
 
-	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.latitude, ss.longitude 
+	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.can_be_rent
 					FROM scooters as s 
 					JOIN scooter_models as sm 
 					ON s.model_id=sm.id 
@@ -31,25 +30,22 @@ func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterList, error) {
 	if err != nil {
 		return scooterList, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var scooter models.ScooterDTO
-		err := rows.Scan(&scooter.ID, &scooter.MaxWeight, &scooter.ScooterModel, &scooter.BatteryRemain,
-			&scooter.Latitude, &scooter.Longitude)
+		err := rows.Scan(&scooter.ID, &scooter.MaxWeight, &scooter.ScooterModel, &scooter.BatteryRemain, &scooter.CanBeRent)
 		if err != nil {
 			return scooterList, err
 		}
 		scooterList.Scooters = append(scooterList.Scooters, scooter)
-		fmt.Println(scooter)
 	}
-	fmt.Println(scooterList)
 	return scooterList, nil
 }
 
 func (scdb *ScooterRepoDB) GetScooterById(scooterId int) (models.ScooterDTO, error) {
 	scooter := models.ScooterDTO{}
-	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.latitude, 
-ss.longitude 
+	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.can_be_rent
 					FROM scooters as s 
 					JOIN scooter_models as sm 
 					ON s.model_id=sm.id 
@@ -58,13 +54,12 @@ ss.longitude
 					WHERE s.id=$1`
 
 	row := scdb.db.QueryResultRow(context.Background(), querySQL, scooterId)
-	switch err := row.Scan(&scooter.ID, &scooter.MaxWeight, &scooter.ScooterModel, &scooter.BatteryRemain,
-		&scooter.Latitude, &scooter.Longitude); err {
-	case sql.ErrNoRows:
-		return scooter, err
-	default:
+	err := row.Scan(&scooter.ID, &scooter.MaxWeight, &scooter.ScooterModel, &scooter.BatteryRemain, &scooter.CanBeRent)
+	if err !=nil {
 		return scooter, err
 	}
+
+	return scooter, nil
 }
 
 func (scdb *ScooterRepoDB) GetScooterStatus(scooterID int) (models.ScooterStatus, error) {
@@ -114,50 +109,11 @@ func (scdb *ScooterRepoDB) CreateScooterStatusInRent(scooterID int) (models.Scoo
 
 }
 
-//func (scdb *ScooterRepoDB) SendCurrentPosition(id int, lat, lon float64) {
-//	scooter, err := scdb.GetScooterById(id)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//
-//}
+func (scdb *ScooterRepoDB) SendCurrentPosition(id int, lat, lon float64) error {
+	querySQL := `UPDATE scooter_statuses 
+					SET latitude=$1, longitude=$2
+					WHERE scooter_id=$3`
 
-//func(scdb *ScooterRepoDB) SendAtStart(uID, sID int) (error, int) {
-//	scooter, err := scdb.GetScooterById(sID)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//
-//	coordinate := models.Coordinate{Latitude: scooter.Latitude, Longitude: scooter.Longitude}
-//
-//	var tripId int
-//	querySQL := `INSERT INTO scooter_statuses_in_rent(user_id, scooter_id, date_time)
-//					VALUES ($1, $2, now())
-//					RETURNING id`
-//	err = scdb.db.QueryResultRow(context.Background(), querySQL, uID, sID).Scan(&tripId)
-//	if err != nil {
-//		return err, 0
-//	}
-//
-//	querySQL = `INSERT INTO locations(latitude, longitude, label)
-//					VALUES($1, $2, $3)
-//					RETURNING id`
-//	_, err = scdb.db.QueryResult(context.Background(), querySQL, coordinate.Latitude, coordinate.Longitude,
-//		string(rune(tripId)))
-//	if err != nil {
-//		return err, 0
-//	}
-//
-//	return nil, tripId
-//}
-
-//func (scdb *ScooterRepoDB) SendAtEnd(tripId int, client *Client) error {
-//	querySQL := `INSERT INTO locations(latitude, longitude, label)
-//					VALUES($1, $2, $3)`
-//	_, err := scdb.db.QueryResult(context.Background(), querySQL, client.Latitude, client.Longitude, string(rune(tripId)))
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//
-//	return nil
-//}
+	_, err := scdb.db.QueryResult(context.Background(), querySQL, lat, lon, id)
+	return err
+}

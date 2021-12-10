@@ -4,15 +4,13 @@ import "time"
 
 type ScooterDTO struct {
 	ID            int     `json:"scooter_id"`
-	Latitude      float64 `json:"latitude"`
-	Longitude     float64 `json:"longitude"`
 	ScooterModel  string  `json:"scooter_model"`
 	MaxWeight     float64 `json:"max_weight"`
 	BatteryRemain float64 `json:"battery_remain"`
 	CanBeRent     bool    `json:"can_be_rent"`
 }
 
-type ScooterList struct {
+type ScooterListDTO struct {
 	Scooters []ScooterDTO `json:"scooters"`
 }
 

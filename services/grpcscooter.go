@@ -11,20 +11,18 @@ import (
 )
 
 const (
-	step = 0.001
+	step = 0.0005
 	interval = 1
 )
 
 type GrpcScooterService struct {
 	repositories.ScooterRepo
-
 }
 
 type GrpcScooterClient struct {
 	Id uint64
 	coordinate models.Coordinate
 	stream protos.ScooterService_ReceiveClient
-	repositories.ScooterRepo
 }
 
 func NewGrpcScooterService(repo repositories.ScooterRepo) *GrpcScooterService {
@@ -75,6 +73,7 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int,
 	if err != nil {
 		fmt.Println(err)
 	}
+	err = gss.SendCurrentPosition(int(client.Id), client.coordinate.Latitude, client.coordinate.Longitude)
 	return err
 }
 
@@ -98,31 +97,54 @@ func (s *GrpcScooterClient) Run(station models.Coordinate) error {
 
 	switch {
 	case s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude:
-		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.
+			coordinate.Latitude,
 		s.coordinate.Longitude = s.coordinate.Latitude+step,s.coordinate.Longitude+step {
 			s.grpcScooterMessage()
 		}
-		fmt.Println("Trip finished. You are at the point")
+		fallthrough
 	case s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude <= station.Longitude:
-		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+		for ; s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.
+			Latitude,
 			s.coordinate.Longitude = s.coordinate.Latitude-step,s.coordinate.Longitude+step {
 			s.grpcScooterMessage()
 		}
-		fmt.Println("Trip finished. You are at the point")
+		fallthrough
 	case s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude >= station.Longitude:
-		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+		for ; s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude >= station.Longitude; s.coordinate.
+			Latitude,
 			s.coordinate.Longitude = s.coordinate.Latitude-step,s.coordinate.Longitude-step  {
 			s.grpcScooterMessage()
 		}
-		fmt.Println("Trip finished. You are at the point")
+		fallthrough
 	case s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude >= station.Longitude:
-		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.Latitude,
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude >= station.Longitude; s.coordinate.
+			Latitude,
 			s.coordinate.Longitude = s.coordinate.Latitude+step,s.coordinate.Longitude-step {
 			s.grpcScooterMessage()
 		}
-		fmt.Println("Trip finished. You are at the point")
+			fallthrough
+	case s.coordinate.Latitude <= station.Latitude:
+		for ; s.coordinate.Latitude <= station.Latitude; s.coordinate.Latitude += step {
+			s.grpcScooterMessage()
+		}
+		fallthrough
+	case s.coordinate.Latitude >= station.Latitude:
+		for ; s.coordinate.Latitude >= station.Latitude; s.coordinate.Latitude -= step {
+			s.grpcScooterMessage()
+		}
+		fallthrough
+	case s.coordinate.Longitude >= station.Longitude:
+		for ; s.coordinate.Longitude >= station.Longitude; s.coordinate.Longitude -= step {
+			s.grpcScooterMessage()
+		}
+		fallthrough
+	case s.coordinate.Longitude <= station.Longitude:
+		for ; s.coordinate.Longitude <= station.Longitude; s.coordinate.Longitude += step {
+			s.grpcScooterMessage()
+		}
 	default:
-		return fmt.Errorf("you are at this point now")
+		return fmt.Errorf("error happened")
 	}
 	return nil
 }

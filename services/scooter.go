@@ -14,7 +14,7 @@ func NewScooterService(repoScooter repositories.ScooterRepo) *ScooterService {
 	return &ScooterService{repoScooter: repoScooter}
 }
 
-func (ser *ScooterService) GetAllScooters() (*models.ScooterList, error) {
+func (ser *ScooterService) GetAllScooters() (*models.ScooterListDTO, error) {
 	return ser.repoScooter.GetAllScooters()
 }
 
@@ -26,7 +26,7 @@ func (ser *ScooterService) GetScooterStatus(scooterID int) (models.ScooterStatus
 	return ser.repoScooter.GetScooterStatus(scooterID)
 }
 
-//func (ser *ScooterService) SendAtStart(uID, sID int) (error, int) {
-//	return ser.repoScooter.SendAtStart(uID, sID)
-//}
+func (ser *ScooterService) SendCurrentPosition(id int, lat, lon float64) error {
+	return ser.repoScooter.SendCurrentPosition(id, lat, lon)
+}
 
