@@ -17,7 +17,7 @@ type ScooterListDTO struct {
 type ScooterStatus struct {
 	Scooter       ScooterDTO `json:"scooter"`
 	Location      Coordinate `json:"location"`
-	BatteryRemain int        `json:"battery_remain"`
+	BatteryRemain float64    `json:"battery_remain"`
 	StationID     int        `json:"station_id"`
 }
 

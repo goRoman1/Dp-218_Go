@@ -12,6 +12,7 @@ import (
 
 const (
 	step = 0.0005
+	dischargeStep = 1
 	interval = 1
 )
 
@@ -20,8 +21,9 @@ type GrpcScooterService struct {
 }
 
 type GrpcScooterClient struct {
-	Id uint64
+	ID uint64
 	coordinate models.Coordinate
+	batteryRemain float64
 	stream protos.ScooterService_ReceiveClient
 }
 
@@ -31,11 +33,12 @@ func NewGrpcScooterService(repo repositories.ScooterRepo) *GrpcScooterService {
 	}
 }
 
-func NewGrpcScooterClient(id uint64, coordinate models.Coordinate,
+func NewGrpcScooterClient(id uint64, coordinate models.Coordinate, battery float64,
 	stream protos.ScooterService_ReceiveClient) *GrpcScooterClient {
 	return &GrpcScooterClient{
-		Id: id,
+		ID: id,
 		coordinate: coordinate,
+		batteryRemain: battery,
 		stream: stream,
 	}
 }
@@ -49,31 +52,50 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int,
 	}
 	// TODO по айди станции нахожу координаты
 
-	scooterStatus, err := gss.GetScooterStatus(scooter.ID)
+	scooterStatus, err := gss.GetScooterStatus(scooterID)
 	if err!= nil {
 		fmt.Println(err)
+		return err
 	}
 
-	conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithInsecure())
+	if scooterStatus.BatteryRemain > 10 {
+		conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithInsecure())
 
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
+		if err != nil {
+			panic(err)
+		}
+		defer conn.Close()
 
-	sClient := protos.NewScooterServiceClient(conn)
-	stream, err := sClient.Receive(context.Background())
-	if err != nil {
-		panic(err)
+		sClient := protos.NewScooterServiceClient(conn)
+		stream, err := sClient.Receive(context.Background())
+		if err != nil {
+			panic(err)
+		}
+
+		client := NewGrpcScooterClient(uint64(scooterID),
+			scooterStatus.Location, scooter.BatteryRemain, stream)
+		err = client.run(coordinate)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = gss.SendCurrentStatus(int(client.ID), client.coordinate.Latitude, client.coordinate.Longitude,
+			client.batteryRemain)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if client.batteryRemain <= 0 {
+			err = fmt.Errorf("scooter battery discharged. Trip is over")
+			fmt.Println(err.Error())
+			return err
+		}
+		return nil
+
 	}
 
-	client := NewGrpcScooterClient(uint64(scooterID),
-		scooterStatus.Location, stream)
-	err = client.Run(coordinate)
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = gss.SendCurrentPosition(int(client.Id), client.coordinate.Latitude, client.coordinate.Longitude)
+	err = fmt.Errorf("scooter battery is too low for trip. Choose another one")
+	fmt.Println(err.Error())
 	return err
 }
 
@@ -82,7 +104,7 @@ func (s *GrpcScooterClient) grpcScooterMessage()  {
 
 	fmt.Println("executing run in client")
 	msg := &protos.ClientMessage{
-		Id: s.Id,
+		Id: s.ID,
 		Latitude:  s.coordinate.Latitude,
 		Longitude:  s.coordinate.Longitude,
 	}
@@ -93,54 +115,68 @@ func (s *GrpcScooterClient) grpcScooterMessage()  {
 	time.Sleep(intPol)
 }
 
-func (s *GrpcScooterClient) Run(station models.Coordinate) error {
+func (s *GrpcScooterClient) run(station models.Coordinate) error {
 
 	switch {
 	case s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude:
-		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude <= station.Longitude && s.
+			batteryRemain > 0; s.
 			coordinate.Latitude,
-		s.coordinate.Longitude = s.coordinate.Latitude+step,s.coordinate.Longitude+step {
+		s.coordinate.Longitude, s.batteryRemain = s.coordinate.Latitude+step,s.coordinate.Longitude+step,
+		s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 		fallthrough
 	case s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude <= station.Longitude:
-		for ; s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude <= station.Longitude; s.coordinate.
+		for ; s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude <= station.Longitude && s.
+			batteryRemain > 0; s.coordinate.
 			Latitude,
-			s.coordinate.Longitude = s.coordinate.Latitude-step,s.coordinate.Longitude+step {
+			s.coordinate.Longitude, s.batteryRemain = s.coordinate.Latitude-step,s.coordinate.Longitude+step,
+			s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 		fallthrough
 	case s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude >= station.Longitude:
-		for ; s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude >= station.Longitude; s.coordinate.
+		for ; s.coordinate.Latitude >= station.Latitude && s.coordinate.Longitude >= station.Longitude && s.
+			batteryRemain > 0; s.coordinate.
 			Latitude,
-			s.coordinate.Longitude = s.coordinate.Latitude-step,s.coordinate.Longitude-step  {
+			s.coordinate.Longitude, s.batteryRemain = s.coordinate.Latitude-step,s.coordinate.Longitude-step,
+			s.batteryRemain-dischargeStep  {
 			s.grpcScooterMessage()
 		}
 		fallthrough
 	case s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude >= station.Longitude:
-		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude >= station.Longitude; s.coordinate.
+		for ; s.coordinate.Latitude <= station.Latitude && s.coordinate.Longitude >= station.Longitude && s.
+			batteryRemain > 0; s.coordinate.
 			Latitude,
-			s.coordinate.Longitude = s.coordinate.Latitude+step,s.coordinate.Longitude-step {
+			s.coordinate.Longitude, s.batteryRemain = s.coordinate.Latitude+step,s.coordinate.Longitude-step,
+			s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 			fallthrough
 	case s.coordinate.Latitude <= station.Latitude:
-		for ; s.coordinate.Latitude <= station.Latitude; s.coordinate.Latitude += step {
+		for ; s.coordinate.Latitude <= station.Latitude && s.
+			batteryRemain > 0; s.coordinate.Latitude, s.batteryRemain = s.coordinate.Latitude+step, s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 		fallthrough
 	case s.coordinate.Latitude >= station.Latitude:
-		for ; s.coordinate.Latitude >= station.Latitude; s.coordinate.Latitude -= step {
+		for ; s.coordinate.Latitude >= station.Latitude && s.
+			batteryRemain > 0; s.coordinate.Latitude, s.batteryRemain = s.coordinate.Latitude-step, s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 		fallthrough
 	case s.coordinate.Longitude >= station.Longitude:
-		for ; s.coordinate.Longitude >= station.Longitude; s.coordinate.Longitude -= step {
+		for ; s.coordinate.Longitude >= station.Longitude && s.
+			batteryRemain > 0; s.coordinate.Longitude, s.batteryRemain = s.coordinate.Longitude-step,
+			s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 		fallthrough
 	case s.coordinate.Longitude <= station.Longitude:
-		for ; s.coordinate.Longitude <= station.Longitude; s.coordinate.Longitude += step {
+		for ; s.coordinate.Longitude <= station.Longitude && s.
+			batteryRemain > 0; s.coordinate.Longitude, s.batteryRemain = s.coordinate.Longitude+step,
+			s.batteryRemain-dischargeStep {
 			s.grpcScooterMessage()
 		}
 	default:

@@ -26,7 +26,7 @@ func (ser *ScooterService) GetScooterStatus(scooterID int) (models.ScooterStatus
 	return ser.repoScooter.GetScooterStatus(scooterID)
 }
 
-func (ser *ScooterService) SendCurrentPosition(id int, lat, lon float64) error {
-	return ser.repoScooter.SendCurrentPosition(id, lat, lon)
+func (ser *ScooterService) SendCurrentStatus(id int, lat, lon, battery float64) error {
+	return ser.repoScooter.SendCurrentStatus(id, lat, lon, battery)
 }
 
