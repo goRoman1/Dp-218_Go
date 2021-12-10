@@ -6,6 +6,7 @@ import (
 	"Dp218Go/routing"
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
+	"Dp218Go/utils"
 	"fmt"
 	"log"
 	"os"
@@ -53,6 +54,8 @@ func main() {
 	routing.AddUserHandler(handler, userService)
 	routing.AddAccountHandler(handler, accService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
+
+	utils.CheckKafka() //TODO: delete after checking
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

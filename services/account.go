@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	PayIncomeTypeId  = 2
-	PayOutcomeTypeId = 3
+	PayIncomeTypeID  = 2
+	PayOutcomeTypeID = 3
 )
 
 type AccountService struct {
@@ -23,7 +23,7 @@ type transactionsWithIncome struct {
 	IsIncome    bool
 }
 
-func NewAccountService(repoAccount repositories.AccountRepo, repoAccountTransaction repositories.AccountTransactionRepo, repoPaymentType repositories.PaymentTypeRepo) *AccountService {
+func NewAccountService(repoAccount repositories.AccountRepo, repoAccountTransaction repositories.AccountTransactionRepo, repoPaymentType repositories.PaymentTypeRepo) *AccountService { //nolint:lll
 	return &AccountService{repoAccount, repoAccountTransaction, repoPaymentType}
 }
 
@@ -31,8 +31,8 @@ func (accserv *AccountService) GetAccountsByOwner(user models.User) (*models.Acc
 	return accserv.repoAccount.GetAccountsByOwner(user)
 }
 
-func (accserv *AccountService) GetAccountById(accountId int) (models.Account, error) {
-	return accserv.repoAccount.GetAccountById(accountId)
+func (accserv *AccountService) GetAccountByID(accountId int) (models.Account, error) {
+	return accserv.repoAccount.GetAccountByID(accountId)
 }
 
 func (accserv *AccountService) GetAccountByNumber(number string) (models.Account, error) {
@@ -43,35 +43,35 @@ func (accserv *AccountService) AddAccount(account *models.Account) error {
 	return accserv.repoAccount.AddAccount(account)
 }
 
-func (accserv *AccountService) UpdateAccount(accountId int, accountData models.Account) (models.Account, error) {
-	return accserv.repoAccount.UpdateAccount(accountId, accountData)
+func (accserv *AccountService) UpdateAccount(accountID int, accountData models.Account) (models.Account, error) {
+	return accserv.repoAccount.UpdateAccount(accountID, accountData)
 }
 
-func (accserv *AccountService) GetAccountTransactionById(transId int) (models.AccountTransaction, error) {
-	return accserv.repoAccountTransaction.GetAccountTransactionById(transId)
+func (accserv *AccountService) GetAccountTransactionByID(transId int) (models.AccountTransaction, error) {
+	return accserv.repoAccountTransaction.GetAccountTransactionByID(transId)
 }
 
 func (accserv *AccountService) AddAccountTransaction(accountTransaction *models.AccountTransaction) error {
 	return accserv.repoAccountTransaction.AddAccountTransaction(accountTransaction)
 }
 
-func (accserv *AccountService) GetAccountTransactions(accounts ...models.Account) (*models.AccountTransactionList, error) {
+func (accserv *AccountService) GetAccountTransactions(accounts ...models.Account) (*models.AccountTransactionList, error) { //nolint:lll
 	return accserv.repoAccountTransaction.GetAccountTransactions(accounts...)
 }
 
-func (accserv *AccountService) GetAccountTransactionsInTimePeriod(start time.Time, end time.Time, accounts ...models.Account) (*models.AccountTransactionList, error) {
+func (accserv *AccountService) GetAccountTransactionsInTimePeriod(start time.Time, end time.Time, accounts ...models.Account) (*models.AccountTransactionList, error) { //nolint:lll
 	return accserv.repoAccountTransaction.GetAccountTransactionsInTimePeriod(start, end, accounts...)
 }
 
-func (accserv *AccountService) GetAccountTransactionsByOrder(order models.Order) (*models.AccountTransactionList, error) {
+func (accserv *AccountService) GetAccountTransactionsByOrder(order models.Order) (*models.AccountTransactionList, error) { //nolint:lll
 	return accserv.repoAccountTransaction.GetAccountTransactionsByOrder(order)
 }
 
-func (accserv *AccountService) GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error) {
+func (accserv *AccountService) GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error) { //nolint:lll
 	return accserv.repoAccountTransaction.GetAccountTransactionsByPaymentType(paymentType, accounts...)
 }
 
-func (accserv *AccountService) GetPaymentTypeById(paymentTypeId int) (models.PaymentType, error) {
+func (accserv *AccountService) GetPaymentTypeByID(paymentTypeId int) (models.PaymentType, error) {
 	return accserv.repoPaymentType.GetPaymentTypeById(paymentTypeId)
 }
 
@@ -92,7 +92,7 @@ func (accserv *AccountService) CalculateMoneyAmountByDate(account models.Account
 	return accserv.MoneyFromCents(amountCalculated), nil
 }
 
-func (accserv *AccountService) CalculateProfitForPeriod(account models.Account, start, end time.Time) (models.Money, error) {
+func (accserv *AccountService) CalculateProfitForPeriod(account models.Account, start, end time.Time) (models.Money, error) { //nolint:lll
 	transactionsUpToDate, err := accserv.repoAccountTransaction.GetAccountTransactionsInTimePeriod(start, end, account)
 	if err != nil {
 		return models.Money{}, err
@@ -106,7 +106,7 @@ func (accserv *AccountService) CalculateProfitForPeriod(account models.Account, 
 	return accserv.MoneyFromCents(amountCalculated), nil
 }
 
-func (accserv *AccountService) CalculateLossForPeriod(account models.Account, start, end time.Time) (models.Money, error) {
+func (accserv *AccountService) CalculateLossForPeriod(account models.Account, start, end time.Time) (models.Money, error) { //nolint:lll
 	transactionsUpToDate, err := accserv.repoAccountTransaction.GetAccountTransactionsInTimePeriod(start, end, account)
 	if err != nil {
 		return models.Money{}, err
@@ -121,7 +121,7 @@ func (accserv *AccountService) CalculateLossForPeriod(account models.Account, st
 }
 
 func (accserv *AccountService) AddMoneyToAccount(account models.Account, amountCents int) error {
-	paymentType, err := accserv.repoPaymentType.GetPaymentTypeById(PayIncomeTypeId)
+	paymentType, err := accserv.repoPaymentType.GetPaymentTypeById(PayIncomeTypeID)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (accserv *AccountService) AddMoneyToAccount(account models.Account, amountC
 }
 
 func (accserv *AccountService) TakeMoneyFromAccount(account models.Account, amountCents int) error {
-	paymentType, err := accserv.repoPaymentType.GetPaymentTypeById(PayOutcomeTypeId)
+	paymentType, err := accserv.repoPaymentType.GetPaymentTypeById(PayOutcomeTypeID)
 	if err != nil {
 		return err
 	}
@@ -176,8 +176,8 @@ func (accserv *AccountService) CentsFromMoney(money models.Money) int {
 	return money.Dollars*100 + money.Cents
 }
 
-func (accserv *AccountService) GetAccountOutputStructById(accId int) (interface{}, error) {
-	account, err := accserv.GetAccountById(accId)
+func (accserv *AccountService) GetAccountOutputStructByID(accId int) (interface{}, error) {
+	account, err := accserv.GetAccountByID(accId)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (accserv *AccountService) GetAccountOutputStructById(accId int) (interface{
 	}, nil
 }
 
-func addIncomeToTransactions(transactions []models.AccountTransaction, account models.Account) []transactionsWithIncome {
+func addIncomeToTransactions(transactions []models.AccountTransaction, account models.Account) []transactionsWithIncome { //nolint:lll
 	result := make([]transactionsWithIncome, len(transactions))
 	for i := 0; i < len(transactions); i++ {
 		result[i].Transaction = transactions[i]

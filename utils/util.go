@@ -1,4 +1,4 @@
-package auth
+package utils
 
 import (
 	"fmt"
@@ -18,8 +18,3 @@ func HashPassword(password string) (string, error) {
 func CheckPassword(password1, password2 string) error {
 	return bcrypt.CompareHashAndPassword([]byte(password1), []byte(password2))
 }
-
-// func Sanitize() {
-// 	u.Password = ""
-// 	u.Role = ""
-// }

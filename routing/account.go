@@ -39,7 +39,7 @@ func AddAccountHandler(router *mux.Router, service *services.AccountService) {
 
 func getAllAccounts(w http.ResponseWriter, r *http.Request) {
 
-	var accounts = &models.AccountList{}
+	var accounts *models.AccountList
 	var err error
 	format := GetFormatFromRequest(r)
 
@@ -61,13 +61,13 @@ func getAllAccounts(w http.ResponseWriter, r *http.Request) {
 func getAccountInfo(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
-	accId, err := strconv.Atoi(mux.Vars(r)[accountIDKey])
+	accID, err := strconv.Atoi(mux.Vars(r)[accountIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
 
-	accData, err := accountService.GetAccountOutputStructById(accId)
+	accData, err := accountService.GetAccountOutputStructByID(accID)
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
@@ -79,12 +79,12 @@ func getAccountInfo(w http.ResponseWriter, r *http.Request) {
 func updateAccountInfo(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
-	accId, err := strconv.Atoi(mux.Vars(r)[accountIDKey])
+	accID, err := strconv.Atoi(mux.Vars(r)[accountIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	account, err := accountService.GetAccountById(accId)
+	account, err := accountService.GetAccountByID(accID)
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
