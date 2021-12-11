@@ -2,17 +2,13 @@ package main
 
 import (
 	"Dp218Go/configs"
-	"Dp218Go/protos"
 	"Dp218Go/repositories/postgres"
 	"Dp218Go/routing"
 	"Dp218Go/routing/grpcserver"
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -66,29 +62,7 @@ func main() {
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 
-
-	svr := grpcserver.NewServer()
-	svr.Run()
-	grpcServer := grpc.NewServer()
-
-	protos.RegisterScooterServiceServer(grpcServer, svr)
-
-	listener, err := net.Listen("tcp", ":8000")
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		fmt.Println("grpc server started: 8000")
-		log.Fatal(grpcServer.Serve(listener))
-	}()
-
-	http.HandleFunc("/scooter", svr.ScooterHandler)
-	http.HandleFunc("/run", routing.StartScooterTrip)
-	http.HandleFunc("/", routing.ShowTripPage)
-
-
-	fmt.Println("http server started: 9000")
-	http.ListenAndServe(":9000", nil)
+	grpcserver.ServersRunForGrpc()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

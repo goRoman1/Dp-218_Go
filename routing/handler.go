@@ -45,9 +45,6 @@ func NewRouter(authService *services.AuthService) *mux.Router {
 	router.HandleFunc("/signup", SignUp(AuthService))
 	router.HandleFunc("/signin", SignIn(AuthService))
 	router.HandleFunc("/signout", SignOut(AuthService))
-	router.HandleFunc("/scooters", getAllScooters)
-	router.HandleFunc(`/scooter/ + {`+scooterIDKey+`}`, getScooterById)
-	//router.HandleFunc("/run", StartScooterTrip)
 	return router
 }
 

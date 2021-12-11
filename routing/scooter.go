@@ -31,10 +31,6 @@ var scooterRoutes = []Route{
 		Uri:     `/scooter/{` + scooterIDKey + `}`,
 		Method:  http.MethodGet,
 		Handler: getScooterById,
-	}, {
-		Uri:     `/run`,
-		Method:  http.MethodGet,
-		Handler: StartScooterTrip,
 	},
 }
 
@@ -93,7 +89,6 @@ func StartScooterTrip(w http.ResponseWriter, r *http.Request) {
 }
 
 func ShowTripPage(w http.ResponseWriter, r *http.Request) {
-
 	scooterList, err := scooterService.GetAllScooters()
 	if err!= nil {
 		fmt.Println(err)
@@ -105,6 +100,6 @@ func ShowTripPage(w http.ResponseWriter, r *http.Request) {
 	}
 	err = tmpl.Execute(w, scooterList)
 	if err != nil {
-		fmt.Println()
+		fmt.Println(err)
 	}
 }

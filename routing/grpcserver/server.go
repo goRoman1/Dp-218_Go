@@ -2,12 +2,16 @@ package grpcserver
 
 import (
 	"Dp218Go/protos"
+	"Dp218Go/routing"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
+	"log"
+	"net"
 	"net/http"
 )
 
@@ -22,11 +26,6 @@ type Server struct {
 	codes  map[int]int
 	in     chan *protos.ClientMessage
 	*protos.UnimplementedScooterServiceServer
-}
-
-
-func GISHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./presentation/views/templates/html/index.html")
 }
 
 func (ss *Server) ScooterHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,4 +106,28 @@ func (ss *Server) Run() {
 			}
 		}
 	}()
+}
+
+func ServersRunForGrpc() {
+	svr := NewServer()
+	svr.Run()
+	grpcServer := grpc.NewServer()
+
+	protos.RegisterScooterServiceServer(grpcServer, svr)
+
+	listener, err := net.Listen("tcp", ":8000")
+	if err != nil {
+		log.Fatal(err)
+	}
+	go func() {
+		fmt.Println("grpc server started: 8000")
+		log.Fatal(grpcServer.Serve(listener))
+	}()
+
+	http.HandleFunc("/scooter", svr.ScooterHandler)
+	http.HandleFunc("/run", routing.StartScooterTrip)
+	http.HandleFunc("/start-trip", routing.ShowTripPage)
+
+	fmt.Println("http server started: 9000")
+	http.ListenAndServe(":9000", nil)
 }
