@@ -7,17 +7,17 @@ import (
 
 type UserRepo interface {
 	GetAllUsers() (*models.UserList, error)
-	GetUserById(userId int) (models.User, error)
+	GetUserByID(userID int) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
 	AddUser(user *models.User) error
-	UpdateUser(userId int, userData models.User) (models.User, error)
-	DeleteUser(userId int) error
+	UpdateUser(userID int, userData models.User) (models.User, error)
+	DeleteUser(userID int) error
 	FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error)
 }
 
 type RoleRepo interface {
 	GetAllRoles() (*models.RoleList, error)
-	GetRoleById(roleId int) (models.Role, error)
+	GetRoleByID(roleID int) (models.Role, error)
 }
 
 type AuthRepo interface {

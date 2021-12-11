@@ -14,6 +14,7 @@ require (
 // go 1.17
 
 require (
+	github.com/Shopify/sarama v1.30.1 // indirect
 	github.com/go-chi/render v1.0.1
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/gorilla/mux v1.8.0
