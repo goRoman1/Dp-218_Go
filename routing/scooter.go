@@ -32,6 +32,16 @@ var scooterRoutes = []Route{
 		Method:  http.MethodGet,
 		Handler: getScooterById,
 	},
+	{
+		Uri:     `/start-trip`,
+		Method:  http.MethodGet,
+		Handler: ShowTripPage,
+	},
+	{
+		Uri:     `/run`,
+		Method:  http.MethodGet,
+		Handler: StartScooterTrip,
+	},
 }
 
 func AddScooterHandler(router *mux.Router, service *services.ScooterService) {

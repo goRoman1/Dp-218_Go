@@ -2,6 +2,7 @@ package main
 
 import (
 	"Dp218Go/configs"
+	"Dp218Go/protos"
 	"Dp218Go/repositories/postgres"
 	"Dp218Go/routing"
 	"Dp218Go/routing/grpcserver"
@@ -9,6 +10,7 @@ import (
 	"Dp218Go/services"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -61,8 +63,11 @@ func main() {
 	routing.AddScooterHandler(handler, scooterService)
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
+	handler.HandleFunc("/scooter",httpServer.ScooterHandler)
 
-	grpcserver.ServersRunForGrpc()
+	grpcServer := grpcserver.NewGrpcServer()
+	protos.RegisterScooterServiceServer(grpcServer, httpServer)
+	http.ListenAndServe(":8080", handler)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
