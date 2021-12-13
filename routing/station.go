@@ -34,6 +34,16 @@ var keyRoutesStation = []Route{
 		Method:  http.MethodDelete,
 		Handler: deleteStation,
 	},
+	{
+		Uri:     `/stations`,
+		Method:  http.MethodPost,
+		Handler: allStationsOperation,
+	},
+	{
+		Uri:     `/stations/{` + stationIDKey + `}`,
+		Method:  http.MethodPost,
+		Handler: UpdateStation,
+	},
 }
 
 func AddStationHandler(router *mux.Router, service *services.StationService) {
@@ -63,13 +73,13 @@ func getAllStations(w http.ResponseWriter, r *http.Request) {
 	var err error
 	format := GetFormatFromRequest(r)
 
-		station, err = stationService.GetAllStations()
+	station, err = stationService.GetAllStations()
 	if err != nil {
 		ServerErrorRender(format, w)
 		return
 	}
 
-	EncodeAnswer(format, w, station, HTMLPath+"user-list.html")
+	EncodeAnswer(format, w, station, HTMLPath+"station-list.html")
 }
 
 func getStation(w http.ResponseWriter, r *http.Request) {
@@ -103,4 +113,64 @@ func deleteStation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	EncodeAnswer(format, w, ErrorRenderer(fmt.Errorf(""), "success", http.StatusOK))
+}
+
+func allStationsOperation(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
+	r.ParseForm()
+	if _, ok := r.Form["ActionType"]; !ok {
+
+		return
+	}
+	actionType := r.FormValue("ActionType")
+	switch actionType {
+	case "BlockStation":
+		stationId, err := strconv.Atoi(r.FormValue("stationID"))
+		if err != nil {
+			EncodeError(format, w, ErrorRendererDefault(err))
+			return
+		}
+		err = stationService.ChangeStationBlockStatus(stationId)
+		if err != nil {
+			EncodeError(format, w, ErrorRendererDefault(err))
+			return
+		}
+	default:
+		EncodeError(format, w, ErrorRendererDefault(fmt.Errorf("unknown users operation")))
+	}
+	getAllStations(w, r)
+}
+
+func UpdateStation(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
+	stationId, err := strconv.Atoi(mux.Vars(r)[stationIDKey])
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+	stationData, err := stationService.GetStationById(stationId)
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+	DecodeRequest(format, w, r, &stationData, DecodeStationUpdateRequest)
+	stationData, err = stationService.UpdateStation(stationId, stationData)
+	if err != nil {
+		ServerErrorRender(format, w)
+		return
+	}
+
+	EncodeAnswer(format, w, stationData , HTMLPath+"station-edit.html")
+}
+
+func DecodeStationUpdateRequest(r *http.Request, data interface{}) error {
+	//var err error
+	r.ParseForm()
+	stationData := data.(*models.Station)
+	if _, ok := r.Form["IsActive"]; ok {
+		stationData.IsActive, _ = strconv.ParseBool(r.FormValue("IsActive"))
+	}
+	return nil
 }

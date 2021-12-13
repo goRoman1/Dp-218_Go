@@ -9,4 +9,5 @@ type StationRepo interface {
 	GetStationById(stationId int) (models.Station, error)
 	AddStation(station *models.Station) error
 	DeleteStation(stationId int) error
+	UpdateStation(stationId int, stationData models.Station) (models.Station, error)
 }
