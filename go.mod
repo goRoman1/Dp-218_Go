@@ -1,6 +1,5 @@
 module Dp218Go
 
-// module github.com/ITA-Dnipro/Dp-218_Go
 go 1.17
 
 require (
