@@ -5,7 +5,6 @@ import (
 	"Dp218Go/services"
 	"fmt"
 	"github.com/gorilla/mux"
-	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -18,7 +17,7 @@ var scooterIDKey = "scooterId"
 //var choosenWay = models.Coordinate{Latitude: 48.4221, Longitude: 35.0196}
 //var choosenWay = models.Coordinate{ Latitude: 48.42543, Longitude: 35.02183}  // dafi
 //var choosenWay = models.Coordinate{48.42272,35.02280} // visokovoltnaya
-var choosenWay = models.Coordinate{48.42367 ,35.04436} // ostapa vishni
+var choosenWay = models.Coordinate{Latitude: 48.42367 , Longitude: 35.04436} // ostapa vishni
 var choosenScooter = 1
 
 var scooterRoutes = []Route{
@@ -104,12 +103,5 @@ func ShowTripPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	tmpl, err := template.ParseFiles("./templates/html/scooter-run.html")
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = tmpl.Execute(w, scooterList)
-	if err != nil {
-		fmt.Println(err)
-	}
+	EncodeAnswer(FormatHTML, w, scooterList, HTMLPath+"scooter-run.html")
 }
