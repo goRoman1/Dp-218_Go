@@ -1,7 +1,7 @@
 package routing
 
 import (
-	"Dp218Go/auth"
+	"Dp218Go/utils"
 	"Dp218Go/models"
 	"Dp218Go/services"
 	"context"
@@ -31,7 +31,7 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 			Password:    r.FormValue("password"),
 		}
 
-		pass, err := auth.HashPassword(user.Password)
+		pass, err := utils.HashPassword(user.Password)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, ErrSignUp.Error(), http.StatusInternalServerError)
@@ -79,7 +79,7 @@ func SignIn(sv *services.AuthService) http.HandlerFunc {
 			return
 		}
 
-		if err := auth.CheckPassword(user.Password, req.Password); err != nil {
+		if err := utils.CheckPassword(user.Password, req.Password); err != nil {
 			fmt.Println(err)
 			http.Error(w, ErrSignIn.Error(), http.StatusForbidden)
 			return

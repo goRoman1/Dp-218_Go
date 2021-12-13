@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS accounts
 
 CREATE TABLE IF NOT EXISTS payment_types
 (
-    id   smallserial PRIMARY KEY,
+    id   smallint PRIMARY KEY,
     name VARCHAR(100) UNIQUE
 );
 
@@ -208,10 +208,10 @@ CREATE TABLE IF NOT EXISTS account_transactions
     order_id        bigint,
     amount_cents    bigint,
 
-    FOREIGN KEY (payment_type_id) REFERENCES payment_types (id),
-    FOREIGN KEY (account_from_id) REFERENCES accounts (id),
-    FOREIGN KEY (account_To_id) REFERENCES accounts (id),
-    FOREIGN KEY (order_id) REFERENCES orders (id)
+    FOREIGN KEY (payment_type_id) REFERENCES payment_types (id)
+--    FOREIGN KEY (account_from_id) REFERENCES accounts (id),
+--    FOREIGN KEY (account_To_id) REFERENCES accounts (id),
+--    FOREIGN KEY (order_id) REFERENCES orders (id)
 );
 
 BEGIN;
@@ -245,4 +245,9 @@ INSERT INTO scooters(id, model_id, owner_id, serial_number) VALUES(2, 2, 1, '223
 
 INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude, can_be_rent) VALUES(1, 77, 48.41452620789186, 35.01444471956219, true);
 INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude, can_be_rent) VALUES(2, 58, 48.43452620789186, 35.01444471956219, true);
+INSERT INTO accounts(name, number, owner_id) VALUES('Main account', '111222333444', 9);
+INSERT INTO accounts(name, number, owner_id) VALUES('One more account', '55555666666', 9);
+
+INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 2, 0, 1, 0, 99999);
+INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 3, 1, 0, 0, 11111);
 COMMIT;

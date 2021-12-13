@@ -8,6 +8,7 @@ import (
 	"Dp218Go/routing/grpcserver"
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
+	"Dp218Go/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -68,6 +69,8 @@ func main() {
 	grpcServer := grpcserver.NewGrpcServer()
 	protos.RegisterScooterServiceServer(grpcServer, httpServer)
 	http.ListenAndServe(":8080", handler)
+
+	utils.CheckKafka() //TODO: delete after checking
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

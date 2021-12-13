@@ -2,15 +2,20 @@ package models
 
 import "time"
 
-type PaymentType struct{
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
+type PaymentType struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type Money struct {
+	Dollars int `json:"dollars"`
+	Cents   int `json:"cents"`
 }
 
 type Account struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
-	Number string `json:"is_admin"`
+	Number string `json:"number"`
 	User   User   `json:"user"`
 }
 
@@ -25,9 +30,20 @@ type AccountTransaction struct {
 	AccountFrom Account     `json:"account_from"`
 	AccountTo   Account     `json:"account_to"`
 	Order       Order       `json:"order"`
-	AmountCents int        `json:"amount_cents"`
+	AmountCents int         `json:"amount_cents"`
 }
 
 type AccountTransactionList struct {
 	AccountTransactions []AccountTransaction `json:"account_transactions"`
+}
+
+func (accTrans *AccountTransaction) GetAmountInMoney() Money {
+	coefCents := 1
+	if accTrans.AmountCents < 0 {
+		coefCents = -1
+	}
+	return Money{
+		Dollars: accTrans.AmountCents / 100,
+		Cents:   coefCents * accTrans.AmountCents % 100,
+	}
 }
