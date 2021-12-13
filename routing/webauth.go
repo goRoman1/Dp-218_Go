@@ -1,18 +1,21 @@
 package routing
 
 import (
-	"Dp218Go/auth"
+	"Dp218Go/utils"
 	"Dp218Go/models"
 	"Dp218Go/services"
-
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 )
 
+type Uid string
+
 var (
-	ErrSignUp = errors.New("signup error")
-	ErrSignIn = errors.New("signin error")
+	uid       Uid = "user"
+	ErrSignUp     = errors.New("signup error")
+	ErrSignIn     = errors.New("signin error")
 )
 
 func SignUp(sv *services.AuthService) http.HandlerFunc {
@@ -28,7 +31,7 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 			Password:    r.FormValue("password"),
 		}
 
-		pass, err := auth.HashPassword(user.Password)
+		pass, err := utils.HashPassword(user.Password)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, ErrSignUp.Error(), http.StatusInternalServerError)
@@ -76,7 +79,7 @@ func SignIn(sv *services.AuthService) http.HandlerFunc {
 			return
 		}
 
-		if err := auth.CheckPassword(user.Password, req.Password); err != nil {
+		if err := utils.CheckPassword(user.Password, req.Password); err != nil {
 			fmt.Println(err)
 			http.Error(w, ErrSignIn.Error(), http.StatusForbidden)
 			return
@@ -122,3 +125,29 @@ func SignOut(sv *services.AuthService) http.HandlerFunc {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
 }
+
+func WrapUserContext(sv *services.AuthService, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := sv.GetUserFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		newReq := r.WithContext(context.WithValue(r.Context(), uid, user))
+
+		next(w, newReq)
+	}
+}
+
+func GetUserFromContext(r *http.Request) *models.User {
+	val := r.Context().Value(uid)
+	user, ok := val.(models.User)
+	if ok {
+		return &user
+	}
+	return nil
+}
+
+// usage
+// WrapUserContext(authService, endPointUser)
+// -> GetUserFromContext(r) = user

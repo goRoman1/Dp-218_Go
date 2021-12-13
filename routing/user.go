@@ -107,9 +107,6 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 
 func getUserPage(w http.ResponseWriter, r *http.Request) {
 
-	//var users = &models.UserList{}
-	//var err error
-
 	user, err := AuthService.GetUserFromRequest(r)
 	if err != nil {
 		EncodeError(FormatHTML, w, ErrorRendererDefault(err))
@@ -127,7 +124,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	user, err := userService.GetUserById(userId)
+	user, err := userService.GetUserByID(userId)
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
@@ -160,7 +157,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	userData, err := userService.GetUserById(userId)
+	userData, err := userService.GetUserByID(userId)
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
@@ -206,7 +203,6 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 
 	var err error
 	r.ParseForm()
-	//userData := models.User{}
 	userData := data.(*models.User)
 
 	if _, ok := r.Form["LoginEmail"]; ok {
@@ -226,7 +222,7 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 		if err != nil {
 			return err
 		}
-		userData.Role, err = userService.GetRoleById(roleId)
+		userData.Role, err = userService.GetRoleByID(roleId)
 		if err != nil {
 			return err
 		}
@@ -235,6 +231,5 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 		userData.IsBlocked, _ = strconv.ParseBool(r.FormValue("IsBlocked"))
 	}
 
-	//reflect.ValueOf(data).Elem().Set(reflect.ValueOf(userData))
 	return nil
 }

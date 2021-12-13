@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+              integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+              integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <title>Scooter service</title>
+        <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"></script>
+        <script type="text/javascript">
+            var map;
+
+            let eventSource = new EventSource("/scooter");
+            let scooters = new Map();
+            // let scooter;
+
+            DG.then(function () {
+                map = DG.map('map', {
+                    center: [48.4223, 35.0234],
+                    zoom: 12
+                });
+
+                // scooter = DG.marker([50.0, 40.0]);
+                // scooter.addTo(map);
+                // console.log(scooter)
+            });
+
+                // scooter = DG.marker([50.0, 40.0]);
+                // scooter.addTo(map);
+
+
+
+            eventSource.onopen = function(e) {
+                console.log("connection: open");
+            };
+
+            eventSource.onerror = function(e) {
+                console.log("connection: error");
+                if (this.readyState == EventSource.CONNECTING) {
+                    console.log(`reconnectin=${this.readyState})...`);
+                } else {
+                    console.log("error occured");
+                }
+            };
+
+            eventSource.onmessage = function(e) {
+                // console.log("message: " + e.data);
+                json = JSON.parse(e.data);
+                // console.log(json);
+
+                console.log(scooters.has(json.id));
+
+                if (scooters.has(json.id) != true) {
+                    console.log("in if");
+                    let scr = DG.marker([json.longitude, json.latitude]);
+                    scr.addTo(map);
+                    scooters.set(json.id, scr);
+                    // console.log(map);
+                    // return;
+                }
+                let scr = scooters.get(json.id);
+                // console.log(scr);
+                scr.setLatLng({lat: json.latitude, lng: json.longitude});
+                console.log(scr.getLatLng());
+            };
+
+        </script>
+    </head>
+    <body style="background-color: ivory">
+        <div class="row">
+            <div id="map" style="width:700px; height:100vh"></div>
+            <div class="col-sm-4">
+                <div class="bs-component">
+                    <div class="list-group" name="Scoot_list">
+                        <div href="#" class="list-group-item list-group-item-action active" name="ScooterList">
+                            Scooter list
+                        </div>
+                        {{range .Scooters}}
+                        <a href="#" class="list-group-item list-group-item-action">{{.ScooterModel}}
+                        </a>
+                        {{end}}
+                    </div>
+                    <div class="list-group" style="margin-top: 20px">
+                        <div href="#" class="list-group-item list-group-item-action active" style="background-color:
+                        slateblue">
+                            Choose location
+                        </div>
+                        <a href="#" class="list-group-item list-group-item-action">Haharina - Shevchenko park
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">Haharina - Dafi
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action"
+                           style="margin-bottom: 20px">McDonalds - Theatre
+                        </a>
+                    </div>
+                </div>
+                <p class="bs-component">
+                    <button type="submit" class="btn btn-primary btn-lg" id="run"
+                            style="background-color: teal" name="Run" onclick="fetch('http://localhost:8080/run')">Start
+                        ride</button>
+                </p>
+            </div>
+        </div>
+        </div>
+    </body>
+</html>
