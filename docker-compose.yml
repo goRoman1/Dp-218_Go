@@ -7,9 +7,9 @@ services:
     container_name: scooter_db
     env_file: 
       - ./configs/.env
-    #volumes:
+    volumes:
       #- ./configs:/docker-entrypoint-initdb.d
-      #- dbdata:/var/lib/postgresql/data
+      - dbdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U scooteradmin -d scooterdb"]  
       interval: 30s
