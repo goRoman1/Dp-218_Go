@@ -129,8 +129,10 @@ CREATE TABLE IF NOT EXISTS scooter_statuses
     scooter_id     int PRIMARY KEY,
     location_id    int,
     battery_remain NUMERIC(5, 2),
-    can_be_rent     boolean,
     station_id     int,
+    latitude      NUMERIC(16, 14),
+    longitude     NUMERIC(16, 14),
+    can_be_rent   bool,
 
     FOREIGN KEY (scooter_id)  REFERENCES scooters (id),
     FOREIGN KEY (location_id) REFERENCES locations (id),
@@ -170,15 +172,12 @@ CREATE TABLE IF NOT EXISTS problem_statuses
 CREATE TABLE IF NOT EXISTS scooter_statuses_in_rent
 (
     id         bigserial PRIMARY KEY,
-    user_id     int       NOT NULL,
-    scooter_id  int       NOT NULL,
     station_id  int,
     date_time   TIMESTAMP NOT NULL,
     location_id int,
-    is_returned boolean,
+    latitude      NUMERIC(16, 14),
+    longitude     NUMERIC(16, 14),
 
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (scooter_id) REFERENCES Scooters (id),
     FOREIGN KEY (station_id) REFERENCES Scooter_Stations (id),
     FOREIGN KEY (location_id) REFERENCES Locations (id)
 );
@@ -239,10 +238,16 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) VALUES('gtr@gmail.com', false, 'Gregor', 'Tyson', 7, '$2a$10$Le9uo/qFrA.EPFh5d1Z5Wu1EaNCVMkeV1dOT/q86ZZ.obCeSY/472');
 
+INSERT INTO scooter_models(id, payment_type_id, model_name, max_weight, speed) VALUES(1, 1, 'Xiaomi М365 Mi Scooter', 125.0,5);
+INSERT INTO scooter_models(id, payment_type_id, model_name, max_weight, speed) VALUES(2, 1, 'Kugoo G2 Pro', 150.0, 5);
+INSERT INTO scooters(id, model_id, owner_id, serial_number) VALUES(1, 1, 1, '223445');
+INSERT INTO scooters(id, model_id, owner_id, serial_number) VALUES(2, 2, 1, '223455');
+
+INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude, can_be_rent) VALUES(1, 77, 48.41452620789186, 35.01444471956219, true);
+INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude, can_be_rent) VALUES(2, 58, 48.43452620789186, 35.01444471956219, true);
 INSERT INTO accounts(name, number, owner_id) VALUES('Main account', '111222333444', 9);
 INSERT INTO accounts(name, number, owner_id) VALUES('One more account', '55555666666', 9);
 
 INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 2, 0, 1, 0, 99999);
 INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 3, 1, 0, 0, 11111);
-
 COMMIT;

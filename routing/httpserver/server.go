@@ -1,7 +1,14 @@
 package httpserver
 
 import (
+	"Dp218Go/protos"
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"io"
 	"net"
 	"net/http"
 	"time"
@@ -15,10 +22,20 @@ const(
 	defaultAddr = ":8080"
 )
 
+type Client struct {
+	w    io.Writer
+	done chan struct{}
+}
+
 type Server struct{
 	server *http.Server
 	notify chan error
 	shutdownTimeout time.Duration
+	client map[int]*Client
+	taken  map[int]bool
+	codes  map[int]int
+	in     chan *protos.ClientMessage
+	*protos.UnimplementedScooterServiceServer
 }
 
 type Option func(*Server)
@@ -36,22 +53,19 @@ func New(handler http.Handler, opts ...Option) *Server {
 		server:          httpServer,
 		notify:          make(chan error, 1),
 		shutdownTimeout: defaultShutdownTimeout,
+		client: make(map[int]*Client),
+		taken:  make(map[int]bool),
+		codes:  make(map[int]int),
+		in:     make(chan *protos.ClientMessage),
 	}
 
 	for _, opt:=range opts {
 		opt(server)
 	}
 
-	server.start()
+	server.Run()
 
 	return server
-}
-
-func (s *Server) start(){
-	go func() {
-		s.notify <- s.server.ListenAndServe()
-		close(s.notify)
-	}()
 }
 
 func (s *Server) Notify() <-chan error{
@@ -65,12 +79,85 @@ func (s *Server) Shutdown() error{
 	return s.server.Shutdown(ctx)
 }
 
-
-
 func Port(port string) Option {
 	return func(s *Server) {
 		s.server.Addr = net.JoinHostPort("", port)
 	}
+}
+
+func (s *Server) ScooterHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("new client connected")
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	client := &Client{
+		w:    w,
+		done: make(chan struct{}),
+	}
+	s.AddClient(client)
+
+	<-client.done
+	fmt.Println("connection closed")
+}
+
+func (s *Server) AddClient(c *Client) {
+	s.client[1] = c
+}
+
+func (s *Server) Register(msg *protos.ClientRequest, stream protos.ScooterService_RegisterServer) error {
+	return nil
+}
+
+func (s *Server) Receive(stream protos.ScooterService_ReceiveServer) error {
+	var err error
+
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			fmt.Println(err)
+			err = status.Errorf(codes.Internal, "unexpected error %v", err)
+			break
+		}
+
+		s.in <- msg
+
+	}
+
+	return err
+}
+
+func (s *Server) Run() {
+	go func() {
+		s.notify <- s.server.ListenAndServe()
+		close(s.notify)
+	}()
+	go func() {
+		for {
+			select {
+			case msg := <-s.in:
+				var buf bytes.Buffer
+				json.NewEncoder(&buf).Encode(msg)
+
+				for _, client := range s.client {
+
+					go func(c *Client) {
+						if _, err := fmt.Fprintf(c.w, "data: %v\n\n", buf.String()); err != nil {
+							fmt.Println(err)
+							delete(s.client, 1)
+							close(c.done)
+							return
+						}
+
+						if f, ok := c.w.(http.Flusher); ok {
+							f.Flush()
+						}
+						fmt.Printf("data: %v\n", buf.String())
+					}(client)
+				}
+			}
+		}
+	}()
 }
 
 func ReadTimeout(timeout time.Duration) Option {
