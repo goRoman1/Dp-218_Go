@@ -7,5 +7,9 @@ type Order struct {
 	StatusStartID int     `json:"status_start_id"`
 	StatusEndID   int     `json:"status_end_id"`
 	Distance      float64 `json:"distance"`
-	Amount        float64 `json:"amount"`
+	Amount        int 	  `json:"amount"`
+}
+
+type OrderList struct {
+	Orders []Order `json:"orders"`
 }

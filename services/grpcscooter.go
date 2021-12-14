@@ -43,8 +43,7 @@ func NewGrpcScooterClient(id uint64, coordinate models.Coordinate, battery float
 	}
 }
 
-func (gss *GrpcScooterService) InitAndRun(scooterID int,
-	coordinate models.Coordinate) error{
+func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coordinate) error{
 	scooter,err := gss.GetScooterById(scooterID)
 	if err!= nil {
 		fmt.Println(err)
@@ -58,7 +57,7 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int,
 		return err
 	}
 
-	if scooterStatus.BatteryRemain > 10 {
+	if scooterStatus.BatteryRemain > 10 && scooter.CanBeRent == true {
 		conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithInsecure())
 
 		if err != nil {
@@ -78,24 +77,21 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int,
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println("trip finished")
 
 		err = gss.SendCurrentStatus(int(client.ID), client.coordinate.Latitude, client.coordinate.Longitude,
 			client.batteryRemain)
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println("status has been sent")
 
 		if client.batteryRemain <= 0 {
 			err = fmt.Errorf("scooter battery discharged. Trip is over")
-			fmt.Println(err.Error())
 			return err
 		}
 		return nil
 	}
 
-	err = fmt.Errorf("scooter battery is too low for trip. Choose another one")
+	err = fmt.Errorf("you can't use this scooter. Choose another one")
 	fmt.Println(err.Error())
 	return err
 }
