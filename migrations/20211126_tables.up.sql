@@ -117,12 +117,12 @@ CREATE TABLE IF NOT EXISTS locations
 CREATE TABLE IF NOT EXISTS scooter_stations
 (
     id          serial PRIMARY KEY,
-    location_id int NOT NULL,
+    location_id int,
     name        VARCHAR(100),
     is_active   boolean,
 
     FOREIGN KEY (location_id) REFERENCES locations (id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS scooter_statuses
 (
@@ -236,6 +236,12 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserChan@mail.com', false, 'Jackie', 'Chan', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
+
+
+INSERT INTO locations(id, latitude, longitude, label) VALUES (1, 20, 30, 'Dnepr');
+INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (1, 1, 'station pobeda3', true);
+INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (2, 1, 'station pobeda1', true);
+INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (3, 1, 'station pobeda4', false);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) VALUES('gtr@gmail.com', false, 'Gregor', 'Tyson', 7, '$2a$10$Le9uo/qFrA.EPFh5d1Z5Wu1EaNCVMkeV1dOT/q86ZZ.obCeSY/472');
 
 INSERT INTO scooter_models(id, payment_type_id, model_name, max_weight, speed) VALUES(1, 1, 'Xiaomi М365 Mi Scooter', 125.0,5);

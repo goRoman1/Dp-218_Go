@@ -1,6 +1,5 @@
 module Dp218Go
 
-// module github.com/ITA-Dnipro/Dp-218_Go
 go 1.17
 
 require (
@@ -27,10 +26,13 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20211111143520-d0d5ecc1a356 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
+
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -58,6 +60,11 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
+	go.uber.org/atomic v1.6.0 // indirect
+	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e // indirect
+	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.8 // indirect
 	google.golang.org/genproto v0.0.0-20211013025323-ce878158c4d4 // indirect

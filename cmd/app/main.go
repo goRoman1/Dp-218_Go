@@ -49,6 +49,8 @@ func main() {
 
 	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
 	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
+	var stationRepoDb = postgres.NewStationRepoDB(db)
+	var stationService = services.NewStationService(stationRepoDb)
 
 	var scooterRepo = postgres.NewScooterRepoDB(db)
 	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
@@ -60,6 +62,7 @@ func main() {
 
 	handler := routing.NewRouter(authService)
 	routing.AddUserHandler(handler, userService)
+	routing.AddStationHandler(handler, stationService)
 	routing.AddAccountHandler(handler, accService)
 	routing.AddScooterHandler(handler, scooterService)
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
