@@ -1,0 +1,10 @@
+package usecases
+
+import "Dp218Go/models"
+
+type StationUsecasesRepo interface {
+	GetAllStations() (*models.StationList, error)
+	GetStationById(stationId int) (models.Station, error)
+	AddStation(station *models.Station) error
+	DeleteStation(stationId int) error
+}
