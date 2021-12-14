@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS scooter_statuses
     station_id     int,
     latitude      NUMERIC(16, 14),
     longitude     NUMERIC(16, 14),
-    can_be_rent   bool,
+    can_be_rent   boolean,
 
     FOREIGN KEY (scooter_id)  REFERENCES scooters (id),
     FOREIGN KEY (location_id) REFERENCES locations (id),
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS scooter_statuses
 
 CREATE TABLE IF NOT EXISTS problem_types
 (
-    id   smallserial PRIMARY KEY,
+    id   smallint PRIMARY KEY,
     name VARCHAR(150) UNIQUE NOT NULL
 );
 
@@ -151,16 +151,16 @@ CREATE TABLE IF NOT EXISTS problems
     user_id       int       NOT NULL,
     type_Id       smallint  NOT NULL,
     scooter_id    int,
-    date_reported TIMESTAMP NOT NULL,
+    date_reported TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description   text      NOT NULL,
     is_solved     boolean,
 
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (type_id) REFERENCES problem_types (id),
-    FOREIGN KEY (scooter_id) REFERENCES scooters (id)
+    FOREIGN KEY (type_id) REFERENCES problem_types (id)
+    --FOREIGN KEY (scooter_id) REFERENCES scooters (id)
 );
 
-CREATE TABLE IF NOT EXISTS problem_statuses
+CREATE TABLE IF NOT EXISTS solutions
 (
     problem_id   bigint PRIMARY KEY,
     date_solved  TIMESTAMP NOT NULL,
@@ -215,6 +215,10 @@ CREATE TABLE IF NOT EXISTS account_transactions
 );
 
 BEGIN;
+INSERT INTO problem_types(id, name) VALUES(1, 'Payment problem');
+INSERT INTO problem_types(id, name) VALUES(2, 'Scooter problem');
+INSERT INTO problem_types(id, name) VALUES(3, 'Other problem');
+
 INSERT INTO payment_types(id, name) VALUES(1, 'comission');
 INSERT INTO payment_types(id, name) VALUES(2, 'simple income');
 INSERT INTO payment_types(id, name) VALUES(3, 'simple outcome');

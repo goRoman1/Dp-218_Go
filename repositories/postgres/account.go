@@ -104,23 +104,23 @@ func (accdb *AccountRepoDB) UpdateAccount(accountID int, accountData models.Acco
 	return account, nil
 }
 
-func (accdb *AccountRepoDB) GetAccountTransactionByID(transId int) (models.AccountTransaction, error) {
+func (accdb *AccountRepoDB) GetAccountTransactionByID(transID int) (models.AccountTransaction, error) {
 	accountTransaction := models.AccountTransaction{}
 
 	querySQL := `SELECT 
 		id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents 
 		FROM account_transactions 
 		WHERE id = $1;`
-	row := accdb.db.QueryResultRow(context.Background(), querySQL, transId)
+	row := accdb.db.QueryResultRow(context.Background(), querySQL, transID)
 	var paymentID int
-	var accFromId, accToId int
+	var accFromID, accToId int
 	var orderId int
-	err := row.Scan(&accountTransaction.ID, &accountTransaction.DateTime, &paymentID, &accFromId, &accToId, orderId, &accountTransaction.AmountCents)
+	err := row.Scan(&accountTransaction.ID, &accountTransaction.DateTime, &paymentID, &accFromID, &accToId, orderId, &accountTransaction.AmountCents)
 	if err != nil {
 		return accountTransaction, err
 	}
 
-	err = addTransactionComplexFields(accdb, &accountTransaction, paymentID, accFromId, accToId, orderId)
+	err = addTransactionComplexFields(accdb, &accountTransaction, paymentID, accFromID, accToId, orderId)
 	if err != nil {
 		return accountTransaction, err
 	}
@@ -128,7 +128,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionByID(transId int) (models.Accou
 	return accountTransaction, err
 }
 
-func addTransactionComplexFields(accdb *AccountRepoDB, accountTransaction *models.AccountTransaction, paymentID, accFromID, accToId, orderId int) error {
+func addTransactionComplexFields(accdb *AccountRepoDB, accountTransaction *models.AccountTransaction, paymentID, accFromID, accToID, orderId int) error {
 	var err error
 	accountTransaction.PaymentType, err = accdb.GetPaymentTypeById(paymentID)
 	if err != nil {
@@ -138,8 +138,8 @@ func addTransactionComplexFields(accdb *AccountRepoDB, accountTransaction *model
 	if err != nil && accFromID != 0 {
 		return err
 	}
-	accountTransaction.AccountTo, err = accdb.GetAccountByID(accToId)
-	if err != nil && accToId != 0 {
+	accountTransaction.AccountTo, err = accdb.GetAccountByID(accToID)
+	if err != nil && accToID != 0 {
 		return err
 	}
 	accountTransaction.Order, err = models.Order{}, nil //TODO: refactor when Orders implemented
