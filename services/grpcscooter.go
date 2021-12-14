@@ -78,12 +78,14 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int,
 		if err != nil {
 			fmt.Println(err)
 		}
+		fmt.Println("trip finished")
 
 		err = gss.SendCurrentStatus(int(client.ID), client.coordinate.Latitude, client.coordinate.Longitude,
 			client.batteryRemain)
 		if err != nil {
 			fmt.Println(err)
 		}
+		fmt.Println("status has been sent")
 
 		if client.batteryRemain <= 0 {
 			err = fmt.Errorf("scooter battery discharged. Trip is over")
@@ -91,7 +93,6 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int,
 			return err
 		}
 		return nil
-
 	}
 
 	err = fmt.Errorf("scooter battery is too low for trip. Choose another one")

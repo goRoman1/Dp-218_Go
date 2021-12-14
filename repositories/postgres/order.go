@@ -14,13 +14,16 @@ func NewOrderRepoDB(db repositories.AnyDatabase) *OrderRepoDb {
 	return &OrderRepoDb{db}
 }
 
-func (ordb *OrderRepoDb) CreateOrder(user models.User, scooter models.ScooterDTO) (models.Order, error) {
+func (ordb *OrderRepoDb) CreateOrder(user models.User, scooterID, startID, endID int) (models.Order, error) {
 	var order = models.Order{}
 	order.UserID = user.ID
-	order.ScooterID = scooter.ID
+	order.ScooterID = scooterID
+	order.StatusStartID = startID
+	order.StatusEndID = endID
 
-	querySQL := `INSERT INTO orders(user_id, scooter_id) VALUES ($1, $2) RETURNING id`
-	err := ordb.db.QueryResultRow(context.Background(), querySQL, user.ID, scooter.ID).Scan(order.ID)
+	querySQL := `INSERT INTO orders(user_id, scooter_id, status_start_id, status_end_id) 
+					VALUES ($1, $2, $3, $4) RETURNING id`
+	err := ordb.db.QueryResultRow(context.Background(), querySQL, user.ID, scooterID, startID, endID).Scan(order.ID)
 	if err != nil {
 		return order, err
 	}

@@ -11,14 +11,17 @@ import (
 
 var scooterService *services.ScooterService
 var scooterGrpcService *services.GrpcScooterService
+//var authService *services.AuthService
+var OrderService *services.OrderService
 var scooterIDKey = "scooterId"
 
 // TODO make dynamic access to this variables from UI
 //var choosenWay = models.Coordinate{Latitude: 48.4221, Longitude: 35.0196}
-//var choosenWay = models.Coordinate{ Latitude: 48.42543, Longitude: 35.02183}  // dafi
+var choosenWay = models.Coordinate{ Latitude: 48.42543, Longitude: 35.02183}  // dafi
 //var choosenWay = models.Coordinate{48.42272,35.02280} // visokovoltnaya
-var choosenWay = models.Coordinate{Latitude: 48.42367 , Longitude: 35.04436} // ostapa vishni
-var choosenScooter = 1
+//var choosenWay = models.Coordinate{Latitude: 48.42367 , Longitude: 35.04436} // ostapa vishni
+var choosenScooterID = 1
+var userFromRequest = models.User{ID: 1, LoginEmail: "guru_admin@guru.com", UserName: "Guru", UserSurname: "Sadh"}
 
 var scooterRoutes = []Route{
 	{
@@ -90,11 +93,29 @@ func getScooterById(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartScooterTrip(w http.ResponseWriter, r *http.Request) {
-	err := scooterGrpcService.InitAndRun(choosenScooter, choosenWay)
+	statusStart, err := scooterService.CreateScooterStatusInRent(choosenScooterID)
+	if err!=nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(statusStart)
+
+	err = scooterGrpcService.InitAndRun(choosenScooterID, choosenWay)
 	if err != nil {
+		fmt.Println(err)
 		EncodeError(FormatJSON, w, ErrorRendererDefault(err))
 		return
 	}
+
+	statusEnd, err := scooterService.CreateScooterStatusInRent(choosenScooterID)
+	fmt.Println(statusEnd)
+
+	//order, err := OrderService.CreateOrder(userFromRequest, choosenScooterID, statusStart.ID, statusEnd.ID)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//fmt.Printf("Order %v", order)
+
 }
 
 func ShowTripPage(w http.ResponseWriter, r *http.Request) {
