@@ -57,7 +57,7 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coord
 		return err
 	}
 
-	if scooterStatus.BatteryRemain > 10 && scooter.CanBeRent == true {
+	if scooterStatus.BatteryRemain > 10 && scooter.CanBeRent {
 		conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithInsecure())
 
 		if err != nil {

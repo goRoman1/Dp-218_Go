@@ -56,8 +56,7 @@ func main() {
 	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
 	var scooterService = services.NewScooterService(scooterRepo)
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
-	var orderService = services.NewOrderService(orderRepoDB,scooterRepo)
-
+	var orderService = services.NewOrderService(orderRepoDB)
 
 	sessStore := sessions.NewCookieStore([]byte(sessionKey))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)

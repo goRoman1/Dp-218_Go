@@ -128,10 +128,6 @@ func (s *Server) Receive(stream protos.ScooterService_ReceiveServer) error {
 }
 
 func (s *Server) Run() {
-	//go func() {
-	//	s.notify <- s.server.ListenAndServe()
-	//	close(s.notify)
-	//}()
 	go func() {
 		for {
 			select {
