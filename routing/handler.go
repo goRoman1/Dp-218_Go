@@ -162,7 +162,7 @@ func GetFormatFromRequest(r *http.Request) int {
 	return FormatHTML
 }
 
-func GetParameterFromRequest(r *http.Request, paramName string) (string, error) {
+func GetParameterFromRequest(r *http.Request, paramName string, convertToType func(strData string) (interface{}, error)) (interface{}, error) {
 	if r.Method == http.MethodGet && r.Form == nil || r.Method != http.MethodGet && r.PostForm == nil {
 		r.ParseForm()
 	}
@@ -181,5 +181,5 @@ func GetParameterFromRequest(r *http.Request, paramName string) (string, error) 
 		result = r.PostFormValue(paramName)
 	}
 
-	return result, nil
+	return convertToType(result)
 }
