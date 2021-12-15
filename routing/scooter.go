@@ -19,7 +19,7 @@ var scooterIDKey = "scooterId"
 var choosenWay = models.Coordinate{Latitude: 48.42543, Longitude: 35.02183} // dafi
 //var choosenWay = models.Coordinate{48.42272,35.02280} // visokovoltnaya
 //var choosenWay = models.Coordinate{Latitude: 48.42367 , Longitude: 35.04436} // ostapa vishni
-var choosenScooterID = 1
+var chosenScooterID int
 var userFromRequest = models.User{ID: 1, LoginEmail: "guru_admin@guru.com", UserName: "Guru", UserSurname: "Sadh"}
 
 var scooterRoutes = []Route{
@@ -43,6 +43,21 @@ var scooterRoutes = []Route{
 		Method:  http.MethodGet,
 		Handler: startScooterTrip,
 	},
+	{
+		Uri:     `/choose-scooter`,
+		Method:  http.MethodPost,
+		Handler: chooseScooter,
+	},
+	{
+		Uri:     `/choose-station`,
+		Method:  http.MethodPost,
+		Handler: chooseStation,
+	},
+}
+
+type combineForTemplate struct {
+	models.ScooterListDTO
+	models.StationList
 }
 
 func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
@@ -92,22 +107,22 @@ func getScooterById(w http.ResponseWriter, r *http.Request) {
 }
 
 func startScooterTrip(w http.ResponseWriter, r *http.Request) {
-	statusStart, err := scooterService.CreateScooterStatusInRent(choosenScooterID)
+	statusStart, err := scooterService.CreateScooterStatusInRent(chosenScooterID)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = scooterGrpcService.InitAndRun(choosenScooterID, choosenWay)
+	err = scooterGrpcService.InitAndRun(chosenScooterID, choosenWay)
 	if err != nil {
 		fmt.Println(err)
 		EncodeError(FormatJSON, w, ErrorRendererDefault(err))
 	}
 
-	statusEnd, err := scooterService.CreateScooterStatusInRent(choosenScooterID)
+	statusEnd, err := scooterService.CreateScooterStatusInRent(chosenScooterID)
 
 	distance := statusEnd.Location.Distance(statusStart.Location)
 
-	_, err = orderService.CreateOrder(userFromRequest, choosenScooterID, statusStart.ID, statusEnd.ID, distance)
+	_, err = orderService.CreateOrder(userFromRequest, chosenScooterID, statusStart.ID, statusEnd.ID, distance)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -119,5 +134,34 @@ func showTripPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	EncodeAnswer(FormatHTML, w, scooterList, HTMLPath+"scooter-run.html")
+	stationList, err := stationService.GetAllStations()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	EncodeAnswer(FormatHTML, w, &combineForTemplate{*scooterList, *stationList}, HTMLPath+"scooter-run.html")
+}
+
+func chooseScooter(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println(err)
+	}
+	chosenScooterID, err = strconv.Atoi(r.Form.Get("id"))
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func chooseStation(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	chosenStationID, err := strconv.Atoi(r.Form.Get("id"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(chosenStationID)
 }
