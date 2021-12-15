@@ -48,13 +48,6 @@
             <input type="hidden" class="custom-control-input" id="hideblocked" value="false" name="IsActive" {{if eq .IsActive false}}  checked {{end}}>
             <label class="custom-control-label" for="blocked">Active</label>
         </div>
-<!--        <div class="custom-control custom-switch">-->
-<!--            <input type="checkbox" class="custom-control-input" id="blocked" value="true" name="IsActive" {{if eq .IsActive false}}  checked {{end}}>-->
-<!--            <input type="hidden" class="custom-control-input" id="hideblocked" value="false" name="IsActive" {{if  .IsActive}}  checked {{end}}>-->
-<!--            <label class="custom-control-label" for="blocked">Blocked</label>-->
-<!--        </div>-->
-
-
         <hr class="mb-4">
         <button type="submit" class="btn btn-primary btn-lg">Save & continue</button>
         <button type="button" class="btn btn-secondary" onclick="window.location.href='/stations'">Return</button>
