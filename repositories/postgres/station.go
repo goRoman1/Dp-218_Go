@@ -67,10 +67,10 @@ func (pg *StationRepoDB) DeleteStation(stationId int) error {
 func (pg *StationRepoDB) UpdateStation (stationId int, stationData models.Station) (models.Station, error){
 	station := models.Station{}
 	querySQL := `UPDATE scooter_stations 
-		SET is_active=$1
-		WHERE id=$2
-		RETURNING id, is_active;`
-	err := pg.db.QueryResultRow(context.Background(), querySQL, &stationData.IsActive, stationId).Scan(&station.ID, &station.IsActive)
+		SET is_active=$1, name=$2
+		WHERE id=$3
+		RETURNING id, is_active, name;`
+	err := pg.db.QueryResultRow(context.Background(), querySQL, stationData.IsActive,stationData.Name, stationId).Scan(&station.ID, &station.IsActive, &station.Name)
 	if err != nil {
 		return station, err
 	}
