@@ -68,38 +68,39 @@
     </head>
     <body style="background-color: ivory">
         <div class="row">
-            <div id="map" style="width:700px; height:100vh"></div>
-            <div class="col-sm-4">
-                <div class="bs-component">
-                    <div class="list-group" name="Scoot_list">
-                        <div href="#" class="list-group-item list-group-item-action active" name="ScooterList">
-                            Scooter list
+            <div id="map" style="width:60%; height:100vh"></div>
+                <div class="col-sm-4">
+                    <div class="bs-component">
+                        <div class="list-group" name="Scoot_list">
+                            <div href="#" class="list-group-item list-group-item-action active" name="ScooterList">
+                                Scooter list
+                            </div>
+                            {{range .Scooters}}
+                            <a href="#" class="list-group-item list-group-item-action"
+                               value="{{.ID}}">{{.ScooterModel}}
+                            </a>
+                            {{end}}
                         </div>
-                        {{range .Scooters}}
-                        <a href="#" class="list-group-item list-group-item-action">{{.ScooterModel}}
-                        </a>
-                        {{end}}
-                    </div>
-                    <div class="list-group" style="margin-top: 20px">
-                        <div href="#" class="list-group-item list-group-item-action active" style="background-color:
-                        slateblue">
-                            Choose location
+                        <div class="list-group" style="margin-top: 20px">
+                            <div href="#" class="list-group-item list-group-item-action active" style="background-color:
+                            slateblue">
+                                Choose location
+                            </div>
+                            <a href="#" class="list-group-item list-group-item-action">Haharina - Shevchenko park
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">Haharina - Dafi
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action"
+                               style="margin-bottom: 20px">McDonalds - Theatre
+                            </a>
                         </div>
-                        <a href="#" class="list-group-item list-group-item-action">Haharina - Shevchenko park
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">Haharina - Dafi
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action"
-                           style="margin-bottom: 20px">McDonalds - Theatre
-                        </a>
                     </div>
+                    <p class="bs-component">
+                        <button type="submit" class="btn btn-primary btn-lg" id="run"
+                                style="background-color: teal" name="Run" onclick="fetch('http://localhost:8080/run')">Start
+                            ride</button>
+                    </p>
                 </div>
-                <p class="bs-component">
-                    <button type="submit" class="btn btn-primary btn-lg" id="run"
-                            style="background-color: teal" name="Run" onclick="fetch('http://localhost:8080/run')">Start
-                        ride</button>
-                </p>
-            </div>
         </div>
         </div>
     </body>
