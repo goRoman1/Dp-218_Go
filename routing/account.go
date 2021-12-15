@@ -3,6 +3,7 @@ package routing
 import (
 	"Dp218Go/models"
 	"Dp218Go/services"
+	"Dp218Go/utils"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -89,7 +90,7 @@ func updateAccountInfo(w http.ResponseWriter, r *http.Request) {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	actionType, err := GetParameterFromRequest(r, "ActionType")
+	actionType, err := GetParameterFromRequest(r, "ActionType", utils.ConvertStringToString())
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
@@ -97,33 +98,23 @@ func updateAccountInfo(w http.ResponseWriter, r *http.Request) {
 
 	switch actionType {
 	case "AddMoneyToAccount":
-		moneyData, err := GetParameterFromRequest(r, "MoneyAmount")
+		moneyAmount, err := GetParameterFromRequest(r, "MoneyAmount", utils.ConvertStringToFloat())
 		if err != nil {
 			EncodeError(format, w, ErrorRendererDefault(err))
 			return
 		}
-		moneyAmount, err := strconv.ParseFloat(moneyData, 64)
-		if err != nil {
-			EncodeError(format, w, ErrorRendererDefault(err))
-			return
-		}
-		err = accountService.AddMoneyToAccount(account, int(moneyAmount*100))
+		err = accountService.AddMoneyToAccount(account, int(moneyAmount.(float64)*100))
 		if err != nil {
 			EncodeError(format, w, ErrorRendererDefault(err))
 			return
 		}
 	case "TakeMoneyFromAccount":
-		moneyData, err := GetParameterFromRequest(r, "MoneyAmount")
+		moneyAmount, err := GetParameterFromRequest(r, "MoneyAmount", utils.ConvertStringToFloat())
 		if err != nil {
 			EncodeError(format, w, ErrorRendererDefault(err))
 			return
 		}
-		moneyAmount, err := strconv.ParseFloat(moneyData, 64)
-		if err != nil {
-			EncodeError(format, w, ErrorRendererDefault(err))
-			return
-		}
-		err = accountService.TakeMoneyFromAccount(account, int(moneyAmount*100))
+		err = accountService.TakeMoneyFromAccount(account, int(moneyAmount.(float64)*100))
 		if err != nil {
 			EncodeError(format, w, ErrorRendererDefault(err))
 			return
