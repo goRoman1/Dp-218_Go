@@ -91,7 +91,7 @@ func (accdb *AccountRepoDB) UpdateAccount(accountID int, accountData models.Acco
 		WHERE id=$4 RETURNING id, name, number, owner_id;`
 	var userID int
 	err := accdb.db.QueryResultRow(context.Background(), querySQL,
-		account.Name, account.Number, account.User.ID, accountID).
+		accountData.Name, accountData.Number, accountData.User.ID, accountID).
 		Scan(&account.ID, &account.Name, &account.Number, &userID)
 	if err != nil {
 		return account, err

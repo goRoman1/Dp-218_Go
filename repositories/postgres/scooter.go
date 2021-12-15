@@ -119,6 +119,7 @@ func (scdb *ScooterRepoDB) SendCurrentStatus(id int, lat, lon, battery float64) 
 					SET latitude=$1, longitude=$2, battery_remain=$3, can_be_rent=$4
 					WHERE scooter_id=$5`
 
-	_, err := scdb.db.QueryResult(context.Background(), querySQL, lat, lon, battery, canBeRent, id)
+	row, err := scdb.db.QueryResult(context.Background(), querySQL, lat, lon, battery, canBeRent, id)
+	defer row.Close()
 	return err
 }

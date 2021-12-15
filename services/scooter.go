@@ -30,3 +30,7 @@ func (ser *ScooterService) SendCurrentStatus(id int, lat, lon, battery float64) 
 	return ser.repoScooter.SendCurrentStatus(id, lat, lon, battery)
 }
 
+func (ser * ScooterService) CreateScooterStatusInRent(scooterID int) (models.ScooterStatusInRent, error) {
+	return ser.repoScooter.CreateScooterStatusInRent(scooterID)
+}
+
