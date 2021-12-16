@@ -6,14 +6,17 @@ import (
 	"context"
 )
 
+//OrderRepoDb is a repository for database connection.
 type OrderRepoDb struct {
 	db repositories.AnyDatabase
 }
 
+//NewOrderRepoDB creates new OrderRepoDb
 func NewOrderRepoDB(db repositories.AnyDatabase) *OrderRepoDb {
 	return &OrderRepoDb{db}
 }
 
+//CreateOrder creates a new order in the database table 'orders'.
 func (ordb *OrderRepoDb) CreateOrder(user models.User, scooterID, startID, endID int, distance float64) (models.Order,
 	error) {
 	var order = models.Order{}
@@ -34,6 +37,8 @@ func (ordb *OrderRepoDb) CreateOrder(user models.User, scooterID, startID, endID
 	return order, nil
 }
 
+
+//UpdateOrder updates exist order and returns the new one.
 func (ordb *OrderRepoDb) UpdateOrder(orderID int, orderData models.Order) (models.Order, error) {
 	order := models.Order{}
 	querySQL := `UPDATE orders 
@@ -52,12 +57,14 @@ func (ordb *OrderRepoDb) UpdateOrder(orderID int, orderData models.Order) (model
 	return order, nil
 }
 
+//DeleteOrder deletes the chosen order.
 func (ordb *OrderRepoDb) DeleteOrder(orderID int) error {
 	querySQL := `DELETE FROM orders WHERE id = $1;`
 	_, err := ordb.db.QueryExec(context.Background(), querySQL, orderID)
 	return err
 }
 
+//GetAllOrders returns all orders in the database.
 func (ordb *OrderRepoDb) GetAllOrders() (*models.OrderList, error) {
 	orderList := &models.OrderList{}
 
@@ -79,6 +86,7 @@ func (ordb *OrderRepoDb) GetAllOrders() (*models.OrderList, error) {
 	return orderList, nil
 }
 
+//GetOrderByID returns exact order by it's ID.
 func (ordb *OrderRepoDb) GetOrderByID(orderID int) (models.Order, error) {
 	order := models.Order{}
 
@@ -96,6 +104,7 @@ func (ordb *OrderRepoDb) GetOrderByID(orderID int) (models.Order, error) {
 	return order, nil
 }
 
+//GetOrdersByUserID returns a list of orders attached with user's ID.
 func (ordb *OrderRepoDb) GetOrdersByUserID(userID int) (models.OrderList, error) {
 	orderList := models.OrderList{}
 
@@ -121,6 +130,7 @@ func (ordb *OrderRepoDb) GetOrdersByUserID(userID int) (models.OrderList, error)
 	return orderList, nil
 }
 
+//GetOrdersByScooterID returns a list of orders attached with scooter's ID.
 func (ordb *OrderRepoDb) GetOrdersByScooterID(scooterID int) (models.OrderList, error) {
 	orderList := models.OrderList{}
 	querySQL := `SELECT * 
@@ -144,6 +154,7 @@ func (ordb *OrderRepoDb) GetOrdersByScooterID(scooterID int) (models.OrderList, 
 	return orderList, nil
 }
 
+//GetScooterMileageByID returns total mileage for the chosen scooter.
 func (ordb *OrderRepoDb) GetScooterMileageByID(scooterID int) (float64, error) {
 	var mileageKm float64
 	querySQL := `SELECT SUM(distance) 
@@ -161,6 +172,7 @@ func (ordb *OrderRepoDb) GetScooterMileageByID(scooterID int) (float64, error) {
 
 }
 
+//GetUserMileageByID returns total mileage for the chosen user.
 func (ordb *OrderRepoDb) GetUserMileageByID(userID int) (float64, error) {
 	var mileageKm float64
 	querySQL := `SELECT SUM(distance) 
