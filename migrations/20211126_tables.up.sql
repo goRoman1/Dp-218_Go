@@ -109,19 +109,18 @@ CREATE TABLE IF NOT EXISTS scooters
 CREATE TABLE IF NOT EXISTS locations
 (
     id        serial PRIMARY KEY,
-    latitude  NUMERIC(10, 0) NOT NULL,
-    longitude NUMERIC(10, 0) NOT NULL,
+    latitude      NUMERIC(16, 14),
+    longitude     NUMERIC(16, 14),
     label     VARCHAR(200)
 );
 
 CREATE TABLE IF NOT EXISTS scooter_stations
 (
     id          serial PRIMARY KEY,
-    location_id int,
     name        VARCHAR(100),
     is_active   boolean,
-
-    FOREIGN KEY (location_id) REFERENCES locations (id)
+    latitude      NUMERIC(16, 14),
+    longitude     NUMERIC(16, 14)
     );
 
 CREATE TABLE IF NOT EXISTS scooter_statuses
