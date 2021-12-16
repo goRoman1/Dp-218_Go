@@ -38,7 +38,8 @@
         <thead>
         <tr>
             <th>ID</th>
-            <th>LocationID</th>
+            <td>Latitude</td>
+            <td>Longitude</td>
             <th>Status</th>
             <th>Name</th>
             <th></th>
@@ -50,7 +51,8 @@
         {{range .Station}}
         <tr>
             <td>{{.ID}}</td>
-            <td>{{.LocationID}}</td>
+            <td>{{.Latitude}}</td>
+            <td>{{.Longitude}}</td>
             <td>{{if .IsActive}}<span class="badge badge-success">Active</span>{{else}}<span
                     class="badge badge-danger">Blocked</span>{{end}}
             </td>

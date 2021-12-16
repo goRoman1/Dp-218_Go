@@ -17,7 +17,7 @@ func NewStationRepoDB(db repositories.AnyDatabase) *StationRepoDB {
 func (pg *StationRepoDB) GetAllStations() (*models.StationList, error) {
 	list := &models.StationList{}
 
-	querySQL := `SELECT * FROM scooter_stations ORDER BY id DESC;`
+	querySQL := `SELECT * FROM scooter_stations ORDER BY id;`
 	rows, err := pg.db.QueryResult(context.Background(), querySQL)
 	if err != nil {
 		return list, err
