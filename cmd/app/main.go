@@ -58,6 +58,7 @@ func main() {
 
 	var problemRepoDb = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
 	var problemService = services.NewProblemService(problemRepoDb)
+
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
 	var orderService = services.NewOrderService(orderRepoDB)
 
