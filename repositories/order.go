@@ -2,6 +2,7 @@ package repositories
 
 import "Dp218Go/models"
 
+//OrderRepo the interface which implemented by functions which connect to the database.
 type OrderRepo interface {
 	CreateOrder(user models.User, scooterID, startID, endID int, distance float64) (models.Order, error)
 	UpdateOrder(orderID int, orderData models.Order) (models.Order, error)

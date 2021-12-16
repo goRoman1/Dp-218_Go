@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+//ScooterDTO is a scooter model with custom parameters.
 type ScooterDTO struct {
 	ID            int     `json:"scooter_id"`
 	ScooterModel  string  `json:"scooter_model"`
@@ -10,10 +11,12 @@ type ScooterDTO struct {
 	CanBeRent     bool    `json:"can_be_rent"`
 }
 
+//ScooterListDTO keeps a list of ScooterDTO.
 type ScooterListDTO struct {
 	Scooters []ScooterDTO `json:"scooters"`
 }
 
+//ScooterStatus keeps values of dynamic scooter parameters.
 type ScooterStatus struct {
 	Scooter       ScooterDTO `json:"scooter"`
 	Location      Coordinate `json:"location"`
@@ -21,6 +24,7 @@ type ScooterStatus struct {
 	StationID     int        `json:"station_id"`
 }
 
+//ScooterStatusInRent keeps values which are important for the start and the end of the trip.
 type ScooterStatusInRent struct {
 	ID        int        `json:"id"`
 	StationID int        `json:"station_id"`
