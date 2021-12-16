@@ -28,11 +28,10 @@ var (
 	MainPageHTML  = HTMLPath + "main-page.html"
 	ErrorPageHTML = HTMLPath + "error.html"
 	APIprefix     = "/api/v1"
-	AuthService   = &services.AuthService{}
 )
 
-func NewRouter(authService *services.AuthService) *mux.Router {
-	AuthService = authService
+func NewRouter() *mux.Router {
+
 	router := mux.NewRouter()
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
@@ -42,9 +41,6 @@ func NewRouter(authService *services.AuthService) *mux.Router {
 
 	router.HandleFunc("/", showHomePage)
 	router.HandleFunc("/login", showLoginPage)
-	router.HandleFunc("/signup", SignUp(AuthService))
-	router.HandleFunc("/signin", SignIn(AuthService))
-	router.HandleFunc("/signout", SignOut(AuthService))
 	return router
 }
 
@@ -53,8 +49,9 @@ func showHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func showLoginPage(w http.ResponseWriter, r *http.Request) {
-	_, err := AuthService.GetUserFromRequest(r)
-	if err == nil {
+	// not needed if filter is applied
+	user := services.GetUserFromContext(r)
+	if user != nil {
 		http.Redirect(w, r, "/home", http.StatusFound)
 		return
 	}
