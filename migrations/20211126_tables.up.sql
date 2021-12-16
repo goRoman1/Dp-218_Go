@@ -215,16 +215,15 @@ CREATE TABLE IF NOT EXISTS account_transactions
 );
 
 BEGIN;
-INSERT INTO problem_types(id, name) VALUES(1, 'Payment problem');
-INSERT INTO problem_types(id, name) VALUES(2, 'Scooter problem');
-INSERT INTO problem_types(id, name) VALUES(3, 'Other problem');
+/*
+INSERT INTO problem_types(name) VALUES('Payment problem');
+INSERT INTO problem_types(name) VALUES('Scooter problem');
+INSERT INTO problem_types(name) VALUES('Other problem');
+ */
 
-INSERT INTO payment_types(id, name) VALUES(1, 'comission');
-INSERT INTO payment_types(id, name) VALUES(2, 'simple income');
-INSERT INTO payment_types(id, name) VALUES(3, 'simple outcome');
-INSERT INTO payment_types(id, name) VALUES(4, 'rent scooter class1');
-INSERT INTO payment_types(id, name) VALUES(5, 'rent scooter class2');
-INSERT INTO payment_types(id, name) VALUES(6, 'rent scooter class3');
+INSERT INTO payment_types(id, name) VALUES(1,'comission');
+INSERT INTO payment_types(id, name) VALUES(2,'simple income');
+INSERT INTO payment_types(id, name) VALUES(3,'simple outcome');
 
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(1, 'admin role', true, false, false);
 INSERT INTO roles(id, name, is_admin, is_user, is_supplier) VALUES(2, 'user role', false, true, false);
@@ -241,17 +240,22 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
 
-
 INSERT INTO locations(id, latitude, longitude, label) VALUES (1, 20, 30, 'Dnepr');
 INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (1, 1, 'station pobeda3', true);
 INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (2, 1, 'station pobeda1', true);
 INSERT INTO scooter_stations(id, location_id, name, is_active ) VALUES (3, 1, 'station pobeda4', false);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) VALUES('gtr@gmail.com', false, 'Gregor', 'Tyson', 7, '$2a$10$Le9uo/qFrA.EPFh5d1Z5Wu1EaNCVMkeV1dOT/q86ZZ.obCeSY/472');
 
-INSERT INTO scooter_models(id, payment_type_id, model_name, max_weight, speed) VALUES(1, 1, 'Xiaomi М365 Mi Scooter', 125.0,5);
-INSERT INTO scooter_models(id, payment_type_id, model_name, max_weight, speed) VALUES(2, 1, 'Kugoo G2 Pro', 150.0, 5);
-INSERT INTO scooters(id, model_id, owner_id, serial_number) VALUES(1, 1, 1, '223445');
-INSERT INTO scooters(id, model_id, owner_id, serial_number) VALUES(2, 2, 1, '223455');
+INSERT INTO payment_types(id, name) VALUES(4,'Xiaomi М365 Mi Scooter');
+INSERT INTO payment_types(id, name) VALUES(5,'Kugoo G2 Pro');
+INSERT INTO scooter_models(payment_type_id, model_name, max_weight, speed) VALUES(4, 'Xiaomi М365 Mi Scooter', 125,25);
+INSERT INTO scooter_models(payment_type_id, model_name, max_weight, speed) VALUES(5, 'Kugoo G2 Pro', 150, 35);
+INSERT INTO scooters(model_id, owner_id, serial_number) VALUES(1, 1, '100000');
+INSERT INTO scooters(model_id, owner_id, serial_number) VALUES(1, 1, '100001');
+INSERT INTO scooters(model_id, owner_id, serial_number) VALUES(1, 1, '100002');
+INSERT INTO scooters(model_id, owner_id, serial_number) VALUES(2, 1, '200000');
+INSERT INTO scooters(model_id, owner_id, serial_number) VALUES(2, 1, '200001');
+INSERT INTO scooters(model_id, owner_id, serial_number) VALUES(2, 1, '200002');
 
 INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude, can_be_rent) VALUES(1, 77, 48.41452620789186, 35.01444471956219, true);
 INSERT INTO scooter_statuses(scooter_id, battery_remain, latitude, longitude, can_be_rent) VALUES(2, 58, 48.43452620789186, 35.01444471956219, true);
@@ -260,4 +264,5 @@ INSERT INTO accounts(name, number, owner_id) VALUES('One more account', '5555566
 
 INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 2, 0, 1, 0, 99999);
 INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 3, 1, 0, 0, 11111);
+
 COMMIT;

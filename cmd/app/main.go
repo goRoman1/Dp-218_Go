@@ -9,7 +9,6 @@ import (
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
 	"Dp218Go/utils"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -26,13 +25,15 @@ var sessionKey = "secretkey"
 
 func main() {
 
-	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		configs.POSTGRES_USER,
-		configs.POSTGRES_PASSWORD,
-		configs.PG_HOST,
-		configs.PG_PORT,
-		configs.POSTGRES_DB)
-
+	/*
+		var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+			configs.POSTGRES_USER,
+			configs.POSTGRES_PASSWORD,
+			configs.PG_HOST,
+			configs.PG_PORT,
+			configs.POSTGRES_DB)
+	*/
+	var connectionString = "postgres://scooteradmin:Megascooter!@localhost:5444/scooterdb"
 	db, err := postgres.NewConnection(connectionString)
 	if err != nil {
 		log.Fatalf("app - Run - postgres.New: %v", err)
@@ -56,6 +57,9 @@ func main() {
 	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
 	var scooterService = services.NewScooterService(scooterRepo)
 
+	var supplierRepoDB = postgres.NewSupplierRepoDB(db)
+	var supplierService = services.NewSupplierService(supplierRepoDB)
+
 	var problemRepoDb = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
 	var problemService = services.NewProblemService(problemRepoDb)
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
@@ -72,6 +76,7 @@ func main() {
 	routing.AddProblemHandler(handler, problemService)
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	routing.AddOrderHandler(handler, orderService)
+	routing.AddSupplierHandler(handler, supplierService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 	handler.HandleFunc("/scooter",httpServer.ScooterHandler)
 
