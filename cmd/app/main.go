@@ -26,12 +26,12 @@ var sessionKey = "secretkey"
 
 func main() {
 
-		var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-			configs.POSTGRES_USER,
-			configs.POSTGRES_PASSWORD,
-			configs.PG_HOST,
-			configs.PG_PORT,
-			configs.POSTGRES_DB)
+	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		configs.POSTGRES_USER,
+		configs.POSTGRES_PASSWORD,
+		configs.PG_HOST,
+		configs.PG_PORT,
+		configs.POSTGRES_DB)
 
 	db, err := postgres.NewConnection(connectionString)
 	if err != nil {
@@ -77,7 +77,7 @@ func main() {
 	routing.AddOrderHandler(handler, orderService)
 	routing.AddSupplierHandler(handler, supplierService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
-	handler.HandleFunc("/scooter",httpServer.ScooterHandler)
+	handler.HandleFunc("/scooter", httpServer.ScooterHandler)
 
 	grpcServer := grpcserver.NewGrpcServer()
 	protos.RegisterScooterServiceServer(grpcServer, httpServer)
