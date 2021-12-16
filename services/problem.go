@@ -59,13 +59,13 @@ func (problserv *ProblemService) AddProblemComplexFields(problem *models.Problem
 }
 
 func (solserv *SolutionService) AddProblemSolution(problemID int, solution *models.Solution) error {
-	return solserv.AddProblemSolution(problemID, solution)
+	return solserv.repoSolution.AddProblemSolution(problemID, solution)
 }
 
 func (solserv *SolutionService) GetSolutionByProblem(problem models.Problem) (models.Solution, error) {
-	return solserv.GetSolutionByProblem(problem)
+	return solserv.repoSolution.GetSolutionByProblem(problem)
 }
 
 func (solserv *SolutionService) GetSolutionsByProblems(problems models.ProblemList) (map[models.Problem]models.Solution, error) {
-	return solserv.GetSolutionsByProblems(problems)
+	return solserv.repoSolution.GetSolutionsByProblems(problems)
 }

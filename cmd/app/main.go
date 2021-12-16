@@ -58,6 +58,8 @@ func main() {
 
 	var problemRepoDb = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
 	var problemService = services.NewProblemService(problemRepoDb)
+	var solutionRepoDb = postgres.NewSolutionRepoDB(db)
+	var solutionService = services.NewSolutionService(solutionRepoDb)
 
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
 	var orderService = services.NewOrderService(orderRepoDB)
@@ -70,11 +72,11 @@ func main() {
 	routing.AddStationHandler(handler, stationService)
 	routing.AddAccountHandler(handler, accService)
 	routing.AddScooterHandler(handler, scooterService)
-	routing.AddProblemHandler(handler, problemService)
+	routing.AddProblemHandler(handler, problemService, solutionService)
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	routing.AddOrderHandler(handler, orderService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
-	handler.HandleFunc("/scooter",httpServer.ScooterHandler)
+	handler.HandleFunc("/scooter", httpServer.ScooterHandler)
 
 	grpcServer := grpcserver.NewGrpcServer()
 	protos.RegisterScooterServiceServer(grpcServer, httpServer)
