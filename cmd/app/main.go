@@ -9,6 +9,7 @@ import (
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
 	"Dp218Go/utils"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -25,15 +26,13 @@ var sessionKey = "secretkey"
 
 func main() {
 
-	/*
 		var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 			configs.POSTGRES_USER,
 			configs.POSTGRES_PASSWORD,
 			configs.PG_HOST,
 			configs.PG_PORT,
 			configs.POSTGRES_DB)
-	*/
-	var connectionString = "postgres://scooteradmin:Megascooter!@localhost:5444/scooterdb"
+
 	db, err := postgres.NewConnection(connectionString)
 	if err != nil {
 		log.Fatalf("app - Run - postgres.New: %v", err)

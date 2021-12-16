@@ -3,6 +3,7 @@ package routing
 import (
 	"Dp218Go/models"
 	"Dp218Go/services"
+	"Dp218Go/utils"
 	"fmt"
 	"github.com/gorilla/mux"
 	"io"
@@ -85,7 +86,7 @@ func createModel(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 	model := &models.ScooterModelDTO{}
 
-	DecodeRequest(FormatJSON, w, r, model, decodePriceRequest)
+	DecodeRequest(FormatJSON, w, r, model, scooterModelRequest)
 
 	if err := supplierService.AddModel(model); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
@@ -109,7 +110,7 @@ func editPrice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	DecodeRequest(FormatJSON, w, r, modelData, decodePriceRequest)
+	DecodeRequest(FormatJSON, w, r, modelData, scooterModelRequest)
 	if err := supplierService.ChangePrice(modelData); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
@@ -117,40 +118,6 @@ func editPrice(w http.ResponseWriter, r *http.Request) {
 
 	EncodeAnswer(FormatJSON, w, modelData)
 }
-
-func decodePriceRequest(r *http.Request, data interface{}) error {
-	r.ParseForm()
-	modelData := data.(*models.ScooterModelDTO)
-
-	if _, ok := r.Form["price"]; ok {
-		modelPrice, err := strconv.Atoi(r.FormValue("price"))
-		if err != nil {
-			return err
-		}
-		modelData.Price = modelPrice
-	}
-	if _, ok := r.Form["modelName"]; ok {
-		modelData.ModelName= r.FormValue("modelName")
-	}
-	if _, ok := r.Form["maxWeight"]; ok {
-		modelMaxWeight, err := strconv.Atoi(r.FormValue("maxWeight"))
-		if err != nil {
-			return err
-		}
-		modelData.MaxWeight = modelMaxWeight
-	}
-	if _, ok := r.Form["speed"]; ok {
-		modelSpeed, err := strconv.Atoi(r.FormValue("speed"))
-		if err != nil {
-			return err
-		}
-		modelData.MaxWeight = modelSpeed
-	}
-
-	return nil
-}
-
-/////////////////////
 
 func getSuppliersScootersByModelId(w http.ResponseWriter, r *http.Request) {
 	var scooters = &models.SuppliersScooterList{}
@@ -182,7 +149,7 @@ func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	scooter := &models.SuppliersScooter{}
-	DecodeRequest(FormatJSON, w, r, scooter, nil)
+	DecodeRequest(FormatJSON, w, r, scooter, scooterRequest)
 
 	if err := supplierService.AddSuppliersScooter(modelId, scooter); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
@@ -209,14 +176,16 @@ func deleteSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 }
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(32 << 20)
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		return
+	}
 	file, handler, err := r.FormFile("uploadfile")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer file.Close()
-	fmt.Fprintf(w, "%v", handler.Header)
 	filepath := "./internal/"+handler.Filename
 	f, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -226,4 +195,27 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 	io.Copy(f, file)
 	supplierService.InsertScootersToDb(filepath)
+}
+
+func scooterModelRequest(r *http.Request, data interface{}) error {
+	modelData := data.(*models.ScooterModelDTO)
+
+	price, _ := GetParameterFromRequest(r, "price", nil)
+	modelName,_ := GetParameterFromRequest(r, "modelName", utils.ConvertStringToString())
+	maxWeight,_ := GetParameterFromRequest(r, "maxWeight", nil)
+	speed,_ := GetParameterFromRequest(r, "speed", nil)
+
+	modelData.Price = price.(int)
+	modelData.ModelName = modelName.(string)
+	modelData.MaxWeight = maxWeight.(int)
+	modelData.Speed = speed.(int)
+	return nil
+}
+
+func scooterRequest(r *http.Request, data interface{}) error {
+	scooterData := data.(*models.SuppliersScooter)
+	serial, _ := GetParameterFromRequest(r, "serial",  utils.ConvertStringToString())
+
+	scooterData.SerialNumber = serial.(string)
+	return nil
 }
