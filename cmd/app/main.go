@@ -56,6 +56,9 @@ func main() {
 	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
 	var scooterService = services.NewScooterService(scooterRepo)
 
+	var supplierRepoDB = postgres.NewSupplierRepoDB(db)
+	var supplierService = services.NewSupplierService(supplierRepoDB)
+
 	var problemRepoDb = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
 	var problemService = services.NewProblemService(problemRepoDb)
 
@@ -73,8 +76,9 @@ func main() {
 	routing.AddProblemHandler(handler, problemService)
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	routing.AddOrderHandler(handler, orderService)
+	routing.AddSupplierHandler(handler, supplierService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
-	handler.HandleFunc("/scooter",httpServer.ScooterHandler)
+	handler.HandleFunc("/scooter", httpServer.ScooterHandler)
 
 	grpcServer := grpcserver.NewGrpcServer()
 	protos.RegisterScooterServiceServer(grpcServer, httpServer)
