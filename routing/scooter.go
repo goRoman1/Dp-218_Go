@@ -55,6 +55,7 @@ type combineForTemplate struct {
 	models.StationList
 }
 
+//AddScooterHandler adds routes to the router from the list of routes.
 func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
 	scooterService = service
 	for _, rt := range scooterRoutes {
@@ -63,6 +64,7 @@ func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
 	}
 }
 
+//AddGrpcScooterHandler adds routes to the router from the list of routes.
 func AddGrpcScooterHandler(router *mux.Router, service *services.GrpcScooterService) {
 	scooterGrpcService = service
 	for _, rt := range scooterRoutes {
@@ -165,5 +167,4 @@ func chooseStation(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(chosenStationID)
 }

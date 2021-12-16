@@ -11,15 +11,17 @@ import (
 )
 
 const (
-	step = 0.0005
-	dischargeStep = 1
+	step = 0.001
+	dischargeStep = 0.5
 	interval = 1
 )
 
+//GrpcScooterService is a service which responsible for gRPC scooter.
 type GrpcScooterService struct {
 	repositories.ScooterRepo
 }
 
+//GrpcScooterClient is a struct with parameters which will be translated by the gRPC connection.
 type GrpcScooterClient struct {
 	ID uint64
 	coordinate models.Coordinate
@@ -27,12 +29,14 @@ type GrpcScooterClient struct {
 	stream protos.ScooterService_ReceiveClient
 }
 
+//NewGrpcScooterService creates a new GrpcScooterService.
 func NewGrpcScooterService(repo repositories.ScooterRepo) *GrpcScooterService {
 	return &GrpcScooterService{
 		repo,
 	}
 }
 
+//NewGrpcScooterClient creates a new GrpcScooterClient with given parameters.
 func NewGrpcScooterClient(id uint64, coordinate models.Coordinate, battery float64,
 	stream protos.ScooterService_ReceiveClient) *GrpcScooterClient {
 	return &GrpcScooterClient{
@@ -43,13 +47,16 @@ func NewGrpcScooterClient(id uint64, coordinate models.Coordinate, battery float
 	}
 }
 
+//InitAndRun the main function of scooter's trip. It analyzes the scooter parameters from database by it's ID.
+//If they satisfy the conditions, function creates connection to the gRPC server, creates gRPC client,
+//calls 'run' function which moves the scooter to the destination point.
+//After finished moves it sends the current scooter status to the database.
 func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coordinate) error{
 	scooter,err := gss.GetScooterById(scooterID)
 	if err!= nil {
 		fmt.Println(err)
 		return err
 	}
-	// TODO по айди станции нахожу координаты
 
 	scooterStatus, err := gss.GetScooterStatus(scooterID)
 	if err!= nil {
@@ -96,6 +103,7 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coord
 	return err
 }
 
+//grpcScooterMessage sends the message be gRPC stream in a format which defined in the *proto file.
 func (s *GrpcScooterClient) grpcScooterMessage()  {
 	intPol := time.Duration(interval) * time.Second
 
@@ -112,6 +120,9 @@ func (s *GrpcScooterClient) grpcScooterMessage()  {
 	time.Sleep(intPol)
 }
 
+
+//run is responsible for scooter's movements from his current position to the destination point.
+//Run also is responsible for scooter's discharge. Every step battery charge decrease by the constant discharge value.
 func (s *GrpcScooterClient) run(station models.Coordinate) error {
 
 	switch {

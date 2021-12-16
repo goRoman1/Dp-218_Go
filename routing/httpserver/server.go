@@ -21,12 +21,13 @@ const(
 	defaultShutdownTimeout = 3 * time.Second
 	defaultAddr = ":8080"
 )
-
+//Client is a struct a client who connects to the "scooter-run" page.
 type Client struct {
 	w    io.Writer
 	done chan struct{}
 }
 
+//Server is a struct of the http-server which has a channel for gRPC connection.
 type Server struct{
 	server *http.Server
 	notify chan error
@@ -40,6 +41,7 @@ type Server struct{
 
 type Option func(*Server)
 
+//New creates and starts the http-server
 func New(handler http.Handler, opts ...Option) *Server {
 	httpServer := &http.Server{
 		Handler:      handler,
@@ -63,7 +65,7 @@ func New(handler http.Handler, opts ...Option) *Server {
 		opt(server)
 	}
 
-	server.Run()
+	server.run()
 
 	return server
 }
@@ -85,6 +87,7 @@ func Port(port string) Option {
 	}
 }
 
+//ScooterHandler is a special handler which adds a new stream client to the server.
 func (s *Server) ScooterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("new client connected")
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -101,14 +104,17 @@ func (s *Server) ScooterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("connection closed")
 }
 
+//AddClient is a Server's function for adding attached Client.
 func (s *Server) AddClient(c *Client) {
 	s.client[1] = c
 }
 
+//Register is a function for implementing gRPC-service.
 func (s *Server) Register(msg *protos.ClientRequest, stream protos.ScooterService_RegisterServer) error {
 	return nil
 }
 
+//Receive is the function which receive a message from the gRPC stream and direct it to the Server's 'in' channel.
 func (s *Server) Receive(stream protos.ScooterService_ReceiveServer) error {
 	var err error
 
@@ -127,7 +133,8 @@ func (s *Server) Receive(stream protos.ScooterService_ReceiveServer) error {
 	return err
 }
 
-func (s *Server) Run() {
+//run runs the Server and wait for messages into the channel. Then encode them and print to the console.
+func (s *Server) run() {
 	go func() {
 		for {
 			select {
