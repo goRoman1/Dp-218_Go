@@ -44,7 +44,6 @@ var keyRoutesStation = []Route{
 		Method:  http.MethodPost,
 		Handler: UpdateStation,
 	},
-
 }
 
 func AddStationHandler(router *mux.Router, service *services.StationService) {
@@ -163,7 +162,7 @@ func UpdateStation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(format, w, stationData , HTMLPath+"station-edit.html")
+	EncodeAnswer(format, w, stationData, HTMLPath+"station-edit.html")
 }
 
 func DecodeStationUpdateRequest(r *http.Request, data interface{}) error {
@@ -177,20 +176,3 @@ func DecodeStationUpdateRequest(r *http.Request, data interface{}) error {
 	}
 	return nil
 }
-
-//func getStation(w http.ResponseWriter, r *http.Request) {
-//	format := GetFormatFromRequest(r)
-//
-//	stationId, err := strconv.Atoi(mux.Vars(r)[stationIDKey])
-//	if err != nil {
-//		EncodeError(format, w, ErrorRendererDefault(err))
-//		return
-//	}
-//	station, err := stationService.GetStationByID(stationId)
-//	if err != nil {
-//		EncodeError(format, w, ErrorRendererDefault(err))
-//		return
-//	}
-//
-//	EncodeAnswer(format, w, stationData{station}, HTMLPath+"station-edit.html")
-//}

@@ -5,7 +5,6 @@ import (
 	"Dp218Go/repositories"
 )
 
-
 type StationService struct {
 	repoStation repositories.StationRepo
 }
@@ -31,8 +30,8 @@ func (db *StationService) DeleteStation(stationId int) error {
 }
 
 func (ser *StationService) ChangeStationBlockStatus(stationId int) error {
-	station, err:= ser.repoStation.GetStationById(stationId)
-	if err!=nil{
+	station, err := ser.repoStation.GetStationById(stationId)
+	if err != nil {
 		return err
 	}
 	station.IsActive = !station.IsActive
