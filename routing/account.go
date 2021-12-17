@@ -4,9 +4,11 @@ import (
 	"Dp218Go/models"
 	"Dp218Go/services"
 	"Dp218Go/utils"
-	"github.com/gorilla/mux"
+	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 var accountService *services.AccountService
@@ -44,9 +46,9 @@ func getAllAccounts(w http.ResponseWriter, r *http.Request) {
 	var err error
 	format := GetFormatFromRequest(r)
 
-	user, err := AuthService.GetUserFromRequest(r)
-	if err != nil {
-		EncodeError(format, w, ErrorRendererDefault(err))
+	user := services.GetUserFromContext(r)
+	if user == nil {
+		EncodeError(format, w, ErrorRendererDefault(errors.New("not authorized")))
 		return
 	}
 
