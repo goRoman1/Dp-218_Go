@@ -239,7 +239,7 @@ INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VAL
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('UserB@mail.com', true, 'Beyonce', 'Ivanova', 2);
 INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id) VALUES('telo@mail.com', false, 'Goga', 'Boba', 2);
 
-INSERT INTO locations(id, latitude, longitude, label) VALUES (1, 20, 30, 'Dnepr');
+
 INSERT INTO scooter_stations(id, name, is_active, latitude, longitude ) VALUES (1, 'station pobeda3', true, 48.42367000000000, 35.04436000000000);
 INSERT INTO scooter_stations(id, name, is_active, latitude, longitude ) VALUES (2, 'station pobeda1', true, 48.42210000000000, 35.01960000000000);
 INSERT INTO scooter_stations(id, name, is_active, latitude, longitude ) VALUES (3, 'station pobeda4', false, 48.42543000000000, 35.02183000000000);
