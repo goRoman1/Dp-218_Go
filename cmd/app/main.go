@@ -68,7 +68,11 @@ func main() {
 	sessStore := sessions.NewCookieStore([]byte(sessionKey))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)
 
-	handler := routing.NewRouter(authService)
+	custService := services.NewCustomerService(stationRepoDb)
+
+	handler := routing.NewRouter()
+	routing.AddAuthHandler(handler, authService)
+	routing.AddCustomerHandler(handler, custService)
 	routing.AddUserHandler(handler, userService)
 	routing.AddStationHandler(handler, stationService)
 	routing.AddAccountHandler(handler, accService)

@@ -2,6 +2,7 @@ package routing
 
 import (
 	"Dp218Go/models"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -63,9 +64,12 @@ func (ur *userWithRoleList) ListOfRoles() []models.Role {
 
 func AddUserHandler(router *mux.Router, service *services.UserService) {
 	userService = service
+	userRouter := router.NewRoute().Subrouter()
+	userRouter.Use(authenticationService.FilterAuth)
+
 	for _, rt := range keyUserRoutes {
-		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
-		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		userRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		userRouter.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
@@ -106,10 +110,10 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUserPage(w http.ResponseWriter, r *http.Request) {
-
-	user, err := AuthService.GetUserFromRequest(r)
-	if err != nil {
-		EncodeError(FormatHTML, w, ErrorRendererDefault(err))
+	// check can be omited if filter is applied to route
+	user := services.GetUserFromContext(r)
+	if user == nil {
+		EncodeError(FormatHTML, w, ErrorRendererDefault(errors.New("not authorized")))
 		return
 	}
 
