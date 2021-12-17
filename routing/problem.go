@@ -11,6 +11,7 @@ import (
 )
 
 var problemService *services.ProblemService
+var solutionService *services.SolutionService
 var problemIDKey = "problemID"
 
 var keyProblemRoutes = []Route{
@@ -29,10 +30,22 @@ var keyProblemRoutes = []Route{
 		Method:  http.MethodPost,
 		Handler: addProblem,
 	},
+	{
+		Uri:     `/problem/{` + problemIDKey + `}/solution`,
+		Method:  http.MethodPost,
+		Handler: addProblemSolution,
+	},
+	{
+		Uri:     `/problem/{` + problemIDKey + `}/solution`,
+		Method:  http.MethodGet,
+		Handler: getProblemSolution,
+	},
 }
 
-func AddProblemHandler(router *mux.Router, service *services.ProblemService) {
-	problemService = service
+func AddProblemHandler(router *mux.Router, problserv *services.ProblemService, solserv *services.SolutionService) {
+	problemService = problserv
+	solutionService = solserv
+
 	for _, rt := range keyProblemRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
@@ -113,7 +126,7 @@ func addProblem(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
 	problemData := models.Problem{}
-	DecodeRequest(format, w, r, &problemData, DecodeProblemAddRequest)
+	DecodeRequest(format, w, r, &problemData, decodeProblemAddRequest)
 	err := problemService.AddNewProblem(&problemData)
 	if err != nil {
 		ServerErrorRender(format, w)
@@ -123,7 +136,7 @@ func addProblem(w http.ResponseWriter, r *http.Request) {
 	EncodeAnswer(format, w, problemData, HTMLPath+"problem-add.html")
 }
 
-func DecodeProblemAddRequest(r *http.Request, data interface{}) error {
+func decodeProblemAddRequest(r *http.Request, data interface{}) error {
 
 	var err error
 
@@ -148,4 +161,73 @@ func DecodeProblemAddRequest(r *http.Request, data interface{}) error {
 	}
 
 	return problemService.AddNewProblem(problemData)
+}
+
+func getProblemSolution(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
+	problemID, err := strconv.Atoi(mux.Vars(r)[problemIDKey])
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+
+	problem, err := problemService.GetProblemByID(problemID)
+	if err != nil {
+		EncodeError(FormatHTML, w, ErrorRendererDefault(err))
+		return
+	}
+
+	solution, err := solutionService.GetSolutionByProblem(problem)
+	if err != nil {
+		EncodeError(FormatHTML, w, ErrorRendererDefault(err))
+		return
+	}
+
+	EncodeAnswer(format, w, solution, HTMLPath+"solution.html")
+}
+
+func addProblemSolution(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
+	problemID, err := strconv.Atoi(mux.Vars(r)[problemIDKey])
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+
+	solutionData := models.Solution{}
+	solutionData.Problem = models.Problem{ID: problemID}
+	DecodeRequest(format, w, r, &solutionData, decodeSolutionAddRequest)
+	err = solutionService.AddProblemSolution(solutionData.Problem.ID, &solutionData)
+	if err != nil {
+		ServerErrorRender(format, w)
+		return
+	}
+
+	EncodeAnswer(format, w, solutionData, HTMLPath+"solution-add.html")
+}
+
+func decodeSolutionAddRequest(r *http.Request, data interface{}) error {
+	var err error
+
+	solutionData := data.(*models.Solution)
+
+	description, _ := GetParameterFromRequest(r, "Description", utils.ConvertStringToString())
+	if err != nil {
+		return err
+	}
+	solutionData.Description = description.(string)
+
+	problemID, err := GetParameterFromRequest(r, "ProblemID", utils.ConvertStringToInt())
+	if err != nil {
+		return err
+	}
+	problem, err := problemService.GetProblemByID(problemID.(int))
+	if err != nil {
+		return err
+	}
+	solutionData.Problem = problem
+
+	return solutionService.AddProblemSolution(problemID.(int), solutionData)
 }

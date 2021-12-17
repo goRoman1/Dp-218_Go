@@ -20,3 +20,9 @@ type Problem struct {
 type ProblemList struct {
 	Problems []Problem `json:"accounts"`
 }
+
+type Solution struct {
+	Problem     Problem   `json:"problem"`
+	DateSolved  time.Time `json:"date_solved"`
+	Description string    `json:"description"`
+}
