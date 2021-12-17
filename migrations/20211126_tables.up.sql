@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS problems
 CREATE TABLE IF NOT EXISTS solutions
 (
     problem_id   bigint PRIMARY KEY,
-    date_solved  TIMESTAMP NOT NULL,
+    date_solved  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description text      NOT NULL,
 
     FOREIGN KEY (problem_id) REFERENCES problems (id)
