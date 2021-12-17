@@ -14,12 +14,7 @@ var scooterGrpcService *services.GrpcScooterService
 var orderService *services.OrderService
 var scooterIDKey = "scooterId"
 
-// TODO make dynamic access to this variables from UI
-//var choosenWay = models.Coordinate{Latitude: 48.4221, Longitude: 35.0196}
-var choosenWay = models.Coordinate{Latitude: 48.42543, Longitude: 35.02183} // dafi
-//var choosenWay = models.Coordinate{48.42272,35.02280} // visokovoltnaya
-//var choosenWay = models.Coordinate{Latitude: 48.42367 , Longitude: 35.04436} // ostapa vishni
-var chosenScooterID int
+var chosenScooterID, chosenStationID int
 var userFromRequest = models.User{ID: 1, LoginEmail: "guru_admin@guru.com", UserName: "Guru", UserSurname: "Sadh"}
 
 var scooterRoutes = []Route{
@@ -60,6 +55,7 @@ type combineForTemplate struct {
 	models.StationList
 }
 
+//AddScooterHandler adds routes to the router from the list of routes.
 func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
 	scooterService = service
 	for _, rt := range scooterRoutes {
@@ -68,6 +64,7 @@ func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
 	}
 }
 
+//AddGrpcScooterHandler adds routes to the router from the list of routes.
 func AddGrpcScooterHandler(router *mux.Router, service *services.GrpcScooterService) {
 	scooterGrpcService = service
 	for _, rt := range scooterRoutes {
@@ -107,12 +104,19 @@ func getScooterById(w http.ResponseWriter, r *http.Request) {
 }
 
 func startScooterTrip(w http.ResponseWriter, r *http.Request) {
+	station, err := stationService.GetStationById(chosenStationID)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	chosenWay := models.Coordinate{Latitude: station.Latitude, Longitude: station.Longitude}
 	statusStart, err := scooterService.CreateScooterStatusInRent(chosenScooterID)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = scooterGrpcService.InitAndRun(chosenScooterID, choosenWay)
+
+	err = scooterGrpcService.InitAndRun(chosenScooterID, chosenWay)
 	if err != nil {
 		fmt.Println(err)
 		EncodeError(FormatJSON, w, ErrorRendererDefault(err))
@@ -159,9 +163,8 @@ func chooseStation(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	chosenStationID, err := strconv.Atoi(r.Form.Get("id"))
+	chosenStationID, err = strconv.Atoi(r.Form.Get("id"))
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(chosenStationID)
 }

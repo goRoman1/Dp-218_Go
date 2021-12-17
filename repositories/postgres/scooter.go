@@ -7,14 +7,17 @@ import (
 	"fmt"
 )
 
+//ScooterRepoDB is a repository for database connection.
 type ScooterRepoDB struct {
 	db repositories.AnyDatabase
 }
 
+//NewScooterRepoDB creates new ScooterRepoDB
 func NewScooterRepoDB(db repositories.AnyDatabase) *ScooterRepoDB {
 	return &ScooterRepoDB{db}
 }
 
+//GetAllScooters returns the list of all scooters in the database in ScooterDTO view.
 func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterListDTO, error) {
 	scooterList := &models.ScooterListDTO{}
 
@@ -43,6 +46,7 @@ func (scdb *ScooterRepoDB) GetAllScooters() (*models.ScooterListDTO, error) {
 	return scooterList, nil
 }
 
+//GetScooterById returns exact scooter by it's ID.
 func (scdb *ScooterRepoDB) GetScooterById(scooterId int) (models.ScooterDTO, error) {
 	scooter := models.ScooterDTO{}
 	querySQL := `SELECT s.id, sm.max_weight, sm.model_name, ss.battery_remain, ss.can_be_rent
@@ -62,6 +66,7 @@ func (scdb *ScooterRepoDB) GetScooterById(scooterId int) (models.ScooterDTO, err
 	return scooter, nil
 }
 
+//GetScooterStatus returns the ScooterStatus model of the chosen scooter by it's ID.
 func (scdb *ScooterRepoDB) GetScooterStatus(scooterID int) (models.ScooterStatus, error) {
 	var scooterStatus = models.ScooterStatus{}
 	scooter, err := scdb.GetScooterById(scooterID)
@@ -85,6 +90,8 @@ func (scdb *ScooterRepoDB) GetScooterStatus(scooterID int) (models.ScooterStatus
 	return scooterStatus, nil
 }
 
+//CreateScooterStatusInRent creates a new record in ScooterStatusesInRent by scooter's ID and returns the
+//ScooterStatusInRent model.
 func (scdb *ScooterRepoDB) CreateScooterStatusInRent(scooterID int) (models.ScooterStatusInRent, error) {
 	var scooterStatusInRent models.ScooterStatusInRent
 	scooterStatus, err := scdb.GetScooterStatus(scooterID)
@@ -109,6 +116,7 @@ func (scdb *ScooterRepoDB) CreateScooterStatusInRent(scooterID int) (models.Scoo
 
 }
 
+//SendCurrentStatus updates ScooterStatus with given parameters.
 func (scdb *ScooterRepoDB) SendCurrentStatus(id int, lat, lon, battery float64) error {
 	var canBeRent bool
 	if battery > 10 {

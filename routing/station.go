@@ -40,7 +40,7 @@ var keyRoutesStation = []Route{
 		Handler: allStationsOperation,
 	},
 	{
-		Uri:     `/stations/{` + stationIDKey + `}`,
+		Uri:     `/station/{` + stationIDKey + `}`,
 		Method:  http.MethodPost,
 		Handler: UpdateStation,
 	},
@@ -162,15 +162,17 @@ func UpdateStation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(format, w, stationData , HTMLPath+"station-edit.html")
+	EncodeAnswer(format, w, stationData, HTMLPath+"station-edit.html")
 }
 
 func DecodeStationUpdateRequest(r *http.Request, data interface{}) error {
-	//var err error
 	r.ParseForm()
 	stationData := data.(*models.Station)
 	if _, ok := r.Form["IsActive"]; ok {
 		stationData.IsActive, _ = strconv.ParseBool(r.FormValue("IsActive"))
+	}
+	if _, ok := r.Form["Name"]; ok {
+		stationData.Name = r.FormValue("Name")
 	}
 	return nil
 }

@@ -20,7 +20,7 @@
             <div class="collapse navbar-collapse" id="navbarColor02">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-<!--                        <a class="nav-link" href="/home">Back to profile</a>-->
+                        <!--                        <a class="nav-link" href="/home">Back to profile</a>-->
                     </li>
                 </ul>
                 <form class="form-inline my-2 my-lg-0" method="get" action="/stations">
@@ -38,7 +38,8 @@
         <thead>
         <tr>
             <th>ID</th>
-            <th>LocationID</th>
+            <td>Latitude</td>
+            <td>Longitude</td>
             <th>Status</th>
             <th>Name</th>
             <th></th>
@@ -50,13 +51,14 @@
         {{range .Station}}
         <tr>
             <td>{{.ID}}</td>
-            <td>{{.LocationID}}</td>
+            <td>{{.Latitude}}</td>
+            <td>{{.Longitude}}</td>
             <td>{{if .IsActive}}<span class="badge badge-success">Active</span>{{else}}<span
                     class="badge badge-danger">Blocked</span>{{end}}
             </td>
             <td>{{.Name}}</td>
             <td>
-                <button type="button" class="btn btn-primary" onclick="window.location.href='/stations/{{.ID}}'">Edit
+                <button type="button" class="btn btn-primary" onclick="window.location.href='/station/{{.ID}}'">Edit
                 </button>
             </td>
             <td>
@@ -90,8 +92,8 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">No, dismiss</button>
                         <form class="form-inline" method="post" action="/stations">
-                            <input type="hidden" value="BlockStation" name = "ActionType">
-                            <input type="hidden" value="{{.ID}}" name = "stationID">
+                            <input type="hidden" value="BlockStation" name="ActionType">
+                            <input type="hidden" value="{{.ID}}" name="stationID">
                             <button type="submit" class="btn btn-primary">Yes, confirm</button>
                         </form>
                     </div>
@@ -110,8 +112,8 @@
             integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
             crossorigin="anonymous"></script>
     <script>
-        if ( window.history.replaceState ) {
-            window.history.replaceState( null, null, window.location.href );
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
         }
     </script>
 </body>

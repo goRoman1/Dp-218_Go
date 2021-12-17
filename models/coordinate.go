@@ -13,7 +13,6 @@ type Coordinate struct {
 //     approximation of the Earth) through the Haversin Distance Formula for
 //     great arc distance on a sphere with accuracy for small distances
 //
-// distance returned is METERS!!!
 // http://en.wikipedia.org/wiki/Haversine_formula
 func (l1 Coordinate) Distance(l2 Coordinate) float64 {
 	// convert to radians

@@ -1,5 +1,6 @@
 package models
 
+// Order is a struct which keeps user's trip parameters.
 type Order struct {
 	ID            int     `json:"id"`
 	UserID        int     `json:"user_id"`
@@ -10,6 +11,7 @@ type Order struct {
 	Amount        int 	  `json:"amount"`
 }
 
+//OrderList is a list of Orders
 type OrderList struct {
 	Orders []Order `json:"orders"`
 }

@@ -11,7 +11,7 @@
             padding: 0 2rem;
             /*background-color: yellowgreen;*/
             margin: 0.25rem;
-            font-weight: bold;
+            /*font-weight: bold;*/
             font-size: 18px;
             cursor: pointer;
             transition: background-color 0.5s;
@@ -32,9 +32,15 @@
     <script type="text/javascript">
         var map;
 
+        // myIcon = DG.icon({
+        //     iconUrl: 'https://icons8.com/icon/W7f5fcjgfbyK/scooter',
+        //     iconSize: [35, 35]
+        // });
         let eventSource = new EventSource("/scooter");
         let scooters = new Map();
         // let scooter;
+
+
 
         DG.then(function () {
             map = DG.map('map', {
@@ -115,9 +121,6 @@
                         Scooter list
                     </div>
                     {{range .Scooters}}
-                    <!--                            <a href="#" class="list-group-item list-group-item-action choose_scooter"-->
-                    <!--                               value="{{.ID}}">{{.ScooterModel}}-->
-                    <!--                            </a>-->
                     <input  type="radio" name="size"
                            class="choose_scooter" value="{{.ID}}" id="{{.ID}}"
                     ><label for="{{.ID}}">{{.ScooterModel}}</label>
@@ -135,13 +138,6 @@
                             class="choose_station" value="{{.ID}}" id="{{.ID}}+500"
                     ><label for="{{.ID}}+500">{{.Name}}</label>
                     {{end}}
-    <!--                <a href="#" class="list-group-item list-group-item-action">Haharina - Shevchenko park-->
-    <!--                </a>-->
-    <!--                <a href="#" class="list-group-item list-group-item-action">Haharina - Dafi-->
-    <!--                </a>-->
-    <!--                <a href="#" class="list-group-item list-group-item-action"-->
-    <!--                   style="margin-bottom: 20px">McDonalds - Theatre-->
-    <!--                </a>-->
                 </div>
             </fieldset>
         </div>

@@ -17,7 +17,7 @@ func NewStationRepoDB(db repositories.AnyDatabase) *StationRepoDB {
 func (pg *StationRepoDB) GetAllStations() (*models.StationList, error) {
 	list := &models.StationList{}
 
-	querySQL := `SELECT * FROM scooter_stations ORDER BY id DESC;`
+	querySQL := `SELECT * FROM scooter_stations ORDER BY id;`
 	rows, err := pg.db.QueryResult(context.Background(), querySQL)
 	if err != nil {
 		return list, err
@@ -25,7 +25,7 @@ func (pg *StationRepoDB) GetAllStations() (*models.StationList, error) {
 
 	for rows.Next() {
 		var station models.Station
-		err := rows.Scan(&station.ID, &station.LocationID, &station.Name, &station.IsActive)
+		err := rows.Scan(&station.ID, &station.Name, &station.IsActive, &station.Latitude, &station.Longitude)
 		if err != nil {
 			return list, err
 		}
@@ -37,10 +37,10 @@ func (pg *StationRepoDB) GetAllStations() (*models.StationList, error) {
 
 func (pg *StationRepoDB) AddStation(station *models.Station) error {
 	var id int
-	querySQL := `INSERT INTO scooter_stations(id, location_id, name, is_active) 
-		VALUES($1, $2, $3, $4)
+	querySQL := `INSERT INTO scooter_stations(id, name, is_active, latitude, longitude) 
+		VALUES($1, $2, $3, $4, $5)
 		RETURNING id;`
-	err := pg.db.QueryResultRow(context.Background(), querySQL, station.ID, station.LocationID, station.Name, station.IsActive).Scan(&id)
+	err := pg.db.QueryResultRow(context.Background(), querySQL, station.ID, station.Name, station.IsActive, &station.Latitude, &station.Longitude).Scan(&id)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (pg *StationRepoDB) GetStationById(stationId int) (models.Station, error) {
 
 	querySQL := `SELECT * FROM scooter_stations WHERE id = $1;`
 	row := pg.db.QueryResultRow(context.Background(), querySQL, stationId)
-	err := row.Scan(&station.ID, &station.LocationID, &station.Name, &station.IsActive)
+	err := row.Scan(&station.ID, &station.Name, &station.IsActive, &station.Latitude, &station.Longitude)
 
 	return station, err
 }
@@ -64,13 +64,13 @@ func (pg *StationRepoDB) DeleteStation(stationId int) error {
 	return err
 }
 
-func (pg *StationRepoDB) UpdateStation (stationId int, stationData models.Station) (models.Station, error){
+func (pg *StationRepoDB) UpdateStation(stationId int, stationData models.Station) (models.Station, error) {
 	station := models.Station{}
 	querySQL := `UPDATE scooter_stations 
-		SET is_active=$1
-		WHERE id=$2
-		RETURNING id, is_active;`
-	err := pg.db.QueryResultRow(context.Background(), querySQL, &stationData.IsActive, stationId).Scan(&station.ID, &station.IsActive)
+		SET is_active=$1, name=$2
+		WHERE id=$3
+		RETURNING id, is_active, name;`
+	err := pg.db.QueryResultRow(context.Background(), querySQL, stationData.IsActive, stationData.Name, stationId).Scan(&station.ID, &station.IsActive, &station.Name)
 	if err != nil {
 		return station, err
 	}

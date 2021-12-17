@@ -16,6 +16,7 @@ var keyOrderRoutes = []Route{
 	},
 }
 
+//AddOrderHandler adds routes to the router from the list of routes.
 func AddOrderHandler(router *mux.Router, order *services.OrderService) {
 	orderService = order
 	for _, rt := range keyOrderRoutes {

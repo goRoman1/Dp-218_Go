@@ -7,6 +7,7 @@ import (
 	"net"
 )
 
+//NewGrpcServer creates a new gRPC server on port 8080.
 func NewGrpcServer() *grpc.Server{
 	grpcServer := grpc.NewServer()
 	listener, err := net.Listen("tcp", ":8000")
