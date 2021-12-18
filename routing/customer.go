@@ -11,25 +11,35 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var customerService *services.CustomerService
 var custTmpl = template.Must(template.ParseFiles("templates/html/customer-home.html"))
 
+type customerHandler struct {
+	custService *services.CustomerService
+}
+
+func newCustomerHandler(service *services.CustomerService) *customerHandler {
+	return &customerHandler{
+		custService: service,
+	}
+}
+
 func AddCustomerHandler(router *mux.Router, service *services.CustomerService) {
-	customerService = service
+
+	custHandler := newCustomerHandler(service)
 
 	custRouter := router.PathPrefix("/customer").Subrouter()
-	custRouter.Use(authenticationService.FilterAuth, FilterCustomer)
+	custRouter.Use(FilterAuth(authenticationService), FilterCustomer)
 
-	custRouter.Path("/home").HandlerFunc(CustomerHomeHandler).Methods(http.MethodGet)
-	custRouter.Path("/station").HandlerFunc(CustomerStationListHandler).Methods(http.MethodGet)
+	custRouter.Path("/home").HandlerFunc(custHandler.HomeHandler).Methods(http.MethodGet)
+	custRouter.Path("/station").HandlerFunc(custHandler.StationListHandler).Methods(http.MethodGet)
 	custRouter.Path("/station/nearest").
-		HandlerFunc(CustomerStationNearestHandler).Queries("x", "{x}", "y", "{y}").Methods(http.MethodGet)
-	custRouter.Path("/station/{id:[0-9]+}").HandlerFunc(CustomerStationInfoHandler).Methods(http.MethodGet)
+		HandlerFunc(custHandler.StationNearestHandler).Queries("x", "{x}", "y", "{y}").Methods(http.MethodGet)
+	custRouter.Path("/station/{id:[0-9]+}").HandlerFunc(custHandler.StationInfoHandler).Methods(http.MethodGet)
 
 }
 
-func CustomerHomeHandler(w http.ResponseWriter, r *http.Request) {
-	user := services.GetUserFromContext(r)
+func (h *customerHandler) HomeHandler(w http.ResponseWriter, r *http.Request) {
+	user := GetUserFromContext(r)
 	// no need if wrapped with filteruser
 	if user == nil {
 		http.Error(w, "not authenticated", http.StatusForbidden)
@@ -39,9 +49,9 @@ func CustomerHomeHandler(w http.ResponseWriter, r *http.Request) {
 	custTmpl.ExecuteTemplate(w, "customer-home.html", user)
 }
 
-func CustomerStationListHandler(w http.ResponseWriter, r *http.Request) {
+func (h *customerHandler) StationListHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO show only not blocked
-	sts, err := customerService.ListStations()
+	sts, err := h.custService.ListStations()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -51,7 +61,7 @@ func CustomerStationListHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(sts.Station)
 }
 
-func CustomerStationNearestHandler(w http.ResponseWriter, r *http.Request) {
+func (h *customerHandler) StationNearestHandler(w http.ResponseWriter, r *http.Request) {
 
 	xStr := r.FormValue("x")
 	yStr := r.FormValue("y")
@@ -68,7 +78,7 @@ func CustomerStationNearestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nearest, err := customerService.ShowNearestStation(x, y)
+	nearest, err := h.custService.ShowNearestStation(x, y)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
@@ -78,7 +88,7 @@ func CustomerStationNearestHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode([]*models.Station{nearest})
 }
 
-func CustomerStationInfoHandler(w http.ResponseWriter, r *http.Request) {
+func (h *customerHandler) StationInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
@@ -86,7 +96,7 @@ func CustomerStationInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
 	}
-	station, err := customerService.ShowStation(id)
+	station, err := h.custService.ShowStation(id)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -100,7 +110,7 @@ func CustomerStationInfoHandler(w http.ResponseWriter, r *http.Request) {
 func FilterCustomer(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := services.GetUserFromContext(r)
+		user := GetUserFromContext(r)
 		if user == nil || !(user.Role.IsUser || user.Role.IsAdmin) {
 			http.Error(w, "only customers allowed", http.StatusForbidden)
 			return

@@ -4,7 +4,6 @@ import (
 	"Dp218Go/models"
 	"Dp218Go/repositories"
 	"Dp218Go/utils"
-	"context"
 	"encoding/gob"
 	"fmt"
 	"net/http"
@@ -96,7 +95,7 @@ func (sv *AuthService) SignOut(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (sv *AuthService) getUserFromRequest(r *http.Request) (*models.User, error) {
+func (sv *AuthService) GetUserFromRequest(r *http.Request) (*models.User, error) {
 	sess, err := sv.sessStore.Get(r, sessionName)
 	if err != nil {
 		return nil, err
@@ -119,28 +118,4 @@ func (sv *AuthService) getUserFromRequest(r *http.Request) (*models.User, error)
 
 func (sv *AuthService) GetSessionStore() sessions.Store {
 	return sv.sessStore
-}
-
-func (sv *AuthService) FilterAuth(next http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := sv.getUserFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		}
-		newReq := r.WithContext(context.WithValue(r.Context(), ukey, user))
-
-		next.ServeHTTP(w, newReq)
-	})
-}
-
-func GetUserFromContext(r *http.Request) *models.User {
-	val := r.Context().Value(ukey)
-	user, ok := val.(*models.User)
-
-	if ok {
-		return user
-	}
-	return nil
 }

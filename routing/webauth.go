@@ -3,14 +3,17 @@ package routing
 import (
 	"Dp218Go/models"
 	"Dp218Go/services"
+	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
+type userKey string
+
 var (
+	ukey                  userKey = "user"
 	authenticationService *services.AuthService
 	ErrSignUp             = errors.New("signup error")
 	ErrSignIn             = errors.New("signin error")
@@ -36,8 +39,6 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 			Role:        models.Role{ID: 2},
 			Password:    r.FormValue("password"),
 		}
-		fmt.Println("user is ", *user)
-		fmt.Println("service is ", sv)
 
 		if err := sv.SignUp(user); err != nil {
 
@@ -83,4 +84,29 @@ func SignOut(sv *services.AuthService) http.HandlerFunc {
 
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
+}
+
+func FilterAuth(sv *services.AuthService) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, err := sv.GetUserFromRequest(r)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusForbidden)
+				return
+			}
+			newReq := r.WithContext(context.WithValue(r.Context(), ukey, user))
+
+			next.ServeHTTP(w, newReq)
+		})
+	}
+}
+
+func GetUserFromContext(r *http.Request) *models.User {
+	val := r.Context().Value(ukey)
+	user, ok := val.(*models.User)
+
+	if ok {
+		return user
+	}
+	return nil
 }
