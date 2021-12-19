@@ -23,6 +23,7 @@ func newCustomerHandler(service *services.CustomerService) *customerHandler {
 	}
 }
 
+//AddCustomerHandler registeres endpoints for customer
 func AddCustomerHandler(router *mux.Router, service *services.CustomerService) {
 
 	custHandler := newCustomerHandler(service)
@@ -38,6 +39,7 @@ func AddCustomerHandler(router *mux.Router, service *services.CustomerService) {
 
 }
 
+// HomeHandler is handler for rendering home page of customer
 func (h *customerHandler) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	user := GetUserFromContext(r)
 	// no need if wrapped with filteruser
@@ -49,6 +51,9 @@ func (h *customerHandler) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	custTmpl.ExecuteTemplate(w, "customer-home.html", user)
 }
 
+// StationListHandler is handler that users customer service
+// shows list of available stations on map
+// returns json station list in response shows error if failed
 func (h *customerHandler) StationListHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO show only not blocked
 	sts, err := h.custService.ListStations()
@@ -61,6 +66,9 @@ func (h *customerHandler) StationListHandler(w http.ResponseWriter, r *http.Requ
 	json.NewEncoder(w).Encode(sts.Station)
 }
 
+//StationNearestHandler is handler that user customer service
+// takes user location and returns nearest
+// station in json format shows error if failed
 func (h *customerHandler) StationNearestHandler(w http.ResponseWriter, r *http.Request) {
 
 	xStr := r.FormValue("x")
@@ -88,6 +96,8 @@ func (h *customerHandler) StationNearestHandler(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode([]*models.Station{nearest})
 }
 
+// StationInfoHandler is handler that shows general station info of station
+// by station id received in reguest url var
 func (h *customerHandler) StationInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	idStr := mux.Vars(r)["id"]
@@ -107,6 +117,9 @@ func (h *customerHandler) StationInfoHandler(w http.ResponseWriter, r *http.Requ
 
 }
 
+// FilterCustomer is middleware that restricts access to customer page
+// checks if user role is customer or admin
+// shows error if not allowed
 func FilterCustomer(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
