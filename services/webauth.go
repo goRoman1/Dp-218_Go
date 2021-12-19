@@ -11,17 +11,14 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type userKey string
-
 type AuthService struct {
 	DB        repositories.UserRepo
 	sessStore sessions.Store
 }
 
 const (
-	ukey        userKey = "user"
-	sessionName         = "login"
-	sessionVal          = "user"
+	sessionName = "login"
+	sessionVal  = "user"
 )
 
 func NewAuthService(db repositories.UserRepo, store sessions.Store) *AuthService {
@@ -64,7 +61,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request, authreq *A
 		return err
 	}
 
-	session, err := sv.GetSessionStore().Get(r, sessionName)
+	session, err := sv.getSessionStore().Get(r, sessionName)
 	if err != nil {
 		return err
 	}
@@ -79,7 +76,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request, authreq *A
 }
 
 func (sv *AuthService) SignOut(w http.ResponseWriter, r *http.Request) error {
-	session, err := sv.GetSessionStore().Get(r, sessionName)
+	session, err := sv.getSessionStore().Get(r, sessionName)
 	if err != nil {
 		return err
 	}
@@ -116,6 +113,6 @@ func (sv *AuthService) GetUserFromRequest(r *http.Request) (*models.User, error)
 
 }
 
-func (sv *AuthService) GetSessionStore() sessions.Store {
+func (sv *AuthService) getSessionStore() sessions.Store {
 	return sv.sessStore
 }
