@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// ProblemRepo - interface for user problem repository
 type ProblemRepo interface {
 	AddNewProblem(problem *models.Problem) error
 	GetProblemByID(problemID int) (models.Problem, error)
@@ -17,6 +18,7 @@ type ProblemRepo interface {
 	MarkProblemAsSolved(problem *models.Problem) (models.Problem, error)
 }
 
+// SolutionRepo - interface for solution repository
 type SolutionRepo interface {
 	AddProblemSolution(problemID int, solution *models.Solution) error
 	GetSolutionByProblem(problem models.Problem) (models.Solution, error)

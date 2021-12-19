@@ -18,18 +18,24 @@ type Route struct {
 	Handler func(http.ResponseWriter, *http.Request)
 }
 
+// available formats of http response representation
 const (
 	FormatJSON = iota
 	FormatHTML
 )
 
 var (
+	// HTMLPath - path where html templates are stored
 	HTMLPath      = configs.TEMPLATES_PATH + "html/"
+	// MainPageHTML - path to main page template
 	MainPageHTML  = HTMLPath + "main-page.html"
+	// ErrorPageHTML - path to error page template
 	ErrorPageHTML = HTMLPath + "error.html"
+	//APIprefix - endpoint prefix to receive result in API (json) format
 	APIprefix     = "/api/v1"
 )
 
+// NewRouter - initialize main http router of the application
 func NewRouter() *mux.Router {
 
 	router := mux.NewRouter()
@@ -67,10 +73,12 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	EncodeError(FormatHTML, w, ErrorRenderer(fmt.Errorf("resource not found"), "Not found", http.StatusNotFound))
 }
 
+// ServerErrorRender - renders error page with server error
 func ServerErrorRender(format int, w http.ResponseWriter) {
 	EncodeError(format, w, ErrorRenderer(fmt.Errorf("server error"), "Internal server error", http.StatusInternalServerError))
 }
 
+// EncodeError - renders general error page with passed error info
 func EncodeError(format int, w http.ResponseWriter, respErr *ResponseStatus) {
 	var err error
 	switch format {
@@ -95,6 +103,7 @@ func EncodeError(format int, w http.ResponseWriter, respErr *ResponseStatus) {
 	w.WriteHeader(respErr.StatusCode)
 }
 
+// EncodeAnswer - renders given answer structure into given htmlTemplate using given format
 func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTemplates ...string) {
 	var err error
 
@@ -127,6 +136,7 @@ func EncodeAnswer(format int, w http.ResponseWriter, answer interface{}, htmlTem
 	w.WriteHeader(http.StatusOK)
 }
 
+// DecodeRequest - receives information from given request and decodes it into given format
 func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestData interface{}, htmlDecoder func(r *http.Request, dataToDecode interface{}) error) {
 	var err error
 
@@ -152,6 +162,7 @@ func DecodeRequest(format int, w http.ResponseWriter, r *http.Request, requestDa
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetFormatFromRequest - get format html/json based on request URI
 func GetFormatFromRequest(r *http.Request) int {
 	if strings.Contains(r.RequestURI, APIprefix) {
 		return FormatJSON
@@ -159,6 +170,7 @@ func GetFormatFromRequest(r *http.Request) int {
 	return FormatHTML
 }
 
+// GetParameterFromRequest - get parameter from the request by name in needed type with given convertToType function
 func GetParameterFromRequest(r *http.Request, paramName string, convertToType func(strData string) (interface{}, error)) (interface{}, error) {
 	if r.Method == http.MethodGet && r.Form == nil || r.Method != http.MethodGet && r.PostForm == nil {
 		r.ParseForm()

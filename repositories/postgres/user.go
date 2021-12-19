@@ -8,14 +8,17 @@ import (
 	"time"
 )
 
+// UserRepoDB - struct representing user repository
 type UserRepoDB struct {
 	db repositories.AnyDatabase
 }
 
+// NewUserRepoDB - user repo initialization
 func NewUserRepoDB(db repositories.AnyDatabase) *UserRepoDB {
 	return &UserRepoDB{db}
 }
 
+// GetAllUsers - get list of all system users from the DB
 func (urdb *UserRepoDB) GetAllUsers() (*models.UserList, error) {
 	list := &models.UserList{}
 
@@ -52,13 +55,14 @@ func (urdb *UserRepoDB) GetAllUsers() (*models.UserList, error) {
 	return list, nil
 }
 
+// AddUser - create user record in the DB based on given entity
 func (urdb *UserRepoDB) AddUser(user *models.User) error {
 	var id int
 	var createdAt time.Time
 	querySQL := `INSERT INTO users(login_email, is_blocked, user_name, user_surname, role_id, password_hash) 
 		VALUES($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at;`
-	err := urdb.db.QueryResultRow(context.Background(),	querySQL,
+	err := urdb.db.QueryResultRow(context.Background(), querySQL,
 		user.LoginEmail, user.IsBlocked, user.UserName, user.UserSurname, user.Role.ID, user.Password).
 		Scan(&id, &createdAt)
 	if err != nil {
@@ -69,6 +73,7 @@ func (urdb *UserRepoDB) AddUser(user *models.User) error {
 	return nil
 }
 
+// GetUserByID - get user entity from the DB by given user ID
 func (urdb *UserRepoDB) GetUserByID(userID int) (models.User, error) {
 	user := models.User{}
 
@@ -78,17 +83,18 @@ func (urdb *UserRepoDB) GetUserByID(userID int) (models.User, error) {
 		WHERE id = $1;`
 	row := urdb.db.QueryResultRow(context.Background(), querySQL, userID)
 
-	var roleId int
+	var roleID int
 	err := row.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked,
-		&user.UserName, &user.UserSurname, &user.CreatedAt, &roleId)
+		&user.UserName, &user.UserSurname, &user.CreatedAt, &roleID)
 	if err != nil {
 		return models.User{}, err
 	}
-	user.Role, err = urdb.GetRoleByID(roleId)
+	user.Role, err = urdb.GetRoleByID(roleID)
 
 	return user, err
 }
 
+// GetUserByEmail - get user entity from the DB by given user email
 func (urdb *UserRepoDB) GetUserByEmail(email string) (models.User, error) {
 	user := models.User{}
 
@@ -98,45 +104,48 @@ func (urdb *UserRepoDB) GetUserByEmail(email string) (models.User, error) {
 		WHERE login_email = $1;`
 	row := urdb.db.QueryResultRow(context.Background(), querySQL, email)
 
-	var roleId int
+	var roleID int
 	err := row.Scan(&user.ID, &user.LoginEmail, &user.IsBlocked,
-		&user.UserName, &user.UserSurname, &user.CreatedAt, &roleId, &user.Password)
+		&user.UserName, &user.UserSurname, &user.CreatedAt, &roleID, &user.Password)
 
 	if err != nil {
 		return models.User{}, err
 	}
-	user.Role, err = urdb.GetRoleByID(roleId)
+	user.Role, err = urdb.GetRoleByID(roleID)
 
 	return user, err
 }
 
+// DeleteUser - delete user with given ID from the DB
 func (urdb *UserRepoDB) DeleteUser(userID int) error {
 	querySQL := `DELETE FROM users WHERE id = $1;`
 	_, err := urdb.db.QueryExec(context.Background(), querySQL, userID)
 	return err
 }
 
+// UpdateUser - update user with given ID in the DB based on given user entity
 func (urdb *UserRepoDB) UpdateUser(userID int, userData models.User) (models.User, error) {
 	user := models.User{}
 	querySQL := `UPDATE users 
 		SET login_email=$1, is_blocked=$2, user_name=$3, user_surname=$4, role_id=$5 
 		WHERE id=$6 
 		RETURNING id, created_at, login_email, is_blocked, user_name, user_surname, role_id;`
-	var roleId int
+	var roleID int
 	err := urdb.db.QueryResultRow(context.Background(), querySQL,
 		userData.LoginEmail, userData.IsBlocked, userData.UserName,
 		userData.UserSurname, userData.Role.ID, userID).
-		Scan(&user.ID, &user.CreatedAt, &user.LoginEmail, &user.IsBlocked, &user.UserName, &user.UserSurname, &roleId)
+		Scan(&user.ID, &user.CreatedAt, &user.LoginEmail, &user.IsBlocked, &user.UserName, &user.UserSurname, &roleID)
 	if err != nil {
 		return user, err
 	}
-	user.Role, err = urdb.GetRoleByID(roleId)
+	user.Role, err = urdb.GetRoleByID(roleID)
 	if err != nil {
 		return user, err
 	}
 	return user, nil
 }
 
+// FindUsersByLoginNameSurname - find list of users having whatToFind string in login, name or surname in the DB
 func (urdb *UserRepoDB) FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error) {
 	list := &models.UserList{}
 
@@ -174,6 +183,7 @@ func (urdb *UserRepoDB) FindUsersByLoginNameSurname(whatToFind string) (*models.
 	return list, nil
 }
 
+// GetAllRoles - get list of all roles from the DB
 func (urdb *UserRepoDB) GetAllRoles() (*models.RoleList, error) {
 	list := &models.RoleList{}
 	querySQL := `SELECT * FROM roles ORDER BY id DESC;`
@@ -192,6 +202,7 @@ func (urdb *UserRepoDB) GetAllRoles() (*models.RoleList, error) {
 	return list, nil
 }
 
+// GetRoleByID - get role from the DB by given role ID
 func (urdb *UserRepoDB) GetRoleByID(roleId int) (models.Role, error) {
 	role := models.Role{}
 	querySQL := `SELECT * FROM roles WHERE id = $1;`
@@ -200,6 +211,7 @@ func (urdb *UserRepoDB) GetRoleByID(roleId int) (models.Role, error) {
 	return role, err
 }
 
+// FindRoleInTheList - find role in given role list by role ID
 func FindRoleInTheList(roles *models.RoleList, roleID int) (models.Role, error) {
 	for _, v := range roles.Roles {
 		if v.ID == roleID {

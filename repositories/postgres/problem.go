@@ -10,24 +10,29 @@ import (
 	"time"
 )
 
+// ProblemRepoDB - struct for user problems repository
 type ProblemRepoDB struct {
 	userRepo    *UserRepoDB
 	scooterRepo *ScooterRepoDB
 	db          repositories.AnyDatabase
 }
 
+// SolutionRepoDB - struct for solutions repository
 type SolutionRepoDB struct {
 	db repositories.AnyDatabase
 }
 
+// NewProblemRepoDB - initialize problem repo from user & scooter repos
 func NewProblemRepoDB(userRepo *UserRepoDB, scooterRepo *ScooterRepoDB, db repositories.AnyDatabase) *ProblemRepoDB {
 	return &ProblemRepoDB{userRepo, scooterRepo, db}
 }
 
+// NewSolutionRepoDB - initialize solution repo
 func NewSolutionRepoDB(db repositories.AnyDatabase) *SolutionRepoDB {
 	return &SolutionRepoDB{db}
 }
 
+// AddNewProblem - create new user problem record in the DB based on problem entity
 func (probl *ProblemRepoDB) AddNewProblem(problem *models.Problem) error {
 	querySQL := `INSERT INTO problems(user_id, type_Id, scooter_id, description, is_solved) 
 		VALUES($1, $2, $3, $4, $5)
@@ -40,6 +45,7 @@ func (probl *ProblemRepoDB) AddNewProblem(problem *models.Problem) error {
 	return err
 }
 
+// GetProblemByID - get user problem record from the DB by given problem ID
 func (probl *ProblemRepoDB) GetProblemByID(problemID int) (models.Problem, error) {
 	problem := models.Problem{}
 
@@ -64,6 +70,7 @@ func (probl *ProblemRepoDB) GetProblemByID(problemID int) (models.Problem, error
 	return problem, err
 }
 
+// MarkProblemAsSolved - change DB record of given problem to mark it as solved
 func (probl *ProblemRepoDB) MarkProblemAsSolved(problem *models.Problem) (models.Problem, error) {
 	solvedWas := problem.IsSolved
 	problem.IsSolved = true
@@ -78,6 +85,7 @@ func (probl *ProblemRepoDB) MarkProblemAsSolved(problem *models.Problem) (models
 	return *problem, err
 }
 
+// AddProblemComplexFields - add data about problem type, scooter, user to given problem entity by given IDs
 func (probl *ProblemRepoDB) AddProblemComplexFields(problem *models.Problem, typeID, scooterID, userID int) error {
 	var err error
 	if userID != 0 {
@@ -101,6 +109,7 @@ func (probl *ProblemRepoDB) AddProblemComplexFields(problem *models.Problem, typ
 	return nil
 }
 
+// GetProblemTypeByID - get problem type by gived ID from the DB
 func (probl *ProblemRepoDB) GetProblemTypeByID(typeID int) (models.ProblemType, error) {
 	querySQL := `SELECT id, name FROM problem_types WHERE id = $1;`
 	row := probl.db.QueryResultRow(context.Background(), querySQL, typeID)
@@ -111,18 +120,22 @@ func (probl *ProblemRepoDB) GetProblemTypeByID(typeID int) (models.ProblemType, 
 	return problemType, err
 }
 
+// GetProblemsByUserID - get list of problems from the DB by user ID
 func (probl *ProblemRepoDB) GetProblemsByUserID(userID int) (*models.ProblemList, error) {
 	return probl.getProblemsWithCondition(`user_id = $1`, userID)
 }
 
+// GetProblemsByTypeID - get list of problems from the DB by type ID
 func (probl *ProblemRepoDB) GetProblemsByTypeID(typeID int) (*models.ProblemList, error) {
 	return probl.getProblemsWithCondition(`type_Id = $1`, typeID)
 }
 
+// GetProblemsByBeingSolved - get list of problems from the DB by is_solved field
 func (probl *ProblemRepoDB) GetProblemsByBeingSolved(solved bool) (*models.ProblemList, error) {
 	return probl.getProblemsWithCondition(`is_solved = $1`, solved)
 }
 
+// GetProblemsByTimePeriod - get list of problems from the DB from start to end time
 func (probl *ProblemRepoDB) GetProblemsByTimePeriod(start, end time.Time) (*models.ProblemList, error) {
 	return probl.getProblemsWithCondition(`date_reported >= $1 AND date_reported <= $2`, start, end)
 }
@@ -175,6 +188,7 @@ func (probl *ProblemRepoDB) getProblemsWithCondition(condition string, params ..
 	return list, nil
 }
 
+// AddProblemSolution - create new DB record for problem solution in the DB by problem ID & solution info
 func (sol *SolutionRepoDB) AddProblemSolution(problemID int, solution *models.Solution) error {
 	querySQL := `INSERT INTO solutions(problem_id, description) 
 		VALUES($1, $2)
@@ -186,6 +200,7 @@ func (sol *SolutionRepoDB) AddProblemSolution(problemID int, solution *models.So
 	return err
 }
 
+// GetSolutionByProblem - get solution info for given problem from the DB
 func (sol *SolutionRepoDB) GetSolutionByProblem(problem models.Problem) (models.Solution, error) {
 	solution := models.Solution{}
 	solution.Problem = problem
@@ -200,6 +215,7 @@ func (sol *SolutionRepoDB) GetSolutionByProblem(problem models.Problem) (models.
 	return solution, err
 }
 
+// GetSolutionsByProblems - get solutions for given problems list from the DB
 func (sol *SolutionRepoDB) GetSolutionsByProblems(problems models.ProblemList) (map[models.Problem]models.Solution, error) {
 	result := make(map[models.Problem]models.Solution, len(problems.Problems))
 	if len(result) == 0 {
