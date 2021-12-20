@@ -65,7 +65,7 @@ func (ur *userWithRoleList) ListOfRoles() []models.Role {
 func AddUserHandler(router *mux.Router, service *services.UserService) {
 	userService = service
 	userRouter := router.NewRoute().Subrouter()
-	userRouter.Use(authenticationService.FilterAuth)
+	userRouter.Use(FilterAuth(authenticationService))
 
 	for _, rt := range keyUserRoutes {
 		userRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
@@ -111,7 +111,7 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 
 func getUserPage(w http.ResponseWriter, r *http.Request) {
 	// check can be omited if filter is applied to route
-	user := services.GetUserFromContext(r)
+	user := GetUserFromContext(r)
 	if user == nil {
 		EncodeError(FormatHTML, w, ErrorRendererDefault(errors.New("not authorized")))
 		return
