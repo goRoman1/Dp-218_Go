@@ -64,7 +64,6 @@ func NewUseCasesMock(ctrl *gomock.Controller) *UseCasesMock {
 	}
 }
 
-
 func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 	runTestCases(t, []testCase{
 		{//In this case we are going by happy path.
@@ -136,5 +135,3 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 		},
 	})
 }
-
-
