@@ -6,10 +6,9 @@ import (
 	"Dp218Go/tests/mocks"
 	"errors"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-var ErrNoRows = errors.New("no rows in result set")
 
 type usecasesUser struct {
 	repoUser *mocks.MockUserRepo
@@ -53,32 +52,51 @@ func NewUseCasesMock(ctrl *gomock.Controller) *usecasesUser {
 	}
 }
 
-func TestUseCases_Role_GetRoleByID(t *testing.T) {
+func TestUseCases_User_ChangeUsersBlockStatus(t *testing.T) {
 	runTestCases(t, []testCase{
 		{
 			name: "correct",
 			test: func(t *testing.T, mock *usecasesUser) {
 
-				mock.repoRole.EXPECT().GetRoleByID(gomock.Eq(1)).
-					Return(models.Role{}, nil).Times(1)
+				mock.repoUser.EXPECT().GetUserByID(1).
+					Return(models.User{IsBlocked: false}, nil).Times(1)
 
-				_, err := mock.repoRole.GetRoleByID(1)
-				if err != nil {
-					t.Errorf("error in role repo -> GetRoleByID")
-				}
+				mock.repoUser.EXPECT().UpdateUser(1, models.User{IsBlocked: true}).
+					Return(models.User{}, nil).Times(1)
+
+				err := mock.userUC.ChangeUsersBlockStatus(1)
+				assert.Equal(t, nil, err)
 			},
 		},
 		{
-			name: "incorrect",
+			name: "incorrect get by ID",
 			test: func(t *testing.T, mock *usecasesUser) {
 
-				mock.repoRole.EXPECT().GetRoleByID(gomock.Eq(0)).
-					Return(models.Role{}, ErrNoRows).Times(1)
+				var someError = errors.New("error get by ID")
 
-				_, err := mock.repoRole.GetRoleByID(0)
-				if err == nil {
-					t.Errorf("error expected but not received in role repo -> GetRoleByID")
-				}
+				mock.repoUser.EXPECT().GetUserByID(2).
+					Return(models.User{IsBlocked: false}, someError).Times(1)
+
+				err := mock.userUC.ChangeUsersBlockStatus(2)
+				assert.Error(t, err)
+				assert.Equal(t, someError, err)
+			},
+		},
+		{
+			name: "incorrect update user",
+			test: func(t *testing.T, mock *usecasesUser) {
+
+				var someError = errors.New("error update user")
+
+				mock.repoUser.EXPECT().GetUserByID(3).
+					Return(models.User{IsBlocked: false}, nil).Times(1)
+
+				mock.repoUser.EXPECT().UpdateUser(3, models.User{IsBlocked: true}).
+					Return(models.User{}, someError).Times(1)
+
+				err := mock.userUC.ChangeUsersBlockStatus(3)
+				assert.Error(t, err)
+				assert.Equal(t, someError, err)
 			},
 		},
 	})
