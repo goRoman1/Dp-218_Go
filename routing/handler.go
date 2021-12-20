@@ -2,7 +2,6 @@ package routing
 
 import (
 	"Dp218Go/configs"
-	"Dp218Go/services"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -56,7 +55,7 @@ func showHomePage(w http.ResponseWriter, r *http.Request) {
 
 func showLoginPage(w http.ResponseWriter, r *http.Request) {
 	// not needed if filter is applied
-	user := services.GetUserFromContext(r)
+	user := GetUserFromContext(r)
 	if user != nil {
 		http.Redirect(w, r, "/home", http.StatusFound)
 		return

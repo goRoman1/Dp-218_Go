@@ -22,8 +22,6 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-var sessionKey = "secretkey"
-
 func main() {
 
 	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
@@ -67,7 +65,7 @@ func main() {
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
 	var orderService = services.NewOrderService(orderRepoDB)
 
-	sessStore := sessions.NewCookieStore([]byte(sessionKey))
+	sessStore := sessions.NewCookieStore([]byte(configs.SESSION_SECRET))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)
 
 	custService := services.NewCustomerService(stationRepoDb)

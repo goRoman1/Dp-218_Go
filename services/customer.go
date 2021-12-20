@@ -6,20 +6,25 @@ import (
 	"math"
 )
 
+// CustomerService takes repostation interface
+// serves as main service for customer interaction with system
 type CustomerService struct {
 	repoStation repositories.StationRepo
 }
 
+// NewCustomerService returns new customerservice
 func NewCustomerService(repo repositories.StationRepo) *CustomerService {
 	return &CustomerService{
 		repoStation: repo,
 	}
 }
 
+// ListStations returns station list from db or error if failed
 func (cs *CustomerService) ListStations() (*models.StationList, error) {
 	return cs.repoStation.GetAllStations()
 }
 
+// ShowStation returns station from db by id or error if failed
 func (cs *CustomerService) ShowStation(id int) (*models.Station, error) {
 	station, err := cs.repoStation.GetStationById(id)
 	if err != nil {
@@ -28,6 +33,7 @@ func (cs *CustomerService) ShowStation(id int) (*models.Station, error) {
 	return &station, nil
 }
 
+// ShowNearestStation takes user location and returns nearest station or error if failed
 func (cs *CustomerService) ShowNearestStation(x, y float64) (*models.Station, error) {
 
 	stations, err := cs.repoStation.GetAllStations()

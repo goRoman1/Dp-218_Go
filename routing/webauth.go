@@ -3,19 +3,25 @@ package routing
 import (
 	"Dp218Go/models"
 	"Dp218Go/services"
+	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
+type userKey string
+
 var (
+	ukey                  userKey = "user"
 	authenticationService *services.AuthService
-	ErrSignUp             = errors.New("signup error")
-	ErrSignIn             = errors.New("signin error")
+	// ErrSignUp error returned to client if registering failed
+	ErrSignUp = errors.New("signup error")
+	// ErrSignIn error returned to client if authentication failed
+	ErrSignIn = errors.New("signin error")
 )
 
+//AddAuthHandler registeres endpoints for authentication
 func AddAuthHandler(router *mux.Router, service *services.AuthService) {
 	authenticationService = service
 	router.Path("/signup").HandlerFunc(SignUp(authenticationService)).Methods(http.MethodPost)
@@ -23,6 +29,7 @@ func AddAuthHandler(router *mux.Router, service *services.AuthService) {
 	router.Path("/signout").HandlerFunc(SignOut(authenticationService)).Methods(http.MethodGet)
 }
 
+//SignUp is handler for signup authentication service method
 func SignUp(sv *services.AuthService) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -36,8 +43,6 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 			Role:        models.Role{ID: 2},
 			Password:    r.FormValue("password"),
 		}
-		fmt.Println("user is ", *user)
-		fmt.Println("service is ", sv)
 
 		if err := sv.SignUp(user); err != nil {
 
@@ -48,6 +53,7 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 	}
 }
 
+//SignIn is handler for signin authentication service method
 func SignIn(sv *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// // TODO implement validation
@@ -72,6 +78,7 @@ func SignIn(sv *services.AuthService) http.HandlerFunc {
 	}
 }
 
+//SignOut is handler for signout authentication service method
 func SignOut(sv *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -83,4 +90,33 @@ func SignOut(sv *services.AuthService) http.HandlerFunc {
 
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
+}
+
+// FilterAuth  is middleware checks if user is authenticated
+// writes user to context for retrieving if chaining middleware is present
+// shows error if user is not authenticated
+func FilterAuth(sv *services.AuthService) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, err := sv.GetUserFromRequest(r)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusForbidden)
+				return
+			}
+			newReq := r.WithContext(context.WithValue(r.Context(), ukey, user))
+
+			next.ServeHTTP(w, newReq)
+		})
+	}
+}
+
+// GetUserFromContext retrieves user from context
+func GetUserFromContext(r *http.Request) *models.User {
+	val := r.Context().Value(ukey)
+	user, ok := val.(*models.User)
+
+	if ok {
+		return user
+	}
+	return nil
 }

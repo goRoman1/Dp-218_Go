@@ -4,7 +4,6 @@ import (
 	"Dp218Go/models"
 	"Dp218Go/repositories"
 	"Dp218Go/utils"
-	"context"
 	"encoding/gob"
 	"fmt"
 	"net/http"
@@ -12,19 +11,19 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type userKey string
-
+// AuthService provides access to user database and sessionstore
+// for user authentication in system
 type AuthService struct {
 	DB        repositories.UserRepo
 	sessStore sessions.Store
 }
 
 const (
-	ukey        userKey = "user"
-	sessionName         = "login"
-	sessionVal          = "user"
+	sessionName = "login"
+	sessionVal  = "user"
 )
 
+// NewAuthService returns new AuthService
 func NewAuthService(db repositories.UserRepo, store sessions.Store) *AuthService {
 
 	gob.Register(&models.User{})
@@ -34,11 +33,13 @@ func NewAuthService(db repositories.UserRepo, store sessions.Store) *AuthService
 	}
 }
 
+// AuthRequest contains required fields needed for authenticating user
 type AuthRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
+// SignUp method registeres new user in system, returns error if it's failed
 func (sv *AuthService) SignUp(user *models.User) error {
 	pass, err := utils.HashPassword(user.Password)
 	if err != nil {
@@ -54,6 +55,8 @@ func (sv *AuthService) SignUp(user *models.User) error {
 	return nil
 }
 
+// SignIn method takes user from db, checks password, writes it to session and
+// writes session id to cookie, returns error if it's failed
 func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request, authreq *AuthRequest) error {
 	user, err := sv.DB.GetUserByEmail(authreq.Email)
 
@@ -65,7 +68,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request, authreq *A
 		return err
 	}
 
-	session, err := sv.GetSessionStore().Get(r, sessionName)
+	session, err := sv.getSessionStore().Get(r, sessionName)
 	if err != nil {
 		return err
 	}
@@ -79,8 +82,9 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request, authreq *A
 	return nil
 }
 
+// SignOut deletes user from session, removes cookies, returns error if it's failed
 func (sv *AuthService) SignOut(w http.ResponseWriter, r *http.Request) error {
-	session, err := sv.GetSessionStore().Get(r, sessionName)
+	session, err := sv.getSessionStore().Get(r, sessionName)
 	if err != nil {
 		return err
 	}
@@ -96,7 +100,9 @@ func (sv *AuthService) SignOut(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (sv *AuthService) getUserFromRequest(r *http.Request) (*models.User, error) {
+// GetUserFromRequest retrieves user data from session
+// returns error if is no user in session
+func (sv *AuthService) GetUserFromRequest(r *http.Request) (*models.User, error) {
 	sess, err := sv.sessStore.Get(r, sessionName)
 	if err != nil {
 		return nil, err
@@ -117,30 +123,6 @@ func (sv *AuthService) getUserFromRequest(r *http.Request) (*models.User, error)
 
 }
 
-func (sv *AuthService) GetSessionStore() sessions.Store {
+func (sv *AuthService) getSessionStore() sessions.Store {
 	return sv.sessStore
-}
-
-func (sv *AuthService) FilterAuth(next http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := sv.getUserFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		}
-		newReq := r.WithContext(context.WithValue(r.Context(), ukey, user))
-
-		next.ServeHTTP(w, newReq)
-	})
-}
-
-func GetUserFromContext(r *http.Request) *models.User {
-	val := r.Context().Value(ukey)
-	user, ok := val.(*models.User)
-
-	if ok {
-		return user
-	}
-	return nil
 }

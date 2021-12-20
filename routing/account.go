@@ -47,7 +47,7 @@ func getAllAccounts(w http.ResponseWriter, r *http.Request) {
 	var err error
 	format := GetFormatFromRequest(r)
 
-	user := services.GetUserFromContext(r)
+	user := GetUserFromContext(r)
 	if user == nil {
 		EncodeError(format, w, ErrorRendererDefault(errors.New("not authorized")))
 		return
