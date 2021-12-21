@@ -46,7 +46,8 @@ func main() {
 	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
 
 	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
-	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
+	var clock = services.NewClock()
+	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb, clock)
 	var stationRepoDb = postgres.NewStationRepoDB(db)
 	var stationService = services.NewStationService(stationRepoDb)
 
