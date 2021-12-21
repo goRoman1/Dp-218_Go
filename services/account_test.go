@@ -1,8 +1,8 @@
 package services
 
 import (
-	"Dp218Go/mock"
 	"Dp218Go/models"
+	mock2 "Dp218Go/services/mock"
 	"errors"
 	"github.com/golang/mock/gomock"
 	assert "github.com/stretchr/testify/require"
@@ -13,10 +13,10 @@ import (
 //UseCasesMock is a struct which exists of repositories which are mocked and our service.
 type UseCasesMock struct {
 	AccountServiceUC *AccountService
-	RepoPaymentType *mock.MockPaymentTypeRepo
-	RepoAccountTransaction *mock.MockAccountTransactionRepo
-	RepoAccount *mock.MockAccountRepo
-	Clock *mock.MockClock
+	RepoPaymentType *mock2.MockPaymentTypeRepo
+	RepoAccountTransaction *mock2.MockAccountTransactionRepo
+	RepoAccount *mock2.MockAccountRepo
+	Clock *mock2.MockClock
 }
 
 type testCase struct {
@@ -37,7 +37,7 @@ func runTestCases(t *testing.T, testCases []testCase) {
 			ctrl := gomock.NewController(tt)
 			defer ctrl.Finish()
 
-			//Here we should change if our struct name will be different to 'UseCasesMock'
+			//Here we should change if our struct name will be different to 'UseCasesMock'.
 			mock := NewUseCasesMock(ctrl)
 
 			tc.test(tt, mock)
@@ -46,10 +46,10 @@ func runTestCases(t *testing.T, testCases []testCase) {
 }
 
 func NewUseCasesMock(ctrl *gomock.Controller) *UseCasesMock {
-	repoAccount := mock.NewMockAccountRepo(ctrl)
-	repoAccountTransaction  := mock.NewMockAccountTransactionRepo(ctrl)
-	repoPaymentType := mock.NewMockPaymentTypeRepo(ctrl)
-	clock := mock.NewMockClock(ctrl)
+	repoAccount := mock2.NewMockAccountRepo(ctrl)
+	repoAccountTransaction  := mock2.NewMockAccountTransactionRepo(ctrl)
+	repoPaymentType := mock2.NewMockPaymentTypeRepo(ctrl)
+	clock := mock2.NewMockClock(ctrl)
 
 	//We created 'clock' for mocking 'time.Now()'
 	//Transfer 'clock' here just because it doesn't work in any other way.
@@ -66,7 +66,7 @@ func NewUseCasesMock(ctrl *gomock.Controller) *UseCasesMock {
 
 func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 	runTestCases(t, []testCase{
-		{//In this case we are going by happy path.
+		{ //In this case we are going by happy path.
 			name: "Correct",
 			test: func(t *testing.T, mock *UseCasesMock) {
 
@@ -82,7 +82,7 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 					Return(models.PaymentType{}, nil).Times(1)
 
 				//Here we are mocking the time of our 'Clock' which is a wrapper of the system service 'Time'
-				//With the value of 'currentTime'
+				//With the value of 'currentTime'.
 				mock.Clock.EXPECT().Now().Return(currentTime).Times(1)
 
 				//Into 'DateTime' we put the 'currentTime'.
@@ -95,7 +95,7 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 					Order:       models.Order{},
 					AmountCents: 50}
 
-				//We call this func like in the order of calls into the real 'AddMoneyToAccount'
+				//We call this func like in the order of calls into the real 'AddMoneyToAccount'.
 				mock.RepoAccountTransaction.EXPECT().AddAccountTransaction(accTransaction).
 					Return(nil).Times(1)
 
@@ -105,14 +105,14 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 				//Compare that expected value of error is nil.
 				assert.Equal(t, nil, err)
 			},
-		}, {//In this case we are going by getting the error
-			name: "Incorrect. Got error from GetPaymentTypeByID",
+		}, {//In this case we are going by getting the error.
+			name: "Incorrect.Got error from GetPaymentTypeByID",
 			test: func(t *testing.T, mock *UseCasesMock) {
 
 				//Describe which error we'll get.
 				expectedError := errors.New("expectedError")
 
-				//Call 'GetPaymentTypeById' and return here our 'expectedError'
+				//Call 'GetPaymentTypeById' and return here our 'expectedError'.
 				mock.RepoPaymentType.EXPECT().GetPaymentTypeById(2).
 					Return(models.PaymentType{}, expectedError).Times(1)
 
