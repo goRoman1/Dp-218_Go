@@ -32,6 +32,7 @@ var keyAccountRoutes = []Route{
 	},
 }
 
+// AddAccountHandler - add endpoints for money accounts to http router
 func AddAccountHandler(router *mux.Router, service *services.AccountService) {
 	accountService = service
 	for _, rt := range keyAccountRoutes {
