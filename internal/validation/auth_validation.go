@@ -14,7 +14,7 @@ type SignUpUserRequest struct {
 }
 
 // Validate validates signupuser request data
-func (su *SignUpUserRequest) Validate() error {
+func (su SignUpUserRequest) Validate() error {
 
 	return validation.ValidateStruct(&su,
 		validation.Field(&su.LoginEmail, validation.Required, is.EmailFormat, validation.Length(3, 100)),
@@ -31,7 +31,7 @@ type SignInUserRequest struct {
 }
 
 // Validate validates signinuser request data
-func (su *SignInUserRequest) Validate() error {
+func (su SignInUserRequest) Validate() error {
 
 	return validation.ValidateStruct(&su,
 		validation.Field(&su.LoginEmail, validation.Required, is.EmailFormat, validation.Length(3, 100)),
