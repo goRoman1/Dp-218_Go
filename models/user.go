@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Role - entity for user roles
 type Role struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`
@@ -12,10 +13,12 @@ type Role struct {
 	IsSupplier bool   `json:"is_supplier"`
 }
 
+// RoleList - struct with list of roles
 type RoleList struct {
 	Roles []Role `json:"roles"`
 }
 
+// User - entity representing user in the system
 type User struct {
 	ID          int       `json:"id"`
 	LoginEmail  string    `json:"login_email"`
@@ -27,6 +30,7 @@ type User struct {
 	Password    string    `json:"password"`
 }
 
+// UserList - struct for list of users
 type UserList struct {
 	Users []User `json:"users"`
 }
