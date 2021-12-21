@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"Dp218Go/internal/validation"
 	"Dp218Go/models"
 	"Dp218Go/services"
 	"encoding/json"
@@ -71,24 +72,33 @@ func (h *customerHandler) StationListHandler(w http.ResponseWriter, r *http.Requ
 // station in json format shows error if failed
 func (h *customerHandler) StationNearestHandler(w http.ResponseWriter, r *http.Request) {
 
-	xStr := r.FormValue("x")
-	yStr := r.FormValue("y")
+	valReq := validation.LocationRequest{
+		Latitude:  r.FormValue("x"),
+		Longitude: r.FormValue("y"),
+	}
 
-	x, err := strconv.ParseFloat(xStr, 64)
+	if err := valReq.Validate(); err != nil {
+		if err := valReq.Validate(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	x, err := strconv.ParseFloat(valReq.Latitude, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	y, err := strconv.ParseFloat(yStr, 64)
+	y, err := strconv.ParseFloat(valReq.Longitude, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	nearest, err := h.custService.ShowNearestStation(x, y)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
