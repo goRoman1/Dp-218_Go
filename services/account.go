@@ -16,6 +16,7 @@ type AccountService struct {
 	repoAccount            repositories.AccountRepo
 	repoAccountTransaction repositories.AccountTransactionRepo
 	repoPaymentType        repositories.PaymentTypeRepo
+	clock                  Clock
 }
 
 type transactionsWithIncome struct {
@@ -23,8 +24,11 @@ type transactionsWithIncome struct {
 	IsIncome    bool
 }
 
-func NewAccountService(repoAccount repositories.AccountRepo, repoAccountTransaction repositories.AccountTransactionRepo, repoPaymentType repositories.PaymentTypeRepo) *AccountService { //nolint:lll
-	return &AccountService{repoAccount, repoAccountTransaction, repoPaymentType}
+func NewAccountService(repoAccount repositories.AccountRepo,
+	repoAccountTransaction repositories.AccountTransactionRepo, repoPaymentType repositories.PaymentTypeRepo, clock Clock) *AccountService {
+
+	return &AccountService{repoAccount, repoAccountTransaction,
+		repoPaymentType, clock}
 }
 
 func (accserv *AccountService) GetAccountsByOwner(user models.User) (*models.AccountList, error) {
@@ -126,8 +130,11 @@ func (accserv *AccountService) AddMoneyToAccount(account models.Account, amountC
 		return err
 	}
 
+	//currentTime is a time.Now() from our Clock.
+	currentTime := accserv.clock.Now()
+
 	accTransaction := &models.AccountTransaction{
-		DateTime:    time.Now(),
+		DateTime:    currentTime,
 		PaymentType: paymentType,
 		AccountFrom: models.Account{},
 		AccountTo:   account,
