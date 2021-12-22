@@ -1,3 +1,4 @@
+//go:generate mockgen -source=supplier.go -destination=../repositories/mocks/mock_supplier_repository.go -package=mock
 package repositories
 
 import (
