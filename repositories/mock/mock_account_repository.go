@@ -35,7 +35,7 @@ func (m *MockAccountRepo) EXPECT() *MockAccountRepoMockRecorder {
 	return m.recorder
 }
 
-// AddAccount mocks base method.
+// AddAccount mock base method.
 func (m *MockAccountRepo) AddAccount(account *models.Account) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddAccount", account)
@@ -49,7 +49,7 @@ func (mr *MockAccountRepoMockRecorder) AddAccount(account interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAccount", reflect.TypeOf((*MockAccountRepo)(nil).AddAccount), account)
 }
 
-// GetAccountByID mocks base method.
+// GetAccountByID mock base method.
 func (m *MockAccountRepo) GetAccountByID(accountID int) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccountByID", accountID)
@@ -64,7 +64,7 @@ func (mr *MockAccountRepoMockRecorder) GetAccountByID(accountID interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountByID", reflect.TypeOf((*MockAccountRepo)(nil).GetAccountByID), accountID)
 }
 
-// GetAccountByNumber mocks base method.
+// GetAccountByNumber mock base method.
 func (m *MockAccountRepo) GetAccountByNumber(number string) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccountByNumber", number)
@@ -79,7 +79,7 @@ func (mr *MockAccountRepoMockRecorder) GetAccountByNumber(number interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountByNumber", reflect.TypeOf((*MockAccountRepo)(nil).GetAccountByNumber), number)
 }
 
-// GetAccountsByOwner mocks base method.
+// GetAccountsByOwner mock base method.
 func (m *MockAccountRepo) GetAccountsByOwner(user models.User) (*models.AccountList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccountsByOwner", user)
@@ -94,7 +94,7 @@ func (mr *MockAccountRepoMockRecorder) GetAccountsByOwner(user interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountsByOwner", reflect.TypeOf((*MockAccountRepo)(nil).GetAccountsByOwner), user)
 }
 
-// UpdateAccount mocks base method.
+// UpdateAccount mock base method.
 func (m *MockAccountRepo) UpdateAccount(accountID int, accountData models.Account) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAccount", accountID, accountData)
@@ -132,7 +132,7 @@ func (m *MockAccountTransactionRepo) EXPECT() *MockAccountTransactionRepoMockRec
 	return m.recorder
 }
 
-// AddAccountTransaction mocks base method.
+// AddAccountTransaction mock base method.
 func (m *MockAccountTransactionRepo) AddAccountTransaction(accountTransaction *models.AccountTransaction) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddAccountTransaction", accountTransaction)
@@ -146,7 +146,7 @@ func (mr *MockAccountTransactionRepoMockRecorder) AddAccountTransaction(accountT
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAccountTransaction", reflect.TypeOf((*MockAccountTransactionRepo)(nil).AddAccountTransaction), accountTransaction)
 }
 
-// GetAccountTransactionByID mocks base method.
+// GetAccountTransactionByID mock base method.
 func (m *MockAccountTransactionRepo) GetAccountTransactionByID(transID int) (models.AccountTransaction, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccountTransactionByID", transID)
@@ -161,7 +161,7 @@ func (mr *MockAccountTransactionRepoMockRecorder) GetAccountTransactionByID(tran
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountTransactionByID", reflect.TypeOf((*MockAccountTransactionRepo)(nil).GetAccountTransactionByID), transID)
 }
 
-// GetAccountTransactions mocks base method.
+// GetAccountTransactions mock base method.
 func (m *MockAccountTransactionRepo) GetAccountTransactions(accounts ...models.Account) (*models.AccountTransactionList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -180,7 +180,7 @@ func (mr *MockAccountTransactionRepoMockRecorder) GetAccountTransactions(account
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountTransactions", reflect.TypeOf((*MockAccountTransactionRepo)(nil).GetAccountTransactions), accounts...)
 }
 
-// GetAccountTransactionsByOrder mocks base method.
+// GetAccountTransactionsByOrder mock base method.
 func (m *MockAccountTransactionRepo) GetAccountTransactionsByOrder(order models.Order) (*models.AccountTransactionList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccountTransactionsByOrder", order)
@@ -195,7 +195,7 @@ func (mr *MockAccountTransactionRepoMockRecorder) GetAccountTransactionsByOrder(
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountTransactionsByOrder", reflect.TypeOf((*MockAccountTransactionRepo)(nil).GetAccountTransactionsByOrder), order)
 }
 
-// GetAccountTransactionsByPaymentType mocks base method.
+// GetAccountTransactionsByPaymentType mock base method.
 func (m *MockAccountTransactionRepo) GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{paymentType}
@@ -215,7 +215,7 @@ func (mr *MockAccountTransactionRepoMockRecorder) GetAccountTransactionsByPaymen
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountTransactionsByPaymentType", reflect.TypeOf((*MockAccountTransactionRepo)(nil).GetAccountTransactionsByPaymentType), varargs...)
 }
 
-// GetAccountTransactionsInTimePeriod mocks base method.
+// GetAccountTransactionsInTimePeriod mock base method.
 func (m *MockAccountTransactionRepo) GetAccountTransactionsInTimePeriod(start, end time.Time, accounts ...models.Account) (*models.AccountTransactionList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{start, end}
@@ -258,7 +258,7 @@ func (m *MockPaymentTypeRepo) EXPECT() *MockPaymentTypeRepoMockRecorder {
 	return m.recorder
 }
 
-// GetPaymentTypeById mocks base method.
+// GetPaymentTypeById mock base method.
 func (m *MockPaymentTypeRepo) GetPaymentTypeById(paymentTypeID int) (models.PaymentType, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPaymentTypeById", paymentTypeID)

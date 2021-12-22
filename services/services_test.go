@@ -2,8 +2,8 @@ package services
 
 import (
 	"Dp218Go/models"
-	mock "Dp218Go/repositories/mocks"
-	mocks "Dp218Go/services/mocks"
+	mock "Dp218Go/repositories/mock"
+	mocks "Dp218Go/services/mock"
 	"errors"
 	"github.com/golang/mock/gomock"
 	assert "github.com/stretchr/testify/require"
@@ -88,7 +88,7 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 				//Create a variable with the exact time for mocking time.Now().
 				var currentTime = time.Date(2021, 12, 19, 12, 21, 00, 00, time.UTC)
 
-				//With help of mocks we can call the functions of repositories without deployment.
+				//With help of mock we can call the functions of repositories without deployment.
 				//'EXPECT' means that the function will be called.
 				//The next we call the function we need ex:'GetPaymentTypeByID'
 				//'Return' let us set the values which will be returned. We can also return an error.
