@@ -8,22 +8,13 @@ import (
 
 // ProblemService - structure for implementing user problem service
 type ProblemService struct {
-	repoProblem repositories.ProblemRepo
-}
-
-// SolutionService - structure for implementing solution service
-type SolutionService struct {
+	repoProblem  repositories.ProblemRepo
 	repoSolution repositories.SolutionRepo
 }
 
 // NewProblemService - initialization of ProblemService
-func NewProblemService(repoProblem repositories.ProblemRepo) *ProblemService {
-	return &ProblemService{repoProblem}
-}
-
-// NewSolutionService - initialization of SolutionService
-func NewSolutionService(repoSolution repositories.SolutionRepo) *SolutionService {
-	return &SolutionService{repoSolution}
+func NewProblemService(repoProblem repositories.ProblemRepo, repoSolution repositories.SolutionRepo) *ProblemService {
+	return &ProblemService{repoProblem, repoSolution}
 }
 
 // AddNewProblem - add new user problem record
@@ -44,6 +35,10 @@ func (problserv *ProblemService) MarkProblemAsSolved(problem *models.Problem) (m
 // GetProblemTypeByID - get problem type record by its ID
 func (problserv *ProblemService) GetProblemTypeByID(typeID int) (models.ProblemType, error) {
 	return problserv.repoProblem.GetProblemTypeByID(typeID)
+}
+
+func (problserv *ProblemService) GetAllProblemTypes() ([]models.ProblemType, error) {
+	return problserv.repoProblem.GetAllProblemTypes()
 }
 
 // GetProblemsByUserID - get problem list for given user (by user ID)
@@ -72,16 +67,25 @@ func (problserv *ProblemService) AddProblemComplexFields(problem *models.Problem
 }
 
 // AddProblemSolution - make solution record for given problem (by ID)
-func (solserv *SolutionService) AddProblemSolution(problemID int, solution *models.Solution) error {
-	return solserv.repoSolution.AddProblemSolution(problemID, solution)
+func (problserv *ProblemService) AddProblemSolution(problemID int, solution *models.Solution) error {
+	err := problserv.repoSolution.AddProblemSolution(problemID, solution)
+	if err != nil {
+		return err
+	}
+	problem, err := problserv.repoProblem.GetProblemByID(problemID)
+	if err != nil {
+		return err
+	}
+	_, err = problserv.repoProblem.MarkProblemAsSolved(&problem)
+	return err
 }
 
 // GetSolutionByProblem - get solution for given problem
-func (solserv *SolutionService) GetSolutionByProblem(problem models.Problem) (models.Solution, error) {
-	return solserv.repoSolution.GetSolutionByProblem(problem)
+func (problserv *ProblemService) GetSolutionByProblem(problem models.Problem) (models.Solution, error) {
+	return problserv.repoSolution.GetSolutionByProblem(problem)
 }
 
 // GetSolutionsByProblems - get solutions for given problems list
-func (solserv *SolutionService) GetSolutionsByProblems(problems models.ProblemList) (map[models.Problem]models.Solution, error) {
-	return solserv.repoSolution.GetSolutionsByProblems(problems)
+func (problserv *ProblemService) GetSolutionsByProblems(problems models.ProblemList) (map[models.Problem]models.Solution, error) {
+	return problserv.repoSolution.GetSolutionsByProblems(problems)
 }
