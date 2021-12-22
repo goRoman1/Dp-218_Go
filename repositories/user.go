@@ -5,6 +5,7 @@ import (
 	"context"
 )
 
+// UserRepo - interface for user repository
 type UserRepo interface {
 	GetAllUsers() (*models.UserList, error)
 	GetUserByID(userID int) (models.User, error)
@@ -15,11 +16,13 @@ type UserRepo interface {
 	FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error)
 }
 
+// RoleRepo - interface for role repository
 type RoleRepo interface {
 	GetAllRoles() (*models.RoleList, error)
 	GetRoleByID(roleID int) (models.Role, error)
 }
 
+// AuthRepo - interface for authorization repository
 type AuthRepo interface {
 	GetUserByEmail(context.Context, string) (models.User, error)
 }
