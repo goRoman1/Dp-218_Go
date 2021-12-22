@@ -44,14 +44,15 @@ func main() {
 
 	var userRoleRepoDB = postgres.NewUserRepoDB(db)
 	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
+	var clock = services.NewClock()
 
 	var accRepoDb = postgres.NewAccountRepoDB(userRoleRepoDB, db)
-	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb)
+	var accService = services.NewAccountService(accRepoDb, accRepoDb, accRepoDb, clock)
 	var stationRepoDb = postgres.NewStationRepoDB(db)
 	var stationService = services.NewStationService(stationRepoDb)
 
 	var scooterRepo = postgres.NewScooterRepoDB(db)
-	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
+	var grpcScooterService = services.NewGrpcScooterService(scooterRepo, stationService)
 	var scooterService = services.NewScooterService(scooterRepo)
 
 	var supplierRepoDB = postgres.NewSupplierRepoDB(db)

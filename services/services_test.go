@@ -2,7 +2,8 @@ package services
 
 import (
 	"Dp218Go/models"
-	"Dp218Go/services/mock"
+	mock "Dp218Go/repositories/mocks"
+	mocks "Dp218Go/services/mocks"
 	"errors"
 	"github.com/golang/mock/gomock"
 	assert "github.com/stretchr/testify/require"
@@ -12,11 +13,15 @@ import (
 
 //UseCasesMock is a struct which exists of repositories which are mocked and our service.
 type UseCasesMock struct {
-	AccountServiceUC *AccountService
-	RepoPaymentType *mock.MockPaymentTypeRepo
+	AccountServiceUC       *AccountService
+	RepoPaymentType        *mock.MockPaymentTypeRepo
 	RepoAccountTransaction *mock.MockAccountTransactionRepo
-	RepoAccount *mock.MockAccountRepo
-	Clock *mock.MockClock
+	RepoAccount            *mock.MockAccountRepo
+	Clock                  *mocks.MockClock
+
+	repoUser *mock.MockUserRepo
+	repoRole *mock.MockRoleRepo
+	userUC   *UserService
 }
 
 type testCase struct {
@@ -37,7 +42,7 @@ func runTestCases(t *testing.T, testCases []testCase) {
 			ctrl := gomock.NewController(tt)
 			defer ctrl.Finish()
 
-			//Here we should change if our struct name will be different to 'UseCasesMock'.
+			//Here we should change if our struct name will be different to 'UseCasesMock'
 			mock := NewUseCasesMock(ctrl)
 
 			tc.test(tt, mock)
@@ -47,20 +52,30 @@ func runTestCases(t *testing.T, testCases []testCase) {
 
 func NewUseCasesMock(ctrl *gomock.Controller) *UseCasesMock {
 	repoAccount := mock.NewMockAccountRepo(ctrl)
-	repoAccountTransaction  := mock.NewMockAccountTransactionRepo(ctrl)
+	repoAccountTransaction := mock.NewMockAccountTransactionRepo(ctrl)
 	repoPaymentType := mock.NewMockPaymentTypeRepo(ctrl)
-	clock := mock.NewMockClock(ctrl)
+	clock := mocks.NewMockClock(ctrl)
 
 	//We created 'clock' for mocking 'time.Now()'
 	//Transfer 'clock' here just because it doesn't work in any other way.
-	accountServiceUC := NewAccountService(repoAccount, repoAccountTransaction, repoPaymentType,clock)
+	accountServiceUC := NewAccountService(repoAccount, repoAccountTransaction, repoPaymentType, clock)
+
+
+	repoUser := mock.NewMockUserRepo(ctrl)
+	repoRole := mock.NewMockRoleRepo(ctrl)
+	userUC := NewUserService(repoUser, repoRole)
+
 
 	return &UseCasesMock{
-		AccountServiceUC: accountServiceUC,
-		RepoPaymentType: repoPaymentType,
+		AccountServiceUC:       accountServiceUC,
+		RepoPaymentType:        repoPaymentType,
 		RepoAccountTransaction: repoAccountTransaction,
-		RepoAccount: repoAccount,
-		Clock: clock,
+		RepoAccount:            repoAccount,
+		Clock:                  clock,
+
+		repoUser: repoUser,
+		repoRole: repoRole,
+		userUC: userUC,
 	}
 }
 
@@ -71,7 +86,7 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 			test: func(t *testing.T, mock *UseCasesMock) {
 
 				//Create a variable with the exact time for mocking time.Now().
-				var currentTime = time.Date(2021, 12, 19, 12, 21,00,00, time.UTC)
+				var currentTime = time.Date(2021, 12, 19, 12, 21, 00, 00, time.UTC)
 
 				//With help of mocks we can call the functions of repositories without deployment.
 				//'EXPECT' means that the function will be called.
@@ -82,7 +97,7 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 					Return(models.PaymentType{}, nil).Times(1)
 
 				//Here we are mocking the time of our 'Clock' which is a wrapper of the system service 'Time'
-				//With the value of 'currentTime'.
+				//With the value of 'currentTime'
 				mock.Clock.EXPECT().Now().Return(currentTime).Times(1)
 
 				//Into 'DateTime' we put the 'currentTime'.
@@ -95,7 +110,7 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 					Order:       models.Order{},
 					AmountCents: 50}
 
-				//We call this func like in the order of calls into the real 'AddMoneyToAccount'.
+				//We call this func like in the order of calls into the real 'AddMoneyToAccount'
 				mock.RepoAccountTransaction.EXPECT().AddAccountTransaction(accTransaction).
 					Return(nil).Times(1)
 
@@ -105,17 +120,16 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 				//Compare that expected value of error is nil.
 				assert.Equal(t, nil, err)
 			},
-		}, {//In this case we are going by getting the error.
-			name: "Incorrect.Got error from GetPaymentTypeByID",
+		}, { //In this case we are going by getting the error
+			name: "Incorrect. Got error from GetPaymentTypeByID",
 			test: func(t *testing.T, mock *UseCasesMock) {
 
 				//Describe which error we'll get.
 				expectedError := errors.New("expectedError")
 
-				//Call 'GetPaymentTypeById' and return here our 'expectedError'.
+				//Call 'GetPaymentTypeById' and return here our 'expectedError'
 				mock.RepoPaymentType.EXPECT().GetPaymentTypeById(2).
 					Return(models.PaymentType{}, expectedError).Times(1)
-
 
 				accTransaction := &models.AccountTransaction{
 					DateTime:    time.Now(),
@@ -124,7 +138,6 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 					AccountTo:   models.Account{},
 					Order:       models.Order{},
 					AmountCents: 50}
-
 
 				//Calling 'AddMoneyToAccount' will return us the error, because we had the error into the func before.
 				err := mock.AccountServiceUC.AddMoneyToAccount(accTransaction.AccountTo, 50)
@@ -135,3 +148,54 @@ func TestUseCases_Account_AddMoneyToAccount(t *testing.T) {
 		},
 	})
 }
+
+func TestUseCases_User_ChangeUsersBlockStatus(t *testing.T) {
+	runTestCases(t, []testCase{
+		{
+			name: "correct",
+			test: func(t *testing.T, mock *UseCasesMock) {
+
+				mock.repoUser.EXPECT().GetUserByID(1).
+					Return(models.User{IsBlocked: false}, nil).Times(1)
+
+				mock.repoUser.EXPECT().UpdateUser(1, models.User{IsBlocked: true}).
+					Return(models.User{}, nil).Times(1)
+
+				err := mock.userUC.ChangeUsersBlockStatus(1)
+				assert.Equal(t, nil, err)
+			},
+		},
+		{
+			name: "incorrect get by ID",
+			test: func(t *testing.T, mock *UseCasesMock) {
+
+				var someError = errors.New("error get by ID")
+
+				mock.repoUser.EXPECT().GetUserByID(2).
+					Return(models.User{IsBlocked: false}, someError).Times(1)
+
+				err := mock.userUC.ChangeUsersBlockStatus(2)
+				assert.Error(t, err)
+				assert.Equal(t, someError, err)
+			},
+		},
+		{
+			name: "incorrect update user",
+			test: func(t *testing.T, mock *UseCasesMock) {
+
+				var someError = errors.New("error update user")
+
+				mock.repoUser.EXPECT().GetUserByID(3).
+					Return(models.User{IsBlocked: false}, nil).Times(1)
+
+				mock.repoUser.EXPECT().UpdateUser(3, models.User{IsBlocked: true}).
+					Return(models.User{}, someError).Times(1)
+
+				err := mock.userUC.ChangeUsersBlockStatus(3)
+				assert.Error(t, err)
+				assert.Equal(t, someError, err)
+			},
+		},
+	})
+}
+
