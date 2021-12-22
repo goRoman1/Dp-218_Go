@@ -174,5 +174,11 @@ func DecodeStationUpdateRequest(r *http.Request, data interface{}) error {
 	if _, ok := r.Form["Name"]; ok {
 		stationData.Name = r.FormValue("Name")
 	}
+	if _, ok := r.Form["Latitude"]; ok {
+		stationData.Latitude, _ = strconv.ParseFloat(r.FormValue("Latitude"), 64)
+	}
+	if _, ok := r.Form["Longitude"]; ok {
+		stationData.Longitude, _ = strconv.ParseFloat(r.FormValue("Longitude"), 64)
+	}
 	return nil
 }

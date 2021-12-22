@@ -38,9 +38,16 @@
             <input type="text" class="form-control" id="StationName" name="Name" placeholder=""
                    value="{{.Name}}" required="">
             <div class="invalid-feedback">
-                Valid first name is required.
+                Valid station name is required.
             </div>
+            <label for="StationLatitude">Latitude</label>
+            <input type="text" class="form-control" id="StationLatitude" name="Latitude" placeholder=""
+                   value="{{.Latitude}}" required="">
+            <label for="StationLongitude">Longitude</label>
+            <input type="text" class="form-control" id="StationLongitude" name="Longitude" placeholder=""
+                   value="{{.Longitude}}" required="">
         </div>
+
 
         <div class="custom-control custom-switch">
             <p>&nbsp;</p>
