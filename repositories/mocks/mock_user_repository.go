@@ -2,7 +2,7 @@
 // Source: user.go
 
 // Package mock_repositories is a generated GoMock package.
-package mocks
+package mock
 
 import (
 	models "Dp218Go/models"

@@ -35,9 +35,12 @@ var keyAccountRoutes = []Route{
 // AddAccountHandler - add endpoints for money accounts to http router
 func AddAccountHandler(router *mux.Router, service *services.AccountService) {
 	accountService = service
+	accountRouter := router.NewRoute().Subrouter()
+	accountRouter.Use(FilterAuth(authenticationService))
+
 	for _, rt := range keyAccountRoutes {
-		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
-		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		accountRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		accountRouter.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
