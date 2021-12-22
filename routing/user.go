@@ -57,11 +57,13 @@ type userWithRoleList struct {
 	models.User
 }
 
+// ListOfRoles - returns slice of all roles to render them on template
 func (ur *userWithRoleList) ListOfRoles() []models.Role {
 	roles, _ := userService.GetAllRoles()
 	return roles.Roles
 }
 
+// AddUserHandler - add endpoints for working with users to http router
 func AddUserHandler(router *mux.Router, service *services.UserService) {
 	userService = service
 	userRouter := router.NewRoute().Subrouter()
@@ -117,18 +119,18 @@ func getUserPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(FormatHTML, w, user, HTMLPath+"aggregator.html")
+	EncodeAnswer(FormatHTML, w, user, HTMLPath+"home.html")
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
-	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
+	userID, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	user, err := userService.GetUserByID(userId)
+	user, err := userService.GetUserByID(userID)
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
@@ -140,12 +142,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func deleteUser(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
-	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
+	userID, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	err = userService.DeleteUser(userId)
+	err = userService.DeleteUser(userID)
 	if err != nil {
 		ServerErrorRender(format, w)
 		return
@@ -156,18 +158,18 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 func updateUser(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
-	userId, err := strconv.Atoi(mux.Vars(r)[userIDKey])
+	userID, err := strconv.Atoi(mux.Vars(r)[userIDKey])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	userData, err := userService.GetUserByID(userId)
+	userData, err := userService.GetUserByID(userID)
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	DecodeRequest(format, w, r, &userData, DecodeUserUpdateRequest)
-	userData, err = userService.UpdateUser(userId, userData)
+	DecodeRequest(format, w, r, &userData, decodeUserUpdateRequest)
+	userData, err = userService.UpdateUser(userID, userData)
 	if err != nil {
 		ServerErrorRender(format, w)
 		return
@@ -187,12 +189,12 @@ func allUsersOperation(w http.ResponseWriter, r *http.Request) {
 	actionType := r.FormValue("ActionType")
 	switch actionType {
 	case "BlockUser":
-		userId, err := strconv.Atoi(r.FormValue("UserID"))
+		userID, err := strconv.Atoi(r.FormValue("UserID"))
 		if err != nil {
 			EncodeError(format, w, ErrorRendererDefault(err))
 			return
 		}
-		err = userService.ChangeUsersBlockStatus(userId)
+		err = userService.ChangeUsersBlockStatus(userID)
 		if err != nil {
 			EncodeError(format, w, ErrorRendererDefault(err))
 			return
@@ -203,7 +205,7 @@ func allUsersOperation(w http.ResponseWriter, r *http.Request) {
 	getAllUsers(w, r)
 }
 
-func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
+func decodeUserUpdateRequest(r *http.Request, data interface{}) error {
 
 	var err error
 	r.ParseForm()
@@ -221,12 +223,12 @@ func DecodeUserUpdateRequest(r *http.Request, data interface{}) error {
 	}
 	if _, ok := r.Form["RoleID"]; ok {
 
-		var roleId int
-		roleId, err = strconv.Atoi(r.FormValue("RoleID"))
+		var roleID int
+		roleID, err = strconv.Atoi(r.FormValue("RoleID"))
 		if err != nil {
 			return err
 		}
-		userData.Role, err = userService.GetRoleByID(roleId)
+		userData.Role, err = userService.GetRoleByID(roleID)
 		if err != nil {
 			return err
 		}

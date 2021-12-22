@@ -26,8 +26,8 @@ func (ordb *OrderRepoDb) CreateOrder(user models.User, scooterID, startID, endID
 	order.StatusEndID = endID
 	order.Distance = distance
 
-	querySQL := `INSERT INTO orders(user_id, scooter_id, status_start_id, status_end_id, distance) 
-					VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	querySQL := `INSERT INTO orders(user_id, scooter_id, status_start_id, status_end_id, distance, amount_cents) 
+					VALUES ($1, $2, $3, $4, $5, 0) RETURNING id`
 	err := ordb.db.QueryResultRow(context.Background(), querySQL, user.ID, scooterID, startID, endID,
 		distance).Scan(&order.ID)
 	if err != nil {

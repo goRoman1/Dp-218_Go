@@ -9,15 +9,18 @@ import (
 	"time"
 )
 
+// AccountRepoDB - struct for implementing account repository
 type AccountRepoDB struct {
 	userRepo *UserRepoDB
 	db       repositories.AnyDatabase
 }
 
+// NewAccountRepoDB - init of new Account repo
 func NewAccountRepoDB(userRepo *UserRepoDB, db repositories.AnyDatabase) *AccountRepoDB {
 	return &AccountRepoDB{userRepo, db}
 }
 
+// GetAccountsByOwner - gets list of accounts of given user from the DB
 func (accdb *AccountRepoDB) GetAccountsByOwner(user models.User) (*models.AccountList, error) {
 	list := &models.AccountList{}
 
@@ -41,6 +44,7 @@ func (accdb *AccountRepoDB) GetAccountsByOwner(user models.User) (*models.Accoun
 	return list, nil
 }
 
+// GetAccountByID - gets account entity by ID from the DB
 func (accdb *AccountRepoDB) GetAccountByID(accountID int) (models.Account, error) {
 	account := models.Account{}
 
@@ -56,6 +60,7 @@ func (accdb *AccountRepoDB) GetAccountByID(accountID int) (models.Account, error
 	return account, err
 }
 
+// GetAccountByNumber - gets account entity by account number from the DB
 func (accdb *AccountRepoDB) GetAccountByNumber(number string) (models.Account, error) {
 	account := models.Account{}
 
@@ -71,6 +76,7 @@ func (accdb *AccountRepoDB) GetAccountByNumber(number string) (models.Account, e
 	return account, err
 }
 
+// AddAccount - creates new account in the DB based on given entity
 func (accdb *AccountRepoDB) AddAccount(account *models.Account) error {
 	var id int
 	querySQL := `INSERT INTO accounts(name, number, owner_id) VALUES($1, $2, $3) RETURNING id;`
@@ -84,6 +90,7 @@ func (accdb *AccountRepoDB) AddAccount(account *models.Account) error {
 	return nil
 }
 
+// UpdateAccount - updates account in the DB by ID and given entity
 func (accdb *AccountRepoDB) UpdateAccount(accountID int, accountData models.Account) (models.Account, error) {
 	account := models.Account{}
 	querySQL := `UPDATE accounts 
@@ -104,6 +111,7 @@ func (accdb *AccountRepoDB) UpdateAccount(accountID int, accountData models.Acco
 	return account, nil
 }
 
+// GetAccountTransactionByID - gets transaction information from the DB by its ID
 func (accdb *AccountRepoDB) GetAccountTransactionByID(transID int) (models.AccountTransaction, error) {
 	accountTransaction := models.AccountTransaction{}
 
@@ -149,13 +157,15 @@ func addTransactionComplexFields(accdb *AccountRepoDB, accountTransaction *model
 	return nil
 }
 
+//AddAccountTransaction - creates transaction record in the DB based on given entity
 func (accdb *AccountRepoDB) AddAccountTransaction(accountTransaction *models.AccountTransaction) error {
 	var id int
 	querySQL := `INSERT INTO 
 		account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) 
 		VALUES($1, $2, $3, $4, $5, $6) RETURNING id;`
-	err := accdb.db.QueryResultRow(context.Background(), querySQL, accountTransaction.DateTime, accountTransaction.PaymentType.ID,
-		accountTransaction.AccountFrom.ID, accountTransaction.AccountTo.ID, accountTransaction.Order.ID, accountTransaction.AmountCents).Scan(&id)
+	err := accdb.db.QueryResultRow(context.Background(), querySQL, accountTransaction.DateTime,
+		accountTransaction.PaymentType.ID,	accountTransaction.AccountFrom.ID, accountTransaction.AccountTo.ID,
+		accountTransaction.Order.ID, accountTransaction.AmountCents).Scan(&id)
 	if err != nil {
 		return err
 	}
@@ -164,7 +174,7 @@ func (accdb *AccountRepoDB) AddAccountTransaction(accountTransaction *models.Acc
 	return nil
 }
 
-func getTransactionsBySomeQuery(accdb *AccountRepoDB, querySQL string, params ...interface{}) (*models.AccountTransactionList, error) { //nolint:lll
+func getTransactionsBySomeQuery(accdb *AccountRepoDB, querySQL string, params ...interface{}) (*models.AccountTransactionList, error) {
 	list := &models.AccountTransactionList{}
 	rows, err := accdb.db.QueryResult(context.Background(), querySQL, params...)
 	if err != nil {
@@ -206,6 +216,7 @@ func getTransactionsBySomeQuery(accdb *AccountRepoDB, querySQL string, params ..
 	return list, nil
 }
 
+// GetAccountTransactions - gets list of money transactions for given accounts from the DB
 func (accdb *AccountRepoDB) GetAccountTransactions(accounts ...models.Account) (*models.AccountTransactionList, error) {
 	querySQL := `SELECT 
 		id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents 
@@ -224,6 +235,7 @@ func (accdb *AccountRepoDB) GetAccountTransactions(accounts ...models.Account) (
 	return getTransactionsBySomeQuery(accdb, querySQL, params...)
 }
 
+// GetAccountTransactionsInTimePeriod - gets list of money transactions for given accounts from start to end time from the DB
 func (accdb *AccountRepoDB) GetAccountTransactionsInTimePeriod(start time.Time, end time.Time, accounts ...models.Account) (*models.AccountTransactionList, error) {
 	querySQL := `SELECT 
 		id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents 
@@ -246,6 +258,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionsInTimePeriod(start time.Time, 
 	return getTransactionsBySomeQuery(accdb, querySQL, params...)
 }
 
+// GetAccountTransactionsByOrder - gets list of money transactions for given order from the DB
 func (accdb *AccountRepoDB) GetAccountTransactionsByOrder(order models.Order) (*models.AccountTransactionList, error) {
 	querySQL := `SELECT 
 		id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents 
@@ -255,6 +268,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionsByOrder(order models.Order) (*
 	return getTransactionsBySomeQuery(accdb, querySQL, order.ID)
 }
 
+// GetAccountTransactionsByPaymentType - gets list of money transactions for given accounts & payment type from the DB
 func (accdb *AccountRepoDB) GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error) {
 	querySQL := `SELECT 
 		id, date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents 
@@ -276,6 +290,7 @@ func (accdb *AccountRepoDB) GetAccountTransactionsByPaymentType(paymentType mode
 	return getTransactionsBySomeQuery(accdb, querySQL, params...)
 }
 
+// GetPaymentTypeById - gets payment type entity by ID from the DB
 func (accdb *AccountRepoDB) GetPaymentTypeById(paymentTypeId int) (models.PaymentType, error) {
 	paymentType := models.PaymentType{}
 

@@ -1,10 +1,12 @@
 package routing
 
 import (
+	"Dp218Go/internal/validation"
 	"Dp218Go/models"
 	"Dp218Go/services"
 	"Dp218Go/utils"
 	"errors"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -30,13 +32,27 @@ var keyAccountRoutes = []Route{
 		Method:  http.MethodPost,
 		Handler: updateAccountInfo,
 	},
+	{
+		Uri:     `/account`,
+		Method:  http.MethodGet,
+		Handler: createAccountPage,
+	},
+	{
+		Uri:     `/account`,
+		Method:  http.MethodPost,
+		Handler: createAccount,
+	},
 }
 
+// AddAccountHandler - add endpoints for money accounts to http router
 func AddAccountHandler(router *mux.Router, service *services.AccountService) {
 	accountService = service
+	accountRouter := router.NewRoute().Subrouter()
+	accountRouter.Use(FilterAuth(authenticationService))
+
 	for _, rt := range keyAccountRoutes {
-		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
-		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		accountRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		accountRouter.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
@@ -126,4 +142,45 @@ func updateAccountInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	getAccountInfo(w, r)
+}
+
+func createAccountPage(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+	user := GetUserFromContext(r)
+
+	tmpl, err := template.ParseFiles("templates/html/account-add.html")
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+
+	tmpl.Execute(w, user)
+}
+
+func createAccount(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+	user := GetUserFromContext(r)
+
+	accReq := validation.CreateAccountRequest{
+		Name:   r.FormValue("name"),
+		Number: r.FormValue("number"),
+	}
+	if err := accReq.Validate(); err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+
+	}
+
+	account := models.Account{
+		Name:   accReq.Name,
+		Number: accReq.Number,
+		User:   *user,
+	}
+
+	if err := accountService.AddAccount(&account); err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+
+	http.Redirect(w, r, "/accounts", http.StatusFound)
 }

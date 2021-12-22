@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//AccountUsecases - interface for user accounting usecases
 type AccountUsecases interface {
 	MoneyFromCents(cents int) models.Money
 	CentsFromMoney(money models.Money) int

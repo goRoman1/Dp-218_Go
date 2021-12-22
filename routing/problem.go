@@ -42,6 +42,7 @@ var keyProblemRoutes = []Route{
 	},
 }
 
+// AddProblemHandler - add endpoints for user problems & solutions to http router
 func AddProblemHandler(router *mux.Router, problserv *services.ProblemService, solserv *services.SolutionService) {
 	problemService = problserv
 	solutionService = solserv

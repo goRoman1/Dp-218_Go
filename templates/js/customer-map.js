@@ -3,13 +3,14 @@
 
         const locationInfo = document.getElementById('location');
         const stationInfo = document.getElementById('stationInfo');
-        const getAllButton = document.getElementById("getAllButton");
-        const getNearestButton = document.getElementById("getNearestButton")
-        const clearAll = document.getElementById("clearAll")
+        const getAllButton = document.getElementById('getAllButton');
+        const getNearestButton = document.getElementById('getNearestButton');
+        const clearAll = document.getElementById('clearAll');
         const stationSubUrl = '/customer/station';
         const stationListUrl = location.origin + stationSubUrl;
         const stationNearestUrl = location.origin + stationSubUrl + '/nearest';
         const stationInfoUrl = location.origin + stationSubUrl;
+        const stationScooter = location.origin + '/start-trip';
 
 
         var map, marker, stations;
@@ -72,7 +73,7 @@
                 "<p>station id=" + data.id + "</p>" +
                 "<p>station name=" + data.name + "</p>" +
                 "<p>station is active=" + data.is_active + "</p>" +
-                "<a href='" + stationSubUrl + "/" + data.id + "/scooter'>show station</a>";
+                "<a href='" + stationScooter + "/" + data.id + "'>show station</a>";
         }
 
         async function getAllStations() {

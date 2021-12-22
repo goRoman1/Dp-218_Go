@@ -72,6 +72,7 @@ func (sv *AuthService) SignIn(w http.ResponseWriter, r *http.Request, authreq *A
 	if err != nil {
 		return err
 	}
+	user = *sanitize(&user)
 
 	session.Values[sessionVal] = user
 	err = session.Save(r, w)
@@ -125,4 +126,9 @@ func (sv *AuthService) GetUserFromRequest(r *http.Request) (*models.User, error)
 
 func (sv *AuthService) getSessionStore() sessions.Store {
 	return sv.sessStore
+}
+
+func sanitize(u *models.User) *models.User {
+	u.Password = ""
+	return u
 }

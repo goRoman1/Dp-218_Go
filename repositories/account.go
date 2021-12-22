@@ -1,3 +1,4 @@
+//go:generate mockgen -source=account.go -destination=../services/mock/mock_account.go -package=mock
 package repositories
 
 import (
@@ -5,6 +6,7 @@ import (
 	"time"
 )
 
+// AccountRepo - interface for money account repository
 type AccountRepo interface {
 	GetAccountsByOwner(user models.User) (*models.AccountList, error)
 	GetAccountByID(accountID int) (models.Account, error)
@@ -13,6 +15,7 @@ type AccountRepo interface {
 	UpdateAccount(accountID int, accountData models.Account) (models.Account, error)
 }
 
+// AccountTransactionRepo - interface for money transaction repository
 type AccountTransactionRepo interface {
 	GetAccountTransactionByID(transID int) (models.AccountTransaction, error)
 	AddAccountTransaction(accountTransaction *models.AccountTransaction) error
@@ -22,6 +25,7 @@ type AccountTransactionRepo interface {
 	GetAccountTransactionsByPaymentType(paymentType models.PaymentType, accounts ...models.Account) (*models.AccountTransactionList, error) //nolint:lll
 }
 
+// PaymentTypeRepo - interface for payment type repository
 type PaymentTypeRepo interface {
 	GetPaymentTypeById(paymentTypeID int) (models.PaymentType, error)
 }
