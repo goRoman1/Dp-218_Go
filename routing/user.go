@@ -119,7 +119,7 @@ func getUserPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	EncodeAnswer(FormatHTML, w, user, HTMLPath+"aggregator.html")
+	EncodeAnswer(FormatHTML, w, user, HTMLPath+"home.html")
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {

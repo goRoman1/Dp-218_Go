@@ -1,3 +1,4 @@
+//go:generate mockgen -source=order.go -destination=../services/mock/mock_order.go -package=mock
 package repositories
 
 import "Dp218Go/models"

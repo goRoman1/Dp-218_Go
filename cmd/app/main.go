@@ -8,6 +8,7 @@ import (
 	"Dp218Go/routing/grpcserver"
 	"Dp218Go/routing/httpserver"
 	"Dp218Go/services"
+	"Dp218Go/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -51,7 +52,7 @@ func main() {
 	var stationService = services.NewStationService(stationRepoDB)
 
 	var scooterRepo = postgres.NewScooterRepoDB(db)
-	var grpcScooterService = services.NewGrpcScooterService(scooterRepo)
+	var grpcScooterService = services.NewGrpcScooterService(scooterRepo, stationService)
 	var scooterService = services.NewScooterService(scooterRepo)
 
 	var supplierRepoDB = postgres.NewSupplierRepoDB(db)

@@ -13,12 +13,13 @@ import (
 const (
 	step = 0.001
 	dischargeStep = 0.5
-	interval = 1
+	interval = 700
 )
 
 //GrpcScooterService is a service which responsible for gRPC scooter.
 type GrpcScooterService struct {
 	repositories.ScooterRepo
+	*StationService
 }
 
 //GrpcScooterClient is a struct with parameters which will be translated by the gRPC connection.
@@ -30,9 +31,10 @@ type GrpcScooterClient struct {
 }
 
 //NewGrpcScooterService creates a new GrpcScooterService.
-func NewGrpcScooterService(repo repositories.ScooterRepo) *GrpcScooterService {
+func NewGrpcScooterService(repoScooter repositories.ScooterRepo, stationService *StationService) *GrpcScooterService {
 	return &GrpcScooterService{
-		repo,
+		repoScooter,
+		stationService,
 	}
 }
 
@@ -47,11 +49,11 @@ func NewGrpcScooterClient(id uint64, coordinate models.Coordinate, battery float
 	}
 }
 
-//InitAndRun the main function of scooter's trip. It analyzes the scooter parameters from database by it's ID.
+//InitAndRun the main function of scooter's trip. It analyzes the scooter parameters from database by its ID.
 //If they satisfy the conditions, function creates connection to the gRPC server, creates gRPC client,
 //calls 'run' function which moves the scooter to the destination point.
 //After finished moves it sends the current scooter status to the database.
-func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coordinate) error{
+func (gss *GrpcScooterService) InitAndRun(scooterID int, chosenStationID int) error{
 	scooter,err := gss.GetScooterById(scooterID)
 	if err!= nil {
 		fmt.Println(err)
@@ -64,7 +66,15 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coord
 		return err
 	}
 
-	if scooterStatus.BatteryRemain > 10 && scooter.CanBeRent {
+	if scooter.CanBeRent {
+		var coordinate models.Coordinate
+		station, err := gss.GetStationById(chosenStationID)
+		if err!=nil {
+			return err
+		}
+		coordinate.Latitude = station.Latitude
+		coordinate.Longitude = station.Longitude
+
 		conn, err := grpc.DialContext(context.Background(), ":8000", grpc.WithInsecure())
 
 		if err != nil {
@@ -85,7 +95,8 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coord
 			fmt.Println(err)
 		}
 
-		err = gss.SendCurrentStatus(int(client.ID), client.coordinate.Latitude, client.coordinate.Longitude,
+		err = gss.SendCurrentStatus(int(client.ID), chosenStationID, client.coordinate.Latitude,
+			client.coordinate.Longitude,
 			client.batteryRemain)
 		if err != nil {
 			fmt.Println(err)
@@ -105,7 +116,7 @@ func (gss *GrpcScooterService) InitAndRun(scooterID int, coordinate models.Coord
 
 //grpcScooterMessage sends the message be gRPC stream in a format which defined in the *proto file.
 func (s *GrpcScooterClient) grpcScooterMessage()  {
-	intPol := time.Duration(interval) * time.Second
+	intPol := time.Duration(interval) * time.Millisecond
 
 	fmt.Println("executing run in client")
 	msg := &protos.ClientMessage{
