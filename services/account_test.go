@@ -2,7 +2,7 @@ package services
 
 import (
 	"Dp218Go/models"
-	mock2 "Dp218Go/services/mock"
+	"Dp218Go/services/mock"
 	"errors"
 	"github.com/golang/mock/gomock"
 	assert "github.com/stretchr/testify/require"
@@ -13,10 +13,10 @@ import (
 //UseCasesMock is a struct which exists of repositories which are mocked and our service.
 type UseCasesMock struct {
 	AccountServiceUC *AccountService
-	RepoPaymentType *mock2.MockPaymentTypeRepo
-	RepoAccountTransaction *mock2.MockAccountTransactionRepo
-	RepoAccount *mock2.MockAccountRepo
-	Clock *mock2.MockClock
+	RepoPaymentType *mock.MockPaymentTypeRepo
+	RepoAccountTransaction *mock.MockAccountTransactionRepo
+	RepoAccount *mock.MockAccountRepo
+	Clock *mock.MockClock
 }
 
 type testCase struct {
@@ -46,10 +46,10 @@ func runTestCases(t *testing.T, testCases []testCase) {
 }
 
 func NewUseCasesMock(ctrl *gomock.Controller) *UseCasesMock {
-	repoAccount := mock2.NewMockAccountRepo(ctrl)
-	repoAccountTransaction  := mock2.NewMockAccountTransactionRepo(ctrl)
-	repoPaymentType := mock2.NewMockPaymentTypeRepo(ctrl)
-	clock := mock2.NewMockClock(ctrl)
+	repoAccount := mock.NewMockAccountRepo(ctrl)
+	repoAccountTransaction  := mock.NewMockAccountTransactionRepo(ctrl)
+	repoPaymentType := mock.NewMockPaymentTypeRepo(ctrl)
+	clock := mock.NewMockClock(ctrl)
 
 	//We created 'clock' for mocking 'time.Now()'
 	//Transfer 'clock' here just because it doesn't work in any other way.
