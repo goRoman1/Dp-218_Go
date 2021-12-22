@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"Dp218Go/internal/validation"
 	"Dp218Go/models"
 	"Dp218Go/services"
 	"context"
@@ -34,14 +35,24 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// TODO implement validation
-		user := &models.User{
+		valReq := validation.SignUpUserRequest{
 			LoginEmail:  r.FormValue("email"),
-			IsBlocked:   true,
 			UserName:    r.FormValue("name"),
 			UserSurname: r.FormValue("surname"),
-			Role:        models.Role{ID: 2},
 			Password:    r.FormValue("password"),
+		}
+		if err := valReq.Validate(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		user := &models.User{
+			LoginEmail:  valReq.LoginEmail,
+			IsBlocked:   true,
+			UserName:    valReq.UserName,
+			UserSurname: valReq.UserSurname,
+			Role:        models.Role{ID: 2},
+			Password:    valReq.Password,
 		}
 
 		if err := sv.SignUp(user); err != nil {
@@ -56,11 +67,19 @@ func SignUp(sv *services.AuthService) http.HandlerFunc {
 //SignIn is handler for signin authentication service method
 func SignIn(sv *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// // TODO implement validation
+
+		valReq := validation.SignInUserRequest{
+			LoginEmail: r.FormValue("email"),
+			Password:   r.FormValue("password"),
+		}
+		if err := valReq.Validate(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		req := &services.AuthRequest{
-			Email:    r.FormValue("email"),
-			Password: r.FormValue("password"),
+			Email:    valReq.LoginEmail,
+			Password: valReq.Password,
 		}
 
 		if err := sv.SignIn(w, r, req); err != nil {

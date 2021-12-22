@@ -1,17 +1,16 @@
 package routing
 
 import (
+	"Dp218Go/internal/validation"
 	"Dp218Go/models"
 	"Dp218Go/services"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"github.com/gorilla/mux"
 )
-
-var custTmpl = template.Must(template.ParseFiles(HTMLPath + "customer-home.html"))
 
 type customerHandler struct {
 	custService *services.CustomerService
@@ -31,7 +30,7 @@ func AddCustomerHandler(router *mux.Router, service *services.CustomerService) {
 	custRouter := router.PathPrefix("/customer").Subrouter()
 	custRouter.Use(FilterAuth(authenticationService), FilterCustomer)
 
-	custRouter.Path("/home").HandlerFunc(custHandler.HomeHandler).Methods(http.MethodGet)
+	custRouter.Path("/map").HandlerFunc(custHandler.HomeHandler).Methods(http.MethodGet)
 	custRouter.Path("/station").HandlerFunc(custHandler.StationListHandler).Methods(http.MethodGet)
 	custRouter.Path("/station/nearest").
 		HandlerFunc(custHandler.StationNearestHandler).Queries("x", "{x}", "y", "{y}").Methods(http.MethodGet)
@@ -42,13 +41,15 @@ func AddCustomerHandler(router *mux.Router, service *services.CustomerService) {
 // HomeHandler is handler for rendering home page of customer
 func (h *customerHandler) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	user := GetUserFromContext(r)
+	format := GetFormatFromRequest(r)
+
 	// no need if wrapped with filteruser
 	if user == nil {
-		http.Error(w, "not authenticated", http.StatusForbidden)
+		EncodeError(format, w, ErrorRendererDefault(errors.New("not authenticated")))
 		return
 	}
 
-	custTmpl.ExecuteTemplate(w, "customer-home.html", user)
+	EncodeAnswer(format, w, user, HTMLPath+"customer-map.html")
 }
 
 // StationListHandler is handler that users customer service
@@ -71,24 +72,31 @@ func (h *customerHandler) StationListHandler(w http.ResponseWriter, r *http.Requ
 // station in json format shows error if failed
 func (h *customerHandler) StationNearestHandler(w http.ResponseWriter, r *http.Request) {
 
-	xStr := r.FormValue("x")
-	yStr := r.FormValue("y")
+	valReq := validation.LocationRequest{
+		Latitude:  r.FormValue("x"),
+		Longitude: r.FormValue("y"),
+	}
 
-	x, err := strconv.ParseFloat(xStr, 64)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+	if err := valReq.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	y, err := strconv.ParseFloat(yStr, 64)
+	x, err := strconv.ParseFloat(valReq.Latitude, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	y, err := strconv.ParseFloat(valReq.Longitude, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	nearest, err := h.custService.ShowNearestStation(x, y)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -106,15 +114,14 @@ func (h *customerHandler) StationInfoHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
 		return
 	}
-	station, err := h.custService.ShowStation(id)
 
+	station, err := h.custService.ShowStation(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(station)
-
 }
 
 // FilterCustomer is middleware that restricts access to customer page
