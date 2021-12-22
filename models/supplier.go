@@ -18,6 +18,10 @@ type SuppliersScooter struct {
 	SerialNumber string `json:"serial_number"`
 }
 
+type UploadedScooters struct {
+	SerialNumber string `json,scv:"serial_number"`
+}
+
 type SuppliersScooterList struct {
 	Scooters []SuppliersScooter `json:"scooters"`
 }
@@ -39,6 +43,7 @@ type ScooterModelDTO struct {
 	ModelName string `json:"model_name"`
 	MaxWeight int    `json:"max_weight"`
 	Speed     int    `json:"speed"`
+	SuppliersScooters SuppliersScooterList `json:"scooters"`
 }
 
 type ScooterModelDTOList struct {
@@ -52,6 +57,6 @@ type SupplierPricesDTO struct {
 	UserId        int `json:"user_id"`
 }
 
-type SupplierPricesODTList struct {
+type SupplierPricesDTOList struct {
 	SupplierPricesDTO []SupplierPricesDTO `json:"supplier_prices_odt_list"`
 }

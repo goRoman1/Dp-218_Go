@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"io"
+	"log"
 	"net/http"
 	"net/textproto"
 	"os"
@@ -15,56 +16,57 @@ import (
 
 var supplierService *services.SupplierService
 
-var scooterModelKeyRoutes = []Route{
+var supplierKeyRoutes = []Route{
 	{
 		Uri:     `/models`,
 		Method:  http.MethodGet,
 		Handler: getModels,
 	},
 	{
-		Uri:     `/createModel`,
+		Uri:     `/modelCreate`,
 		Method:  http.MethodPost,
 		Handler: createModel,
 	},
 	{
-		Uri:     `/editPrice`,
-		Method:  http.MethodPut,
+		Uri:     `/price/{id}`,
+		Method:  http.MethodPost,
 		Handler: editPrice,
 	},
 	{
-		Uri:     `/upload`,
+		Uri:     `/upload/{id}`,
 		Method:  http.MethodPost,
 		Handler: uploadFile,
 	},
 	{
-		Uri:     `/getSuppliersScootersByModelId/{id}`,
-		Method:  http.MethodGet,
-		Handler: getSuppliersScootersByModelId,
-	},
-	{
-		Uri:     `/addScooter/{id}`,
+		Uri:     `/model/{id}`,
 		Method:  http.MethodPost,
 		Handler: addSuppliersScooter,
 	},
 	{
-		Uri:     `/deleteScooter/{id}`,
-		Method:  http.MethodDelete,
+		Uri:     `/delete/{id}`,
+		Method:  http.MethodPost,
 		Handler: deleteSuppliersScooter,
 	},
 }
 
+// FileHeader - the multipart.FileHeader uses the following struct
 type FileHeader struct {
 	Filename string
 	Header   textproto.MIMEHeader
 }
 
-func AddSupplierHandler(router *mux.Router, service *services.SupplierService){
+// AddSupplierHandler - add endpoints for working with supplier scooters and models to http router
+func AddSupplierHandler(router *mux.Router, service *services.SupplierService) {
 	supplierService = service
-	for _, rt := range scooterModelKeyRoutes {
-		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
-		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+	supplierRouter := router.NewRoute().Subrouter()
+	supplierRouter.Use(FilterAuth(authenticationService))
+
+	for _, rt := range supplierKeyRoutes {
+		supplierRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		supplierRouter.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
+
 
 func getModels(w http.ResponseWriter, r *http.Request) {
 	var modelList = &models.ScooterModelDTOList{}
@@ -86,18 +88,55 @@ func createModel(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 	model := &models.ScooterModelDTO{}
 
-	DecodeRequest(FormatJSON, w, r, model, scooterModelRequest)
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+	modelName := r.FormValue("modelName")
+	maxWeight := r.FormValue("maxWeight")
+	speed := r.FormValue("speed")
+	price := r.FormValue("price")
 
+	intMaxWeight, err :=  strconv.Atoi(maxWeight)
+	if err != nil {
+		log.Println(err)
+	}
+
+	intSpeed, err := strconv.Atoi(speed)
+	if err != nil {
+		log.Println(err)
+	}
+	intPrice, err := strconv.Atoi(price)
+	if err != nil {
+		log.Println(err)
+	}
+	model.ModelName = modelName
+	model.MaxWeight = intMaxWeight
+	model.Speed = intSpeed
+	model.Price = intPrice
+
+	//	DecodeRequest(FormatJSON, w, r, model, scooterModelRequest)
 	if err := supplierService.AddModel(model); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
 
-	EncodeAnswer(FormatJSON, w, model)
+	EncodeAnswer(FormatJSON, w, model, HTMLPath+"supplier.html")
 }
 
 func editPrice(w http.ResponseWriter, r *http.Request) {
+	model := &models.ScooterModelDTO{}
 	format := GetFormatFromRequest(r)
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	editedPrice := r.FormValue("priceInput")
+	intPrice, err := strconv.Atoi(editedPrice)
+	if err != nil {
+		log.Println(err)
+	}
 
 	modelId, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
@@ -110,34 +149,17 @@ func editPrice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	DecodeRequest(FormatJSON, w, r, modelData, scooterModelRequest)
-	if err := supplierService.ChangePrice(modelData); err != nil {
+	model = modelData
+	model.Price = intPrice
+
+	//	DecodeRequest(FormatJSON, w, r, modelData, scooterModelRequest)
+	if err := supplierService.ChangePrice(model); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
 
-	EncodeAnswer(FormatJSON, w, modelData)
-}
-
-func getSuppliersScootersByModelId(w http.ResponseWriter, r *http.Request) {
-	var scooters = &models.SuppliersScooterList{}
-	var err error
-	format := GetFormatFromRequest(r)
-
-	modelId, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		EncodeError(format, w, ErrorRendererDefault(err))
-		return
-	}
-
-	scooters, err = supplierService.GetSuppliersScootersByModelId(modelId)
-
-	if err != nil {
-		ServerErrorRender(format, w)
-		return
-	}
-
-	EncodeAnswer(format, w, scooters, HTMLPath+"scooters-list.html")
+	EncodeAnswer(FormatJSON, w, model)
+	http.Redirect(w,r,"http://localhost:8080/models",  http.StatusFound)
 }
 
 func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
@@ -147,35 +169,36 @@ func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
+	scooterSerial := r.FormValue("newScooter")
 
-	scooter := &models.SuppliersScooter{}
-	DecodeRequest(FormatJSON, w, r, scooter, scooterRequest)
-
-	if err := supplierService.AddSuppliersScooter(modelId, scooter); err != nil {
+	if err := supplierService.AddSuppliersScooter(modelId, scooterSerial); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
 
-	EncodeAnswer(FormatJSON, w, scooter)
+	http.Redirect(w,r,"http://localhost:8080/models",  http.StatusFound)
 }
 
 func deleteSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 	format := GetFormatFromRequest(r)
 
-	userId, err := strconv.Atoi(mux.Vars(r)["id"])
+	scooterId, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
-	err = supplierService.DeleteSuppliersScooter(userId)
+	err = supplierService.DeleteSuppliersScooter(scooterId)
 	if err != nil {
 		ServerErrorRender(format, w)
 		return
 	}
-	EncodeAnswer(format, w, ErrorRenderer(fmt.Errorf(""), "success", http.StatusOK))
+
+	http.Redirect(w,r,"http://localhost:8080/models",  http.StatusFound)
 }
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
+	format := GetFormatFromRequest(r)
+
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		return
@@ -194,28 +217,54 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	io.Copy(f, file)
-	supplierService.InsertScootersToDb(filepath)
+
+	modelId, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		EncodeError(format, w, ErrorRendererDefault(err))
+		return
+	}
+	supplierService.InsertScootersToDb(modelId, filepath)
+
+	http.Redirect(w,r,"/models",  http.StatusFound)
 }
 
 func scooterModelRequest(r *http.Request, data interface{}) error {
 	modelData := data.(*models.ScooterModelDTO)
 
-	price, _ := GetParameterFromRequest(r, "price", nil)
-	modelName,_ := GetParameterFromRequest(r, "modelName", utils.ConvertStringToString())
-	maxWeight,_ := GetParameterFromRequest(r, "maxWeight", nil)
-	speed,_ := GetParameterFromRequest(r, "speed", nil)
-
-	modelData.Price = price.(int)
+	modelName, err := GetParameterFromRequest(r, "modelName", utils.ConvertStringToString())
+	if err != nil {
+		return err
+	}
 	modelData.ModelName = modelName.(string)
+
+	maxWeight, err := GetParameterFromRequest(r, "maxWeight", utils.ConvertStringToInt())
+	if err != nil {
+		return err
+	}
 	modelData.MaxWeight = maxWeight.(int)
+
+	speed, err := GetParameterFromRequest(r, "speed", utils.ConvertStringToInt())
+	if err != nil {
+		return err
+	}
 	modelData.Speed = speed.(int)
+
+	price, err := GetParameterFromRequest(r, "price", utils.ConvertStringToInt())
+	if err != nil {
+		return err
+	}
+	modelData.Price = price.(int)
+
 	return nil
 }
 
 func scooterRequest(r *http.Request, data interface{}) error {
 	scooterData := data.(*models.SuppliersScooter)
-	serial, _ := GetParameterFromRequest(r, "serial",  utils.ConvertStringToString())
-
+	serial, err := GetParameterFromRequest(r, "serial",  utils.ConvertStringToString())
+	if err != nil {
+		return err
+	}
 	scooterData.SerialNumber = serial.(string)
+
 	return nil
 }
