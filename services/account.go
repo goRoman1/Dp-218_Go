@@ -26,6 +26,7 @@ type transactionsWithIncome struct {
 	IsIncome    bool
 }
 
+
 // NewAccountService - initialization of AccountService
 func NewAccountService(repoAccount repositories.AccountRepo,
 	repoAccountTransaction repositories.AccountTransactionRepo, repoPaymentType repositories.PaymentTypeRepo, clock Clock) *AccountService {

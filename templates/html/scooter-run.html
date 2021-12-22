@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
           integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
@@ -9,7 +9,7 @@
         label {
             border-radius: 5px;
             padding: 0 2rem;
-            /*background-color: yellowgreen;*/
+            background-color: ivory;
             margin: 0.25rem;
             /*font-weight: bold;*/
             font-size: 18px;
@@ -23,19 +23,20 @@
         }
 
         input[type="radio"]:checked + label {
-            background-color: tomato;
+            background-color: yellowgreen;
         }
     </style>
     <title>Scooter service</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"></script>
+    <script src="https://maps.api.2gis.ru/2.0/loader.js"></script>
     <script type="text/javascript">
-        var map;
+        var map, myIcon;
 
         // myIcon = DG.icon({
         //     iconUrl: 'https://icons8.com/icon/W7f5fcjgfbyK/scooter',
         //     iconSize: [35, 35]
         // });
+
         let eventSource = new EventSource("/scooter");
         let scooters = new Map();
         // let scooter;
@@ -79,8 +80,7 @@
 
             if (scooters.has(json.id) != true) {
                 console.log("no id");
-                let scr = DG.marker([json.longitude, json.latitude]);
-                scr.addTo(map);
+                let scr = DG.marker([json.longitude, json.latitude]).addTo(map);
                 scooters.set(json.id, scr);
                 // console.log(map);
                 // return;
@@ -109,47 +109,47 @@
 
     </script>
 </head>
-<body style="background-color: ivory">
-<!--    <form class="needs-validation" novalidate="" method="post" action="/">-->
-<div class="row">
-    <div id="map" style="width:60%; height:100vh"></div>
-    <div class="col-sm-4">
-        <div class="bs-component">
-            <fieldset>
-                <div class="list-group" name="Scoot_list">
-                    <div href="#" class="list-group-item list-group-item-action active" name="ScooterList">
-                        Scooter list
+<body style="background: radial-gradient(circle at top left, #e1d767, #d3f6da)">
+    <div class="row">
+        <div id="map" style="width:60%; height:100vh"></div>
+        <div class="col-sm-4">
+            <div class="bs-component">
+                <fieldset class="scoot_check">
+                    <div class="list-group" name="Scoot_list">
+                        <div href="#" class="list-group-item list-group-item-action active" style="background:
+                        radial-gradient(#edf1cf, #43acb4); border: none" name="ScooterList">
+                            Scooters
+                        </div>
+                        {{range .Scooters}}
+                        <input  type="radio" name="scoot"
+                               class="choose_scooter" value="{{.ID}}" id="{{.ID}}"
+                        ><label style="border: 1px solid black" for="{{.ID}}"><b>ID: {{.ID}} </b>, "{{.ScooterModel}}",
+                        <b>Battery:{{
+                        .BatteryRemain}}%</b></label>
+                        {{end}}
                     </div>
-                    {{range .Scooters}}
-                    <input  type="radio" name="size"
-                           class="choose_scooter" value="{{.ID}}" id="{{.ID}}"
-                    ><label for="{{.ID}}">{{.ScooterModel}}</label>
-                    {{end}}
-                </div>
-            </fieldset>
-            <fieldset>
-                <div class="list-group" style="margin-top: 20px">
-                    <div href="#" class="list-group-item list-group-item-action active" style="background-color:
-                                slateblue">
-                        Choose location
+                </fieldset>
+                <fieldset class="station_check">
+                    <div class="list-group" style="margin-top: 20px">
+                        <div href="#" class="list-group-item list-group-item-action active" style="background:
+                        radial-gradient(#edf1cf, #43acb4); border: none">
+                            Where we go?
+                        </div>
+                        {{range .Station}}
+                        <input  type="radio" name="station"
+                                class="choose_station" value="{{.ID}}" id="{{.ID}}+500"
+                        ><label for="{{.ID}}+500" style="border: 1px solid black">- {{.Name}}</label>
+                        {{end}}
                     </div>
-                    {{range .Station}}
-                    <input  type="radio" name="size"
-                            class="choose_station" value="{{.ID}}" id="{{.ID}}+500"
-                    ><label for="{{.ID}}+500">{{.Name}}</label>
-                    {{end}}
-                </div>
-            </fieldset>
+                </fieldset>
+            </div>
+            <p class="bs-component"style="margin-top: 20px">
+                <button type="submit" class="btn btn-primary btn-lg" id="run"
+                        style="background-color: teal" name="Run" onclick="fetch('http://localhost:8080/run')">Start
+                    ride
+                </button>
+            </p>
         </div>
-        <p class="bs-component">
-            <button type="submit" class="btn btn-primary btn-lg" id="run"
-                    style="background-color: teal" name="Run" onclick="fetch('http://localhost:8080/run')">Start
-                ride
-            </button>
-        </p>
     </div>
-</div>
-</div>
-<!--    </form>-->
 </body>
 </html>

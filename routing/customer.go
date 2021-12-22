@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var custTmpl = template.Must(template.ParseFiles("templates/html/customer-home.html"))
+var custTmpl = template.Must(template.ParseFiles(HTMLPath + "customer-home.html"))
 
 type customerHandler struct {
 	custService *services.CustomerService
