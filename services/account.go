@@ -3,7 +3,7 @@ package services
 import (
 	"Dp218Go/models"
 	"Dp218Go/repositories"
-	"fmt"
+	"errors"
 	"time"
 )
 
@@ -12,6 +12,7 @@ const (
 	PayIncomeTypeID  = 2
 	PayOutcomeTypeID = 3
 )
+var ErrNotEnoughMoneyToTake = errors.New("can't take more money than you have")
 
 // AccountService - structure for implementing accounting service
 type AccountService struct {
@@ -150,7 +151,6 @@ func (accserv *AccountService) AddMoneyToAccount(account models.Account, amountC
 		return err
 	}
 
-	//currentTime is a time.Now() from our Clock.
 	currentTime := accserv.clock.Now()
 
 	accTransaction := &models.AccountTransaction{
@@ -170,16 +170,17 @@ func (accserv *AccountService) TakeMoneyFromAccount(account models.Account, amou
 	if err != nil {
 		return err
 	}
-	totalMoney, err := accserv.CalculateMoneyAmountByDate(account, time.Now())
+	currentTime := accserv.clock.Now()
+	totalMoney, err := accserv.CalculateMoneyAmountByDate(account, currentTime)
 	if err != nil {
 		return err
 	}
 	if accserv.CentsFromMoney(totalMoney) < amountCents {
-		return fmt.Errorf("can't take more money than you have")
+		return ErrNotEnoughMoneyToTake
 	}
 
 	accTransaction := &models.AccountTransaction{
-		DateTime:    time.Now(),
+		DateTime:    currentTime,
 		PaymentType: paymentType,
 		AccountFrom: account,
 		AccountTo:   models.Account{},
