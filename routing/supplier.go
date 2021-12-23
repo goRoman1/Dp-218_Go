@@ -159,7 +159,7 @@ func editPrice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EncodeAnswer(FormatJSON, w, model)
-	http.Redirect(w,r,"http://localhost:8080/models",  http.StatusFound)
+	http.Redirect(w,r,"/models",  http.StatusFound)
 }
 
 func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +176,7 @@ func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w,r,"http://localhost:8080/models",  http.StatusFound)
+	http.Redirect(w,r,"/models",  http.StatusFound)
 }
 
 func deleteSuppliersScooter(w http.ResponseWriter, r *http.Request) {
@@ -193,7 +193,7 @@ func deleteSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w,r,"http://localhost:8080/models",  http.StatusFound)
+	http.Redirect(w,r,"/models",  http.StatusFound)
 }
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {

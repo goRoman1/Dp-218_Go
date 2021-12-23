@@ -32,11 +32,13 @@
 <h1>Transfer scooters to station</h1>
 <h2>Use multiselect to choose multiple scooters</h2>
 <form action="transfer" method="post">
+    <p>Scooters</p>
     <select id="new_data" name="new_data" class="tag-select chzn-done" multiple="" >
         {{range .SuppliersScooterList.Scooters}}
         <option value="{{.ID}}">{{.SerialNumber}}</option>
         {{end}}
     </select>
+    <p>Stations</p>
     <select id="station_data" name="station_data" class="tag-select chzn-done">
         {{range .StationList.Station}}
         <option value="{{.ID}}" >{{.Name}}</option>
