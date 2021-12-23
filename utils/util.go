@@ -48,3 +48,10 @@ func ConvertStringToTime() func(strData string) (interface{}, error) {
 		return time.Parse(layout, strData)
 	}
 }
+
+// ConvertStringToBool - returns string to bool conversion func.
+func ConvertStringToBool() func(strData string) (interface{}, error) {
+	return func(strData string) (interface{}, error) {
+		return strconv.ParseBool(strData)
+	}
+}
