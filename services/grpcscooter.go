@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	step = 0.001
-	dischargeStep = 0.5
-	interval = 700
+	step = 0.0001
+	dischargeStep = 0.1
+	interval = 450
 )
 
 //GrpcScooterService is a service which responsible for gRPC scooter.

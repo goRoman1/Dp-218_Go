@@ -28,40 +28,15 @@
     </div>
 </header>
 
-<h1>Stations edit</h1>
-
-<div class="col-md-8 order-md-1">
-    <form class="needs-validation" novalidate="" method="post" action="/station/{{.ID}}">
-
-        <div class="col-md-6 mb-3">
-            <label for="StationName">Name</label>
-            <input type="text" class="form-control" id="StationName" name="Name" placeholder=""
-                   value="{{.Name}}" required="">
-            <div class="invalid-feedback">
-                Valid station name is required.
-            </div>
-            <label for="StationLatitude">Latitude</label>
-            <input type="text" class="form-control" id="StationLatitude" name="Latitude" placeholder=""
-                   value="{{.Latitude}}" required="">
-            <label for="StationLongitude">Longitude</label>
-            <input type="text" class="form-control" id="StationLongitude" name="Longitude" placeholder=""
-                   value="{{.Longitude}}" required="">
-        </div>
-
-
-        <div class="custom-control custom-switch">
-            <p>&nbsp;</p>
-            <input type="checkbox" class="custom-control-input" id="blocked" value="true" name="IsActive" {{if
-                   .IsActive}} checked {{end}}>
-            <input type="hidden" class="custom-control-input" id="hideblocked" value="false" name="IsActive" {{if eq
-                   .IsActive false}} checked {{end}}>
-            <label class="custom-control-label" for="blocked">Active</label>
-        </div>
-        <hr class="mb-4">
-        <button type="submit" class="btn btn-primary btn-lg">Save & continue</button>
-        <button type="button" class="btn btn-secondary" onclick="window.location.href='/stations'">Return</button>
-    </form>
-</div>
+<h1>Scooters</h1>
+<form action="scooters" method="post">
+    <select id="new_data" name="new_data" class="tag-select chzn-done" multiple="" >
+        {{range .Scooters}}
+        <option value="{{.ID}}">{{.SerialNumber}}</option>
+        {{end}}
+    </select>
+    <input type="Submit" value="Send" />
+</form>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

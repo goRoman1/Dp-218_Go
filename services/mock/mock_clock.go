@@ -34,7 +34,7 @@ func (m *MockClock) EXPECT() *MockClockMockRecorder {
 	return m.recorder
 }
 
-// Now mocks base method.
+// Now mock base method.
 func (m *MockClock) Now() time.Time {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Now")
