@@ -64,6 +64,9 @@ func main() {
 	var orderRepoDB = postgres.NewOrderRepoDB(db)
 	var orderService = services.NewOrderService(orderRepoDB)
 
+	var scootersInitRepoDb = postgres.NewScooterInitRepoDB(db)
+	var scootersInitService = services.NewScooterInitService(scootersInitRepoDb)
+
 	sessStore := sessions.NewCookieStore([]byte(configs.SESSION_SECRET))
 	authService := services.NewAuthService(userRoleRepoDB, sessStore)
 
@@ -80,6 +83,7 @@ func main() {
 	routing.AddGrpcScooterHandler(handler, grpcScooterService)
 	routing.AddOrderHandler(handler, orderService)
 	routing.AddSupplierHandler(handler, supplierService)
+	routing.AddScooterInitHandler(handler, scootersInitService)
 	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
 	handler.HandleFunc("/scooter", httpServer.ScooterHandler)
 
