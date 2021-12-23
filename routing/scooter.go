@@ -153,6 +153,7 @@ func ChooseScooter(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+
 	chosenScooterID, err = strconv.Atoi(r.Form.Get("id"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

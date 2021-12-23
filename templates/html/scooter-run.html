@@ -29,7 +29,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://maps.api.2gis.ru/2.0/loader.js"></script>
     <script type="text/javascript">
-        var map;
+        let map;
 
         let eventSource = new EventSource("/scooter");
         let scooters = new Map();
@@ -119,7 +119,7 @@
                     <div class="list-group" name="Scoot_list">
                         <div class="list-group-item list-group-item-action active" style="background:
                         radial-gradient(#edf1cf, #43acb4); border: none" name="ScooterList">
-                            Scooters on the station
+                            Scooters at the station
                         </div>
                         {{range .Scooters}}
                         <input  type="radio" name="scoot"
