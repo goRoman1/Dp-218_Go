@@ -273,4 +273,12 @@ INSERT INTO accounts(name, number, owner_id) VALUES('One more account', '5555566
 
 INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 2, 0, 1, 0, 99999);
 INSERT INTO account_transactions(date_time, payment_type_id, account_from_id, account_to_id, order_id, amount_cents) VALUES(current_timestamp, 3, 1, 0, 0, 11111);
+
+INSERT INTO problem_types(id, name) VALUES (1, 'General');
+INSERT INTO problem_types(id, name) VALUES (2, 'Payment issues');
+INSERT INTO problem_types(id, name) VALUES (3, 'Scooter issues');
+INSERT INTO problems(user_id, type_Id, scooter_id, description, is_solved) VALUES(1, 1, 0, 'Bad service', false);
+INSERT INTO problems(user_id, type_Id, scooter_id, description, is_solved) VALUES(1, 2, 0, 'Wrong sum calculated', false);
+INSERT INTO problems(user_id, type_Id, scooter_id, description, is_solved) VALUES(2, 2, 0, 'Cant pay for service', false);
+INSERT INTO problems(user_id, type_Id, scooter_id, description, is_solved) VALUES(3, 3, 1, 'Battery failed and scooter suddenly stopped', false);
 COMMIT;
