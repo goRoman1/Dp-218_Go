@@ -23,7 +23,7 @@ var supplierKeyRoutes = []Route{
 		Handler: getModels,
 	},
 	{
-		Uri:     `/modelCreate`,
+		Uri:     `/models`,
 		Method:  http.MethodPost,
 		Handler: createModel,
 	},
@@ -115,13 +115,12 @@ func createModel(w http.ResponseWriter, r *http.Request) {
 	model.Speed = intSpeed
 	model.Price = intPrice
 
-	//	DecodeRequest(FormatJSON, w, r, model, scooterModelRequest)
 	if err := supplierService.AddModel(model); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
 
-	EncodeAnswer(FormatJSON, w, model, HTMLPath+"supplier.html")
+	http.Redirect(w, r, "http://localhost:8080/models", http.StatusFound)
 }
 
 func editPrice(w http.ResponseWriter, r *http.Request) {
@@ -152,14 +151,12 @@ func editPrice(w http.ResponseWriter, r *http.Request) {
 	model = modelData
 	model.Price = intPrice
 
-	//	DecodeRequest(FormatJSON, w, r, modelData, scooterModelRequest)
 	if err := supplierService.ChangePrice(model); err != nil {
 		EncodeError(format, w, ErrorRendererDefault(err))
 		return
 	}
 
-	EncodeAnswer(FormatJSON, w, model)
-	http.Redirect(w,r,"/models",  http.StatusFound)
+	http.Redirect(w, r, "http://localhost:8080/models", http.StatusFound)
 }
 
 func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +173,7 @@ func addSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w,r,"/models",  http.StatusFound)
+	http.Redirect(w, r, "http://localhost:8080/models", http.StatusFound)
 }
 
 func deleteSuppliersScooter(w http.ResponseWriter, r *http.Request) {
@@ -193,7 +190,7 @@ func deleteSuppliersScooter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w,r,"/models",  http.StatusFound)
+	http.Redirect(w, r, "http://localhost:8080/models", http.StatusFound)
 }
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
@@ -225,7 +222,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	supplierService.InsertScootersToDb(modelId, filepath)
 
-	http.Redirect(w,r,"/models",  http.StatusFound)
+	http.Redirect(w, r, "http://localhost:8080/models", http.StatusFound)
 }
 
 func scooterModelRequest(r *http.Request, data interface{}) error {
