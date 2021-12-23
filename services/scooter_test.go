@@ -2,7 +2,7 @@ package services
 
 import (
 	"Dp218Go/models"
-	"Dp218Go/services/mock"
+	"Dp218Go/repositories/mock"
 	"errors"
 	"github.com/golang/mock/gomock"
 	assert "github.com/stretchr/testify/require"

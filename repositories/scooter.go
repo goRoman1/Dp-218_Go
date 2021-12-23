@@ -1,4 +1,4 @@
-//go:generate mockgen -source=scooter.go -destination=../services/mock/mock_scooter.go -package=mock
+//go:generate mockgen -source=scooter.go -destination=../repositories/mock/mock_scooter.go -package=mock
 package repositories
 
 import "Dp218Go/models"

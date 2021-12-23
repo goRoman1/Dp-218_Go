@@ -35,7 +35,7 @@ func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 	return m.recorder
 }
 
-// AddUser mocks base method.
+// AddUser mock base method.
 func (m *MockUserRepo) AddUser(user *models.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddUser", user)
@@ -49,7 +49,7 @@ func (mr *MockUserRepoMockRecorder) AddUser(user interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUserRepo)(nil).AddUser), user)
 }
 
-// DeleteUser mocks base method.
+// DeleteUser mock base method.
 func (m *MockUserRepo) DeleteUser(userID int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", userID)
@@ -63,7 +63,7 @@ func (mr *MockUserRepoMockRecorder) DeleteUser(userID interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUserRepo)(nil).DeleteUser), userID)
 }
 
-// FindUsersByLoginNameSurname mocks base method.
+// FindUsersByLoginNameSurname mock base method.
 func (m *MockUserRepo) FindUsersByLoginNameSurname(whatToFind string) (*models.UserList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindUsersByLoginNameSurname", whatToFind)
@@ -78,7 +78,7 @@ func (mr *MockUserRepoMockRecorder) FindUsersByLoginNameSurname(whatToFind inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindUsersByLoginNameSurname", reflect.TypeOf((*MockUserRepo)(nil).FindUsersByLoginNameSurname), whatToFind)
 }
 
-// GetAllUsers mocks base method.
+// GetAllUsers mock base method.
 func (m *MockUserRepo) GetAllUsers() (*models.UserList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllUsers")
@@ -93,7 +93,7 @@ func (mr *MockUserRepoMockRecorder) GetAllUsers() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUsers", reflect.TypeOf((*MockUserRepo)(nil).GetAllUsers))
 }
 
-// GetUserByEmail mocks base method.
+// GetUserByEmail mock base method.
 func (m *MockUserRepo) GetUserByEmail(email string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", email)
@@ -108,7 +108,7 @@ func (mr *MockUserRepoMockRecorder) GetUserByEmail(email interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepo)(nil).GetUserByEmail), email)
 }
 
-// GetUserByID mocks base method.
+// GetUserByID mock base method.
 func (m *MockUserRepo) GetUserByID(userID int) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByID", userID)
@@ -123,7 +123,7 @@ func (mr *MockUserRepoMockRecorder) GetUserByID(userID interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepo)(nil).GetUserByID), userID)
 }
 
-// UpdateUser mocks base method.
+// UpdateUser mock base method.
 func (m *MockUserRepo) UpdateUser(userID int, userData models.User) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUser", userID, userData)
@@ -161,7 +161,7 @@ func (m *MockRoleRepo) EXPECT() *MockRoleRepoMockRecorder {
 	return m.recorder
 }
 
-// GetAllRoles mocks base method.
+// GetAllRoles mock base method.
 func (m *MockRoleRepo) GetAllRoles() (*models.RoleList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllRoles")
@@ -176,7 +176,7 @@ func (mr *MockRoleRepoMockRecorder) GetAllRoles() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllRoles", reflect.TypeOf((*MockRoleRepo)(nil).GetAllRoles))
 }
 
-// GetRoleByID mocks base method.
+// GetRoleByID mock base method.
 func (m *MockRoleRepo) GetRoleByID(roleID int) (models.Role, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRoleByID", roleID)
@@ -214,7 +214,7 @@ func (m *MockAuthRepo) EXPECT() *MockAuthRepoMockRecorder {
 	return m.recorder
 }
 
-// GetUserByEmail mocks base method.
+// GetUserByEmail mock base method.
 func (m *MockAuthRepo) GetUserByEmail(arg0 context.Context, arg1 string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", arg0, arg1)
