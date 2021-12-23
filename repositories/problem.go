@@ -16,6 +16,7 @@ type ProblemRepo interface {
 	GetProblemsByTimePeriod(start, end time.Time) (*models.ProblemList, error)
 	AddProblemComplexFields(problem *models.Problem, typeID, scooterID, userID int) error
 	MarkProblemAsSolved(problem *models.Problem) (models.Problem, error)
+	GetAllProblemTypes() ([]models.ProblemType, error)
 }
 
 // SolutionRepo - interface for solution repository
