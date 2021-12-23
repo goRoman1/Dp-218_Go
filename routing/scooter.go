@@ -15,7 +15,6 @@ var orderService *services.OrderService
 var scooterIDKey = "scooterId"
 
 var chosenScooterID, chosenStationID int
-var userFromRequest = models.User{ID: 1, LoginEmail: "guru_admin@guru.com", UserName: "Guru", UserSurname: "Sadh"}
 
 var scooterRoutes = []Route{
 	{
@@ -29,7 +28,7 @@ var scooterRoutes = []Route{
 		Handler: getScooterById,
 	},
 	{
-		Uri:     `/start-trip`,
+		Uri:     `/start-trip/{` + stationIDKey +`}`,
 		Method:  http.MethodGet,
 		Handler: showTripPage,
 	},
@@ -41,12 +40,12 @@ var scooterRoutes = []Route{
 	{
 		Uri:     `/choose-scooter`,
 		Method:  http.MethodPost,
-		Handler: chooseScooter,
+		Handler: ChooseScooter,
 	},
 	{
 		Uri:     `/choose-station`,
 		Method:  http.MethodPost,
-		Handler: chooseStation,
+		Handler: ChooseStation,
 	},
 }
 
@@ -58,15 +57,21 @@ type combineForTemplate struct {
 //AddScooterHandler adds routes to the router from the list of routes.
 func AddScooterHandler(router *mux.Router, service *services.ScooterService) {
 	scooterService = service
+	scooterRouter := router.NewRoute().Subrouter()
+	scooterRouter.Use(FilterAuth(authenticationService))
+
 	for _, rt := range scooterRoutes {
-		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
-		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		scooterRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		scooterRouter.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
 //AddGrpcScooterHandler adds routes to the router from the list of routes.
 func AddGrpcScooterHandler(router *mux.Router, service *services.GrpcScooterService) {
 	scooterGrpcService = service
+	scooterGrpcRouter := router.NewRoute().Subrouter()
+	scooterGrpcRouter.Use(FilterAuth(authenticationService))
+
 	for _, rt := range scooterRoutes {
 		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
@@ -74,7 +79,6 @@ func AddGrpcScooterHandler(router *mux.Router, service *services.GrpcScooterServ
 }
 
 func getAllScooters(w http.ResponseWriter, r *http.Request) {
-
 	scooters, err := scooterService.GetAllScooters()
 
 	if err != nil {
@@ -87,7 +91,6 @@ func getAllScooters(w http.ResponseWriter, r *http.Request) {
 }
 
 func getScooterById(w http.ResponseWriter, r *http.Request) {
-
 	scooterID, err := strconv.Atoi(mux.Vars(r)[scooterIDKey])
 	if err != nil {
 		EncodeError(FormatJSON, w, ErrorRendererDefault(err))
@@ -104,19 +107,14 @@ func getScooterById(w http.ResponseWriter, r *http.Request) {
 }
 
 func startScooterTrip(w http.ResponseWriter, r *http.Request) {
-	station, err := stationService.GetStationById(chosenStationID)
-	if err != nil {
-		fmt.Println(err)
-	}
+	userFromRequest := GetUserFromContext(r)
 
-	chosenWay := models.Coordinate{Latitude: station.Latitude, Longitude: station.Longitude}
 	statusStart, err := scooterService.CreateScooterStatusInRent(chosenScooterID)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-
-	err = scooterGrpcService.InitAndRun(chosenScooterID, chosenWay)
+	err = scooterGrpcService.InitAndRun(chosenScooterID, chosenStationID)
 	if err != nil {
 		fmt.Println(err)
 		EncodeError(FormatJSON, w, ErrorRendererDefault(err))
@@ -126,14 +124,16 @@ func startScooterTrip(w http.ResponseWriter, r *http.Request) {
 
 	distance := statusEnd.Location.Distance(statusStart.Location)
 
-	_, err = orderService.CreateOrder(userFromRequest, chosenScooterID, statusStart.ID, statusEnd.ID, distance)
+	_, err = orderService.CreateOrder(*userFromRequest, chosenScooterID, statusStart.ID, statusEnd.ID, distance)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func showTripPage(w http.ResponseWriter, r *http.Request) {
-	scooterList, err := scooterService.GetAllScooters()
+	stationID, err := strconv.Atoi(mux.Vars(r)[stationIDKey])
+
+	scooterList, err := scooterService.GetAllScootersByStationID(stationID)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -146,25 +146,35 @@ func showTripPage(w http.ResponseWriter, r *http.Request) {
 	EncodeAnswer(FormatHTML, w, &combineForTemplate{*scooterList, *stationList}, HTMLPath+"scooter-run.html")
 }
 
-func chooseScooter(w http.ResponseWriter, r *http.Request) {
+func ChooseScooter(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)
+		return
 	}
 	chosenScooterID, err = strconv.Atoi(r.Form.Get("id"))
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)
+		return
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
-func chooseStation(w http.ResponseWriter, r *http.Request) {
+func ChooseStation(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)
+		return
 	}
 
 	chosenStationID, err = strconv.Atoi(r.Form.Get("id"))
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)
+		return
 	}
+	w.WriteHeader(http.StatusOK)
 }

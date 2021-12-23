@@ -16,35 +16,34 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
   <script src="https://maps.api.2gis.ru/2.0/loader.js"></script>
-
-
   <title>customer</title>
 </head>
 
 <body id="body">
-  <header id="header">
-    <div class="header-bar fixed-top">
-      <nav class="navbar navbar-expand-sm  navbar-dark bg-dark"
-        style="background-color:#545454FF !important; padding: 1em !important;">
-        <a class="navbar-brand" href="main-page.html" style="padding:0 30px">
-          <i class="fas fa-bicycle fa-1x"></i>
-          <b> Dnepr Scooters</b></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#toggleMenu"
-          aria-controls="toggleMenu" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="toggleMenu">
-          <ul class="navbar-nav ms-auto text-center" style="padding:0 30px">
-            <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-
-            <li class="nav-item"><a class="nav-link" id="logout" href="/signout">
-                <i class="fas fa-user"></i> Logout</a></li>
-
-            <li class="nav-item"><a class="nav-link" id="list" href="#" type="button" data-bs-toggle="modal"
-                data-bs-target="#item-modal"><i class="fal fa-scroll"></i> List</a></li>
-          </ul>
-        </div>
-      </nav>
+  <header>
+    <div class="bs-component">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark"
+           style="background-color:#545454FF !important; padding: 1em !important;">
+        <i class="fas fa-bicycle fa-2x"></i>
+        &nbsp;
+        <b><a class="navbar-brand" href="/">Dnepr Scooters</a></b>
+        <div class="collapse navbar-collapse" id="navbarColor02">
+          <ul class="navbar-nav mr-auto">
+          <!-- customer menu -->
+          <li class="nav-item">
+            <a class="nav-link" href="/customer/map">map</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/accounts">account</a>
+          </li>
+          <!-- end customer menu -->
+        </ul>
+      </div>
+      <div>
+        <a class="nav-link" id="logout" href="/signout">
+          <i class="fas fa-user"></i> Logout</a>
+      </div>
+    </nav>
     </div>
   </header>
   <!-- start customer map-->

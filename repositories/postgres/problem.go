@@ -75,8 +75,8 @@ func (probl *ProblemRepoDB) MarkProblemAsSolved(problem *models.Problem) (models
 	solvedWas := problem.IsSolved
 	problem.IsSolved = true
 
-	querySQL := `UPDATE problems SET is_solved = $1 WHERE id = $2`
-	err := probl.db.QueryResultRow(context.Background(), querySQL, problem.IsSolved, problem.ID).Scan()
+	querySQL := `UPDATE problems SET is_solved = $1 WHERE id = $2 RETURNING is_solved;`
+	err := probl.db.QueryResultRow(context.Background(), querySQL, problem.IsSolved, problem.ID).Scan(&problem.IsSolved)
 
 	if err != nil {
 		problem.IsSolved = solvedWas
@@ -109,7 +109,7 @@ func (probl *ProblemRepoDB) AddProblemComplexFields(problem *models.Problem, typ
 	return nil
 }
 
-// GetProblemTypeByID - get problem type by gived ID from the DB
+// GetProblemTypeByID - get problem type by given ID from the DB
 func (probl *ProblemRepoDB) GetProblemTypeByID(typeID int) (models.ProblemType, error) {
 	querySQL := `SELECT id, name FROM problem_types WHERE id = $1;`
 	row := probl.db.QueryResultRow(context.Background(), querySQL, typeID)
@@ -118,6 +118,31 @@ func (probl *ProblemRepoDB) GetProblemTypeByID(typeID int) (models.ProblemType, 
 	err := row.Scan(&problemType.ID, &problemType.Name)
 
 	return problemType, err
+}
+
+// GetAllProblemTypes - get all available problem types from the DB
+func (probl *ProblemRepoDB) GetAllProblemTypes() ([]models.ProblemType, error) {
+	var result []models.ProblemType
+	querySQL := `SELECT 
+		id, name 
+		FROM problem_types`
+
+	rows, err := probl.db.QueryResult(context.Background(), querySQL)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var problemType models.ProblemType
+		err := rows.Scan(&problemType.ID, &problemType.Name)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, problemType)
+	}
+
+	return result, nil
 }
 
 // GetProblemsByUserID - get list of problems from the DB by user ID
@@ -152,6 +177,7 @@ func (probl *ProblemRepoDB) getProblemsWithCondition(condition string, params ..
 	if err != nil {
 		return list, err
 	}
+	defer rows.Close()
 
 	type additionalProblemData struct {
 		typeID    int
@@ -239,6 +265,7 @@ func (sol *SolutionRepoDB) GetSolutionsByProblems(problems models.ProblemList) (
 	if err != nil {
 		return result, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var solution models.Solution
