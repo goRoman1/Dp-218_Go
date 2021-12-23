@@ -8,14 +8,17 @@ import (
 "strings"
 )
 
+// ScooterInitRepoDB - struct representing user  ScooterInit
 type ScooterInitRepoDB struct {
 	db repositories.AnyDatabase
 }
 
+// NewScooterInitRepoDB -  ScooterInit repo initialization
 func NewScooterInitRepoDB(db repositories.AnyDatabase) *ScooterInitRepoDB {
 	return &ScooterInitRepoDB{db}
 }
 
+// GetOwnersScooters - get list of all system scooters that related for current supplier from the DB
 func (si *ScooterInitRepoDB) GetOwnersScooters() (*models.SuppliersScooterList, error) {
 	suppliersScooterList := &models.SuppliersScooterList{}
 
@@ -50,6 +53,7 @@ func (si *ScooterInitRepoDB) GetOwnersScooters() (*models.SuppliersScooterList, 
 	return suppliersScooterList, nil
 }
 
+//  getScooterIDFromStatuses - get scooter IDs from table of scooter statuses
 func (si *ScooterInitRepoDB) getScooterIDFromStatuses()(*models.ScooterIDsStatusesList, error){
 	list := &models.ScooterIDsStatusesList{}
 	querySQL := `SELECT scooter_id FROM scooter_statuses WHERE can_be_rent=true ORDER BY id;`
@@ -70,6 +74,7 @@ func (si *ScooterInitRepoDB) getScooterIDFromStatuses()(*models.ScooterIDsStatus
 	return list, nil
 }
 
+// findStatusInTheList -  check if there are statuses for current scooter
 func (si *ScooterInitRepoDB)findStatusInTheList(scooterIds *models.ScooterIDsStatusesList, scooterId int) bool {
 	for _, v := range scooterIds.ScooterIDsStatusesList {
 		if v.ID == scooterId {
@@ -79,6 +84,7 @@ func (si *ScooterInitRepoDB)findStatusInTheList(scooterIds *models.ScooterIDsSta
 	return true
 }
 
+// GetActiveStations - get all station data for stations that is active
 func (si *ScooterInitRepoDB) GetActiveStations()(*models.StationList, error){
 	list := &models.StationList{}
 	querySQL := `SELECT * FROM scooter_stations WHERE is_active=true ORDER BY id;`
@@ -99,6 +105,7 @@ func (si *ScooterInitRepoDB) GetActiveStations()(*models.StationList, error){
 	return list, nil
 }
 
+//AddStatusesToScooters - add coordinates and statuses to scooter statuses
 func (si *ScooterInitRepoDB) AddStatusesToScooters(scooterIds []int, station models.Station) error {
 	batteryRemain := 100
 

@@ -24,14 +24,19 @@ var scooterInitRoutes = []Route{
 	},
 }
 
+// AddScooterInitHandler - add endpoints for working with scooterInit to http router
 func AddScooterInitHandler(router *mux.Router, service *services.ScooterInitService) {
 	scooterInitService = service
+	scooterInitRouter := router.NewRoute().Subrouter()
+	scooterInitRouter.Use(FilterAuth(authenticationService))
+
 	for _, rt := range scooterInitRoutes {
-		router.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
-		router.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		scooterInitRouter.Path(rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
+		scooterInitRouter.Path(APIprefix + rt.Uri).HandlerFunc(rt.Handler).Methods(rt.Method)
 	}
 }
 
+// getAllocationData - render data on page
 func getAllocationData(w http.ResponseWriter, r *http.Request){
 	var dataAllocation = &models.ScootersStationsAllocation{}
 	var err error
@@ -43,9 +48,10 @@ func getAllocationData(w http.ResponseWriter, r *http.Request){
 	}
 	dataAllocation = scooterInitService.ConvertForTemplateStruct()
 
-	EncodeAnswer(format, w, dataAllocation, HTMLPath+"scooters-init.html")
+	EncodeAnswer(format, w, dataAllocation, HTMLPath+"scooter-init.html")
 }
 
+// addStatusesToScooters - add statuses to scooter statuses
 func addStatusesToScooters(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	scooterIds := r.Form["new_data"]

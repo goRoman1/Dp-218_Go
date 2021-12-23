@@ -5,26 +5,32 @@ import (
 	"Dp218Go/repositories"
 )
 
+// ScooterInitService - structure for implementing ScooterInitService
 type ScooterInitService struct {
 	scooterInitRepo repositories.ScooterInitRepoI
 }
 
+// NewScooterInitService - initialization of ScooterInitService
 func NewScooterInitService(scooterInitRepo repositories.ScooterInitRepoI) *ScooterInitService {
 	return &ScooterInitService{scooterInitRepo}
 }
 
+// GetOwnersScooters - get all scooters that related to current user
 func (si *ScooterInitService) GetOwnersScooters() (*models.SuppliersScooterList, error) {
 	return si.scooterInitRepo.GetOwnersScooters()
 }
 
+// GetActiveStations - get all active system stations
 func (si *ScooterInitService) GetActiveStations()(*models.StationList, error) {
 	return si.scooterInitRepo.GetActiveStations()
 }
 
+// AddStatusesToScooters - add statuses to scooter statuses
 func (si *ScooterInitService) AddStatusesToScooters(scooterIds []int, station models.Station) error {
 	return si.scooterInitRepo.AddStatusesToScooters(scooterIds, station)
 }
 
+// ConvertForTemplateStruct - create struct for template rendering
 func (si *ScooterInitService) ConvertForTemplateStruct()*models.ScootersStationsAllocation{
 	list := &models.ScootersStationsAllocation{}
 
