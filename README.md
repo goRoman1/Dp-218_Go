@@ -25,6 +25,9 @@ Server runs on http://localhost:8080/
 ````/users```` - the list of all users and their statuses.  
 ```/stations``` - the list of all stations.  
 ```/scooters``` - the list of scooters in json format.
+supplier.
+```/models``` - add scooter models/scooters
+```/init``` - place scooters on stations
 
 # How to start the trip
 
