@@ -53,7 +53,10 @@ func getAllocationData(w http.ResponseWriter, r *http.Request){
 
 // addStatusesToScooters - add statuses to scooter statuses
 func addStatusesToScooters(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	err := r.ParseForm()
+	if err != nil {
+		return
+	}
 	scooterIds := r.Form["new_data"]
 	stationId := r.Form["station_data"]
 	intStationId, err := strconv.Atoi(stationId[0])
@@ -77,6 +80,6 @@ func addStatusesToScooters(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w,r,"/init",  http.StatusFound)
+	http.Redirect(w, r, "http://localhost:8080/init", http.StatusFound)
 }
 

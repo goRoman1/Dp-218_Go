@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS scooter_stations
     is_active   boolean,
     latitude      NUMERIC(16, 14),
     longitude     NUMERIC(16, 14)
-    );
+);
 
 CREATE TABLE IF NOT EXISTS scooter_statuses
 (

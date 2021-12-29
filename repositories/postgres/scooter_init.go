@@ -22,11 +22,10 @@ func NewScooterInitRepoDB(db repositories.AnyDatabase) *ScooterInitRepoDB {
 func (si *ScooterInitRepoDB) GetOwnersScooters() (*models.SuppliersScooterList, error) {
 	suppliersScooterList := &models.SuppliersScooterList{}
 
-	/*	idFromStatuses, err := si.getScooterIDFromStatuses()
-		if err != nil {
-			return suppliersScooterList, err
-		}
-	*/
+	idFromStatuses, err := si.getScooterIDFromStatuses()
+	if err != nil {
+		return suppliersScooterList, err
+	}
 
 	querySQL := `SELECT 
 		id, serial_number
@@ -44,9 +43,9 @@ func (si *ScooterInitRepoDB) GetOwnersScooters() (*models.SuppliersScooterList, 
 			return suppliersScooterList, err
 		}
 
-		//		if si.findStatusInTheList(idFromStatuses,suppliersScooter.ID){
-		//			continue
-		//		}
+		if si.findStatusInTheList(idFromStatuses,suppliersScooter.ID){
+			continue
+		}
 
 		suppliersScooterList.Scooters = append(suppliersScooterList.Scooters, suppliersScooter)
 	}
@@ -56,7 +55,7 @@ func (si *ScooterInitRepoDB) GetOwnersScooters() (*models.SuppliersScooterList, 
 //  getScooterIDFromStatuses - get scooter IDs from table of scooter statuses
 func (si *ScooterInitRepoDB) getScooterIDFromStatuses()(*models.ScooterIDsStatusesList, error){
 	list := &models.ScooterIDsStatusesList{}
-	querySQL := `SELECT scooter_id FROM scooter_statuses WHERE can_be_rent=true ORDER BY id;`
+	querySQL := `SELECT scooter_id FROM scooter_statuses WHERE can_be_rent=true ;`
 	rows, err := si.db.QueryResult(context.Background(), querySQL)
 	if err != nil {
 		return list, err
@@ -78,10 +77,10 @@ func (si *ScooterInitRepoDB) getScooterIDFromStatuses()(*models.ScooterIDsStatus
 func (si *ScooterInitRepoDB)findStatusInTheList(scooterIds *models.ScooterIDsStatusesList, scooterId int) bool {
 	for _, v := range scooterIds.ScooterIDsStatusesList {
 		if v.ID == scooterId {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 // GetActiveStations - get all station data for stations that is active

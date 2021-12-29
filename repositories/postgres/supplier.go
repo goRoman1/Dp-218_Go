@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var userId = 1
+var userId = 9
 
 // SupplierRepoDB - struct representing supplier repository
 type SupplierRepoDB struct {
