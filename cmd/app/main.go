@@ -1,128 +1,85 @@
 package main
 
 import (
-	"Dp218Go/configs"
-	"Dp218Go/protos"
-	"Dp218Go/repositories/postgres"
-	"Dp218Go/routing"
-	"Dp218Go/routing/grpcserver"
-	"Dp218Go/routing/httpserver"
-	"Dp218Go/services"
-	"fmt"
+	"context"
 	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
+	"net"
+	"sync"
 
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/gorilla/sessions"
+	pb "Supplier/supplier-service/proto/consignment"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
+
+const (
+	port = ":50051"
+)
+
+type repository interface {
+	Create(*pb.Consignment) (*pb.Consignment, error)
+}
+
+// Repository - Dummy repository, this simulates the use of a datastore
+// of some kind. We'll replace this with a real implementation later on.
+type Repository struct {
+	mu           sync.RWMutex
+	consignments []*pb.Consignment
+}
+
+// Create a new consignment
+func (repo *Repository) Create(consignment *pb.Consignment) (*pb.Consignment, error) {
+	repo.mu.Lock()
+	updated := append(repo.consignments, consignment)
+	repo.consignments = updated
+	repo.mu.Unlock()
+	return consignment, nil
+}
+
+// Service should implement all of the methods to satisfy the service
+// we defined in our protobuf definition. You can check the interface
+// in the generated code itself for the exact method signatures etc
+// to give you a better idea.
+type service struct {
+	repo repository
+}
+
+// CreateConsignment - we created just one method on our service,
+// which is a create method, which takes a context and a request as an
+// argument, these are handled by the gRPC server.
+func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment) (*pb.Response, error) {
+
+	// Save our consignment
+	consignment, err := s.repo.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return matching the `Response` message we created in our
+	// protobuf definition.
+	return &pb.Response{Created: true, Consignment: consignment}, nil
+}
 
 func main() {
 
-	var connectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		configs.POSTGRES_USER,
-		configs.POSTGRES_PASSWORD,
-		configs.PG_HOST,
-		configs.PG_PORT,
-		configs.POSTGRES_DB)
+	repo := &Repository{}
 
-	db, err := postgres.NewConnection(connectionString)
+	// Set-up our gRPC server.
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("app - Run - postgres.New: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
-	defer db.CloseDB()
+	s := grpc.NewServer()
 
-	err = doMigrate(connectionString)
-	if err != nil {
-		log.Printf("app - Run - Migration issues: %v\n", err)
+	// Register our service with the gRPC server, this will tie our
+	// implementation into the auto-generated interface code for our
+	// protobuf definition.
+	pb.RegisterShippingServiceServer(s, &service{repo})
+
+	// Register reflection service on gRPC server.
+	reflection.Register(s)
+
+	log.Println("Running on port:", port)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
-
-	var userRoleRepoDB = postgres.NewUserRepoDB(db)
-	var userService = services.NewUserService(userRoleRepoDB, userRoleRepoDB)
-
-	var accRepoDB = postgres.NewAccountRepoDB(userRoleRepoDB, db)
-	var clock = services.NewClock()
-	var accService = services.NewAccountService(accRepoDB, accRepoDB, accRepoDB, clock)
-	var stationRepoDB = postgres.NewStationRepoDB(db)
-	var stationService = services.NewStationService(stationRepoDB)
-
-	var scooterRepo = postgres.NewScooterRepoDB(db)
-	var grpcScooterService = services.NewGrpcScooterService(scooterRepo, stationService)
-	var scooterService = services.NewScooterService(scooterRepo)
-
-	var supplierRepoDB = postgres.NewSupplierRepoDB(db)
-	var supplierService = services.NewSupplierService(supplierRepoDB)
-
-	var problemRepoDB = postgres.NewProblemRepoDB(userRoleRepoDB, scooterRepo, db)
-	var solutionRepoDB = postgres.NewSolutionRepoDB(db)
-	var problemService = services.NewProblemService(problemRepoDB, solutionRepoDB)
-
-	var orderRepoDB = postgres.NewOrderRepoDB(db)
-	var orderService = services.NewOrderService(orderRepoDB)
-
-	var scootersInitRepoDb = postgres.NewScooterInitRepoDB(db)
-	var scootersInitService = services.NewScooterInitService(scootersInitRepoDb)
-
-	sessStore := sessions.NewCookieStore([]byte(configs.SESSION_SECRET))
-	authService := services.NewAuthService(userRoleRepoDB, sessStore)
-
-	custService := services.NewCustomerService(stationRepoDB)
-
-	handler := routing.NewRouter()
-	routing.AddAuthHandler(handler, authService)
-	routing.AddCustomerHandler(handler, custService)
-	routing.AddUserHandler(handler, userService)
-	routing.AddStationHandler(handler, stationService)
-	routing.AddAccountHandler(handler, accService)
-	routing.AddScooterHandler(handler, scooterService)
-	routing.AddProblemHandler(handler, problemService)
-	routing.AddGrpcScooterHandler(handler, grpcScooterService)
-	routing.AddOrderHandler(handler, orderService)
-	routing.AddSupplierHandler(handler, supplierService)
-	routing.AddScooterInitHandler(handler, scootersInitService)
-	httpServer := httpserver.New(handler, httpserver.Port(configs.HTTP_PORT))
-	handler.HandleFunc("/scooter", httpServer.ScooterHandler)
-
-	//utils.CheckKafka() //TODO: delete after checking
-
-	grpcServer := grpcserver.NewGrpcServer()
-	protos.RegisterScooterServiceServer(grpcServer, httpServer)
-	http.ListenAndServe(":8080", handler)
-
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
-	select {
-	case s := <-interrupt:
-		log.Println("app - Run - signal: " + s.String())
-	case err = <-httpServer.Notify():
-		log.Fatalf("app - Run - httpServer.Notify: %v", err)
-	}
-
-	err = httpServer.Shutdown()
-	if err != nil {
-		log.Fatalf("app - Run - httpServer.Shutdown: %v", err)
-	}
-}
-
-func doMigrate(connStr string) error {
-	migr, err := migrate.New("file://"+configs.MIGRATIONS_PATH, connStr+"?sslmode=disable")
-	if err != nil {
-		return err
-	}
-
-	if configs.MIGRATE_VERSION_FORCE > 0 {
-		migr.Force(configs.MIGRATE_VERSION_FORCE)
-	}
-
-	if configs.MIGRATE_DOWN {
-		migr.Down()
-	}
-
-	return migr.Up()
 }
